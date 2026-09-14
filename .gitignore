@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ambiente Python locale (usato solo per gli script di verifica)
+.venv

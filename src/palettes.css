@@ -1,0 +1,123 @@
+/* ==========================================================================
+   PALETTE ALTERNATIVE
+   Ogni palette ridefinisce solo i token colore: nessuna regola di layout
+   viene duplicata. Si attiva impostando data-theme sull'elemento <html>.
+
+   Tutte le combinazioni testo/sfondo rispettano un contrasto >= 4.5:1
+   (>= 3:1 per i testi di grande dimensione).
+   ========================================================================== */
+
+/* --- 1. Terracotta ---------------------------------------------------------
+   Il default. Accento caldo e minerale, vicino all'arancione originale ma
+   desaturato: legge come colore materico, non come colore commerciale. */
+:root[data-theme='terracotta'] {
+  --c-ink: #14161a;
+  --c-ink-2: #2b3037;
+  --c-body: #545c66;
+  --c-muted: #5f6874;
+  --c-page: #f7f7f5;
+  --c-surface: #ffffff;
+  --c-surface-2: #f1f1ee;
+  --c-line: rgba(20, 22, 26, 0.1);
+  --c-line-strong: rgba(20, 22, 26, 0.18);
+  --c-accent: #b4541b;
+  --c-accent-hover: #8f4215;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(180, 84, 27, 0.08);
+  --c-dark-bg: #14161a;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 2. Blu Tecnico --------------------------------------------------------
+   Accento blu inchiostro su carta fredda. È la palette più "ingegneristica":
+   richiama il disegno tecnico e la cianografia. */
+:root[data-theme='blu'] {
+  --c-ink: #111823;
+  --c-ink-2: #24303f;
+  --c-body: #4d5a6b;
+  --c-muted: #5c6773;
+  --c-page: #f6f7f9;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef1f5;
+  --c-line: rgba(17, 24, 35, 0.1);
+  --c-line-strong: rgba(17, 24, 35, 0.18);
+  --c-accent: #1f4e79;
+  --c-accent-hover: #16395a;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(31, 78, 121, 0.08);
+  --c-dark-bg: #111823;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 3. Verde Oliva --------------------------------------------------------
+   Accento verde salvia scuro su fondo avorio. Palette più naturale e
+   territoriale: si lega bene al paesaggio del Mincio. */
+:root[data-theme='oliva'] {
+  --c-ink: #191a15;
+  --c-ink-2: #2e3129;
+  --c-body: #555a4d;
+  --c-muted: #61665a;
+  --c-page: #f7f6f1;
+  --c-surface: #fffefa;
+  --c-surface-2: #efeee6;
+  --c-line: rgba(25, 26, 21, 0.1);
+  --c-line-strong: rgba(25, 26, 21, 0.18);
+  --c-accent: #4a5a33;
+  --c-accent-hover: #374326;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(74, 90, 51, 0.09);
+  --c-dark-bg: #191a15;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 4. Grafite ------------------------------------------------------------
+   Quasi monocromatica: l'accento è un grigio antracite e il colore viene
+   usato solo dalla fotografia. La più sobria e "da studio di architettura". */
+:root[data-theme='grafite'] {
+  --c-ink: #17171a;
+  --c-ink-2: #2c2c31;
+  --c-body: #56565e;
+  --c-muted: #5f5f68;
+  --c-page: #f6f6f6;
+  --c-surface: #ffffff;
+  --c-surface-2: #ededed;
+  --c-line: rgba(23, 23, 26, 0.11);
+  --c-line-strong: rgba(23, 23, 26, 0.2);
+  --c-accent: #33343a;
+  --c-accent-hover: #17171a;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(51, 52, 58, 0.07);
+  --c-dark-bg: #17171a;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+}
+
+/* --- 5. Bordeaux -----------------------------------------------------------
+   Accento rosso scuro su fondo caldo. Più istituzionale e classico,
+   adatto a una committenza pubblica o a interventi di restauro. */
+:root[data-theme='bordeaux'] {
+  --c-ink: #1a1516;
+  --c-ink-2: #312829;
+  --c-body: #59504f;
+  --c-muted: #665d5c;
+  --c-page: #f8f6f4;
+  --c-surface: #ffffff;
+  --c-surface-2: #f0ecea;
+  --c-line: rgba(26, 21, 22, 0.1);
+  --c-line-strong: rgba(26, 21, 22, 0.18);
+  --c-accent: #7a2431;
+  --c-accent-hover: #5c1a24;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(122, 36, 49, 0.08);
+  --c-dark-bg: #1a1516;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+}

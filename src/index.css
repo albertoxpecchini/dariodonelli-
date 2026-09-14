@@ -1,24 +1,91 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   SISTEMA DI DESIGN — Ing. Dario Donelli
+   Un unico punto di verità per colore, tipografia, spazio e superfici.
+   Le palette alternative sono definite in palettes.css e attivate
+   tramite l'attributo data-theme su <html>.
+   ========================================================================== */
 
 :root {
-  --brand-orange: #f6851c;
-  --brand-orange-soft: #ffe7cf;
-  --brand-blue: #5b86b6;
-  --brand-blue-soft: #edf4fb;
-  --brand-dark: #1a2a39;
-  --text-dark: #1d2f3f;
-  --muted: #586d80;
-  --panel-bg: #f4f7fa;
-  --page-bg: #f4f7fa;
-  --card-bg: #ffffff;
-  --font-body: 'Montserrat', 'Segoe UI', sans-serif;
-  --font-heading: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  /* --- Palette di base: "Grafite" (default) ------------------------------ */
+  --c-ink: #14161a;
+  --c-ink-2: #2b3037;
+  --c-body: #545c66;
+  --c-muted: #5f6874;
+
+  --c-page: #f7f7f5;
+  --c-surface: #ffffff;
+  --c-surface-2: #f1f1ee;
+  --c-line: rgba(20, 22, 26, 0.1);
+  --c-line-strong: rgba(20, 22, 26, 0.18);
+
+  --c-accent: #b4541b;
+  --c-accent-hover: #8f4215;
+  --c-accent-ink: #ffffff;
+  --c-accent-wash: rgba(180, 84, 27, 0.08);
+
+  --c-dark-bg: #14161a;
+  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-fg-strong: #ffffff;
+  --c-dark-line: rgba(255, 255, 255, 0.12);
+
+  /* --- Tipografia -------------------------------------------------------- */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  /* Scala tipografica fluida, rapporto ~1.25 */
+  --fs-label: 0.6875rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: clamp(1.25rem, 0.9rem + 0.9vw, 1.5rem);
+  --fs-xl: clamp(1.5rem, 1.05rem + 1.5vw, 2.125rem);
+  --fs-2xl: clamp(2rem, 1.2rem + 2.8vw, 3.25rem);
+  --fs-3xl: clamp(2.5rem, 1.35rem + 4.2vw, 4.5rem);
+
+  --lh-tight: 1.06;
+  --lh-snug: 1.22;
+  --lh-body: 1.68;
+
+  --ls-label: 0.1em;
+  --ls-tight: -0.02em;
+  --ls-display: -0.03em;
+
+  /* --- Spazio: scala a passo 4px ----------------------------------------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 2.5rem;
+  --s-8: 3rem;
+  --s-9: 4rem;
+  --s-10: 5rem;
+  --s-11: 6.5rem;
+
+  /* Ritmo verticale delle sezioni */
+  --section-y: clamp(4rem, 7vw, 7.5rem);
+  --container: 1180px;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+
+  /* --- Superfici --------------------------------------------------------- */
+  --radius-sm: 2px;
+  --radius: 3px;
+  --shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.04);
+  --shadow-md: 0 6px 24px -8px rgba(20, 22, 26, 0.16);
+
+  /* --- Movimento ---------------------------------------------------------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur: 200ms;
 
   font-family: var(--font-body);
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: var(--lh-body);
   font-weight: 400;
-  color: var(--text-dark);
-  background: var(--page-bg);
+  color: var(--c-ink);
+  background: var(--c-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -26,19 +93,26 @@
   color-scheme: light;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  /* Compensa l'header sticky quando si naviga verso un'ancora */
+  scroll-padding-top: 6rem;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(180deg, rgba(164, 191, 214, 0.12), rgba(255, 255, 255, 0.7)), var(--page-bg);
+  background: var(--c-page);
+  color: var(--c-ink);
+  /* Evita qualsiasi overflow orizzontale accidentale */
+  overflow-x: hidden;
 }
 
 img {
@@ -46,22 +120,53 @@ img {
   display: block;
 }
 
-#root {
-  min-height: 100vh;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-a,
 button,
 input,
 textarea,
 select {
   font: inherit;
+  color: inherit;
 }
 
 h1,
 h2,
 h3,
 h4,
-p {
+p,
+figure,
+blockquote {
   margin-top: 0;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Focus visibile e coerente su tutti gli elementi interattivi */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* Rispetta la preferenza di sistema per il movimento ridotto */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
