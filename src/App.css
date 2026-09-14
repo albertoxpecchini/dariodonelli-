@@ -895,16 +895,39 @@
 .studio__portrait {
   position: relative;
   margin: 0;
-  background: var(--c-surface-2);
-  border-radius: var(--radius);
-  overflow: hidden;
 }
 
+.studio__portrait picture {
+  display: block;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--c-surface-2);
+}
+
+/* L'immagine è mostrata per intero: niente ritaglio, la figura assume
+   il rapporto della fotografia originale. */
 .studio__portrait img {
+  display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
+  height: auto;
   filter: saturate(0.85);
+}
+
+/* Didascalia sotto la fotografia, non sovrapposta: l'immagine resta
+   leggibile per intero. */
+.studio__portrait figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding-top: var(--s-4);
+}
+
+.studio__portrait figcaption .studio__portrait-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
 }
 
 /* Segnaposto in attesa della fotografia del professionista. Volutamente
@@ -1084,6 +1107,26 @@ a.contact-item__value:hover {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--c-dark-line);
   border-radius: var(--radius);
+}
+
+/* Fotografia dell'ingresso: sta sotto i recapiti, così chi arriva in via
+   Turati riconosce la porta. L'aside resta nella colonna accanto. */
+.contact__photo {
+  grid-column: 1;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+/* Anche qui la fotografia è intera, senza ritaglio. */
+.contact__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--c-dark-line);
+  filter: saturate(0.85);
 }
 
 /* --------------------------------------------------------------------------

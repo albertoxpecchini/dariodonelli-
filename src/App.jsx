@@ -593,10 +593,19 @@ function ProjectGrid() {
 function StudioBlock() {
   return (
     <div className="studio-grid reveal">
-      {/* Segnaposto: sostituire con una fotografia del professionista non
-          appena disponibile, mantenendo il rapporto 4:5. Per farlo basta
-          rimuovere la classe --empty e inserire un <img>. */}
-      <figure className="studio__portrait studio__portrait--empty">
+      {/* In attesa di un ritratto del professionista, la targa dello studio:
+          fotografia reale, stesso rapporto 4:5 previsto per il ritratto. */}
+      <figure className="studio__portrait">
+        <picture>
+          <source srcSet="/images/studio-targa.webp" type="image/webp" />
+          <img
+            src="/images/studio-targa.jpg"
+            alt={`Targa dello studio di ${studio.name} in ${studio.address}`}
+            width="1200"
+            height="1800"
+            loading="lazy"
+          />
+        </picture>
         <figcaption>
           <span className="studio__portrait-name">{studio.name}</span>
           <span className="label">{studio.role}</span>
@@ -674,6 +683,20 @@ function ContactSection() {
               </dd>
             </div>
           </dl>
+
+          <figure className="contact__photo reveal">
+            <picture>
+              <source srcSet="/images/studio-esterno.webp" type="image/webp" />
+              <img
+                src="/images/studio-esterno.jpg"
+                alt={`Ingresso dello studio in ${studio.address}`}
+                width="1800"
+                height="1200"
+                loading="lazy"
+              />
+            </picture>
+            <figcaption className="label">L&rsquo;ingresso dello studio</figcaption>
+          </figure>
 
           <div className="contact__aside reveal">
             <h3 className="subhead">Come procediamo</h3>
