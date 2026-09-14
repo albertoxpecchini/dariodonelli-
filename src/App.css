@@ -233,39 +233,8 @@
 }
 
 /* --------------------------------------------------------------------------
-   4. Fascia informativa + Header
+   4. Header
    -------------------------------------------------------------------------- */
-
-.topbar {
-  background: var(--c-ink);
-  color: var(--c-dark-fg);
-}
-
-.topbar__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
-  min-height: 32px;
-  font-size: var(--fs-label);
-  letter-spacing: 0.04em;
-}
-
-.topbar__place {
-  color: var(--c-dark-fg);
-}
-
-.topbar__phone {
-  color: var(--c-dark-fg-strong);
-  font-weight: 500;
-  transition: color var(--dur) var(--ease);
-}
-
-.topbar__phone:hover {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
 
 .header {
   position: sticky;
@@ -690,17 +659,37 @@
   background: var(--c-surface);
 }
 
+/* Le voci occupano tutta la riga invece di ammassarsi a sinistra. Una
+   griglia a colonne uguali con i pallini fra l'una e l'altra: le voci
+   restano incolonnate a passo regolare, come un testo giustificato.
+   Il separatore è una colonna a sé, così non si appiccica al testo. */
+/* Le voci si distendono su tutta la riga invece di ammassarsi a sinistra.
+   Ogni voce sta su una riga sola e lo spazio residuo si divide in parti
+   uguali fra una voce e l'altra: è l'effetto del testo giustificato.
+   Colonne a "auto" e non a "1fr" perché le voci hanno lunghezze molto
+   diverse e a misura uguale la più lunga andrebbe a capo da sola. */
 .marquee-strip__inner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-3) var(--s-6);
+  justify-content: space-between;
+  gap: var(--s-4);
   padding-block: var(--s-4);
 }
 
 .marquee-strip__item {
   font-size: var(--fs-sm);
   color: var(--c-body);
+  white-space: nowrap;
+}
+
+/* La prima e l'ultima voce si allineano ai margini della colonna, così la
+   fascia non sembra rientrata rispetto al resto della pagina. */
+.marquee-strip__item:first-child {
+  text-align: left;
+}
+
+.marquee-strip__item:last-child {
+  text-align: right;
 }
 
 .marquee-strip__sep {
@@ -708,7 +697,7 @@
   height: 3px;
   border-radius: 50%;
   background: var(--c-accent);
-  flex: none;
+  justify-self: center;
 }
 
 /* --------------------------------------------------------------------------
@@ -722,12 +711,35 @@
 
 .service-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.15fr) auto;
+  grid-template-columns: auto 150px minmax(0, 1fr) minmax(0, 1.15fr) auto;
   align-items: start;
   gap: var(--s-5);
   padding-block: var(--s-6);
   border-bottom: 1px solid var(--c-line);
   transition: background-color var(--dur) var(--ease);
+}
+
+/* L'immagine è una miniatura, non una figura a piena larghezza: dà un
+   riferimento visivo alla riga senza rompere il ritmo dell'indice. */
+.service-row__media {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+}
+
+.service-row__media img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  filter: saturate(0.9);
+  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease);
+}
+
+.service-row:hover .service-row__media img {
+  transform: scale(1.04);
+  filter: saturate(1);
 }
 
 /* L'hover è una variazione di superficie appena percettibile. */
@@ -975,6 +987,37 @@
   gap: var(--s-5);
 }
 
+/* Titoli e albo: scheda compatta a due colonne, staccata dal corpo del
+   testo da un filetto. Dati verificabili, nessuna enfasi grafica. */
+.credentials {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-6);
+  padding-block: var(--s-5);
+  border-top: 1px solid var(--c-line);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.credentials__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.credentials__item dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-ink);
+}
+
+@media (max-width: 560px) {
+  .credentials {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Elenco delle competenze: righe sottili, niente "pillole" colorate. */
 .discipline-list {
   margin: 0;
@@ -1137,18 +1180,29 @@ a.contact-item__value:hover {
   background: var(--c-dark-bg);
   color: var(--c-dark-fg);
   border-top: 1px solid var(--c-dark-line);
+  /* Su fondo scuro il testo appare più grasso: si compensa qui. */
+  -webkit-font-smoothing: antialiased;
 }
 
-.footer__grid {
+/* Quattro colonne: il brand ha più respiro, le due colonne di link hanno
+   la stessa misura, la mappa una larghezza che non si deforma. */
+.footer__main {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  /* Le colonne si stirano a tutta altezza: serve alla mappa, che riempie
+     lo spazio residuo della sua colonna invece di restare un francobollo. */
+  align-items: stretch;
   gap: var(--s-7);
   padding-block: var(--s-9) var(--s-8);
 }
 
-.footer__brand {
+.footer__col {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.footer__col--brand {
   gap: var(--s-3);
 }
 
@@ -1157,6 +1211,7 @@ a.contact-item__value:hover {
   font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 400;
+  line-height: 1.2;
   letter-spacing: var(--ls-tight);
   color: var(--c-dark-fg-strong);
 }
@@ -1171,14 +1226,30 @@ a.contact-item__value:hover {
 
 .footer__text {
   margin: 0;
-  max-width: 38ch;
+  max-width: 40ch;
   font-size: var(--fs-sm);
   line-height: var(--lh-body);
   color: var(--c-dark-fg);
 }
 
+/* L'iscrizione all'albo chiude la colonna del brand: è la credenziale che
+   qualifica lo studio, ma non deve competere con la descrizione. */
+.footer__albo {
+  margin: var(--s-2) 0 0;
+  max-width: 40ch;
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--c-dark-line);
+  font-size: var(--fs-label);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .footer__title {
   margin: 0 0 var(--s-4);
+  /* Porta il maiuscoletto sulla stessa linea ottica della prima riga
+     del nome nella colonna del brand. */
+  padding-top: 0.35em;
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   font-weight: 600;
   letter-spacing: var(--ls-label);
@@ -1194,40 +1265,277 @@ a.contact-item__value:hover {
   gap: var(--s-3);
 }
 
-.footer__list a,
-.footer__list li {
+/* Icona e testo su due colonne: le righe successive restano rientrate
+   sotto il testo, non sotto l'icona. */
+.footer__item {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-3);
   font-size: var(--fs-sm);
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--c-dark-fg);
 }
 
-.footer__list a {
+/* Le voci senza icona (navigazione) occupano l'intera riga. */
+.footer__item > :only-child {
+  grid-column: 1 / -1;
+}
+
+.footer__icon {
+  width: 16px;
+  height: 16px;
+  /* Centra il glifo sulla prima riga di testo, non sul blocco. */
+  margin-top: calc((1.55em - 16px) / 2);
+  color: rgba(255, 255, 255, 0.4);
+  flex: none;
   transition: color var(--dur) var(--ease);
 }
 
-.footer__list a:hover {
+.footer__link {
+  display: inline-block;
+  color: var(--c-dark-fg);
+  transition: color var(--dur) var(--ease);
+}
+
+.footer__link--break {
+  overflow-wrap: anywhere;
+}
+
+.footer__link--address {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer__link:hover {
   color: var(--c-dark-fg-strong);
 }
 
+.footer__item:hover .footer__icon {
+  color: var(--c-accent);
+}
+
+/* --- Mini-mappa --- */
+
+/* L'iframe è decorativo e inerte: tutta l'interazione passa dal link che
+   lo contiene, così un solo click porta all'itinerario. */
+/* La mappa cresce fino a pareggiare l'altezza delle colonne di testo,
+   così le quattro colonne chiudono sulla stessa riga. */
+.footer__map {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  min-height: 260px;
+  flex: 1;
+  border: 1px solid var(--c-dark-line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color var(--dur) var(--ease);
+}
+
+/* L'embed di OSM disegna i controlli di zoom in alto a destra e la barra
+   di attribuzione in basso. Si sovradimensiona l'iframe e lo si ritaglia,
+   così nel riquadro resta solo la cartografia; l'attribuzione è resa come
+   testo sotto la mappa, come previsto dalla licenza.
+
+   Il ritaglio è dato in pixel perché i controlli di OSM hanno dimensioni
+   fisse, e resta perciò valido a ogni larghezza del riquadro. */
+.footer__map-crop {
+  position: absolute;
+  top: -44px;
+  right: -52px;
+  bottom: -56px;
+  left: -52px;
+  display: block;
+  overflow: hidden;
+}
+
+.footer__map-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  /* La cartografia OSM è chiara: smorzata si accorda al fondo scuro e
+     torna piena al passaggio del mouse. */
+  filter: grayscale(0.45) contrast(0.95) brightness(0.9);
+  transition: filter var(--dur) var(--ease);
+}
+
+/* Nota sotto la mappa: un riferimento geografico utile a chi non conosce
+   la zona, più l'attribuzione della cartografia. */
+.footer__map-note {
+  margin: var(--s-3) 0 0;
+  font-size: var(--fs-label);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer__map-note a {
+  color: rgba(255, 255, 255, 0.55);
+  transition: color var(--dur) var(--ease);
+}
+
+.footer__map-note a:hover {
+  color: var(--c-dark-fg-strong);
+}
+
+.footer__map-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(20, 22, 26, 0.85) 0%,
+    rgba(20, 22, 26, 0.35) 45%,
+    rgba(20, 22, 26, 0.06) 100%
+  );
+  transition: opacity var(--dur) var(--ease);
+}
+
+.footer__map-cta {
+  position: absolute;
+  left: var(--s-3);
+  right: var(--s-3);
+  bottom: var(--s-3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-strong);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.footer__map-cta-icon {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.footer__map:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.footer__map:hover .footer__map-frame {
+  filter: grayscale(0) contrast(1) brightness(1);
+}
+
+.footer__map:hover .footer__map-veil {
+  opacity: 0.6;
+}
+
+.footer__map:hover .footer__map-cta {
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+
+.footer__map:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 3px;
+}
+
+/* Fascia dei dati societari: informativa, tono più basso del resto del
+   footer perché va letta solo quando serve. Etichetta e valore stanno
+   incolonnati, così i dati si scorrono a colpo d'occhio. */
+.footer__company {
+  border-top: 1px solid var(--c-dark-line);
+}
+
+.footer__company-inner {
+  padding-block: var(--s-6);
+}
+
+.footer__company-name {
+  margin: 0 0 var(--s-4);
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Sei voci su tre colonne: due righe piene, senza dati orfani in coda.
+   Sopra i 1100px stanno tutte su una riga sola. */
+.footer__company-data {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-6);
+  font-size: var(--fs-label);
+}
+
+@media (min-width: 1100px) {
+  .footer__company-data {
+    grid-template-columns: 1.6fr 1fr 1fr 1fr 2fr 1fr;
+  }
+}
+
+.footer__company-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.footer__company-row dt {
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.footer__company-row dd {
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.footer__company-row a {
+  color: rgba(255, 255, 255, 0.62);
+  transition: color var(--dur) var(--ease);
+}
+
+.footer__company-row a:hover {
+  color: var(--c-dark-fg-strong);
+}
+
+/* Barra finale: tre zone, quella centrale ancorata al centro della pagina
+   indipendentemente dalla lunghezza delle due laterali. */
 .footer__bar {
   border-top: 1px solid var(--c-dark-line);
 }
 
 .footer__bar-inner {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-3) var(--s-5);
-  padding-block: var(--s-5);
+  /* Spazio extra in coda: il selettore di palette è fisso nell'angolo in
+     basso a destra e non deve mai coprire il credit. */
+  padding-block: var(--s-5) var(--s-8);
   font-size: var(--fs-label);
   color: rgba(255, 255, 255, 0.45);
 }
 
+.footer__copy {
+  justify-self: start;
+}
+
 .footer__legal {
+  justify-self: center;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--s-4);
+  text-align: center;
 }
 
 .footer__legal a {
@@ -1239,6 +1547,11 @@ a.contact-item__value:hover {
 }
 
 /* Il credit dell'autore resta molto discreto. */
+.footer__credit {
+  justify-self: end;
+  text-align: right;
+}
+
 .footer__credit a {
   color: rgba(255, 255, 255, 0.6);
   transition: color var(--dur) var(--ease);
@@ -1246,6 +1559,90 @@ a.contact-item__value:hover {
 
 .footer__credit a:hover {
   color: var(--c-dark-fg-strong);
+}
+
+/* --------------------------------------------------------------------------
+   10b. Dati societari
+   -------------------------------------------------------------------------- */
+
+/* Riquadro compatto: i dati societari sono un obbligo informativo, non un
+   contenuto da leggere. Stanno in una scheda contenuta, senza titolo di
+   sezione né filetti per riga. */
+.company-box {
+  padding: var(--s-6);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  background: var(--c-surface-2);
+}
+
+.company-box__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-4);
+  margin-bottom: var(--s-5);
+}
+
+.company-box__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+.company-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-5);
+}
+
+.company-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.company-item dd {
+  margin: 0;
+}
+
+.company-item__value {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--c-ink);
+}
+
+a.company-item__value {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--c-line-strong);
+  transition: text-decoration-color var(--dur) var(--ease);
+  word-break: break-word;
+}
+
+a.company-item__value:hover {
+  text-decoration-color: currentColor;
+}
+
+@media (max-width: 900px) {
+  .company-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .company-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* La PEC è lunga: a due colonne si spezzerebbe a metà parola. */
+  .company-item:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1458,23 +1855,86 @@ a.contact-item__value:hover {
 
 /* --- <= 1024px: la griglia dei servizi perde la colonna dell'azione --- */
 @media (max-width: 1024px) {
+  /* Tre colonne: numero, miniatura e — incolonnati a destra — titolo,
+     testo e azione. Le aree sono dichiarate per nome perché le righe
+     implicite, qui, disallineavano il testo rispetto all'immagine. */
   .service-row {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto 128px minmax(0, 1fr);
+    grid-template-areas:
+      'num media title'
+      '.   media body'
+      '.   media action';
     gap: var(--s-3) var(--s-5);
   }
 
+  .service-row__num {
+    grid-area: num;
+  }
+
+  .service-row__media {
+    grid-area: media;
+  }
+
+  .service-row__title {
+    grid-area: title;
+  }
+
   .service-row__body {
-    grid-column: 2;
+    grid-area: body;
   }
 
   .service-row__action {
-    grid-column: 2;
+    grid-area: action;
     padding-top: var(--s-2);
   }
 
   .method {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-6) var(--s-5);
+  }
+
+  /* Quattro voci in riga non ci stanno più: due per riga, con i pallini
+     nascosti perché a capo non separano più nulla. */
+  .marquee-strip__inner {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-2) var(--s-5);
+  }
+
+  .marquee-strip__item,
+  .marquee-strip__item:first-child,
+  .marquee-strip__item:last-child {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .marquee-strip__sep {
+    display: none;
+  }
+
+  /* Il footer perde la quarta colonna: il brand passa a tutta larghezza e
+     contatti, navigazione e mappa restano affiancati sotto. */
+  .footer__main {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-7) var(--s-6);
+  }
+
+  .footer__col--brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer__col--brand .footer__text {
+    max-width: 62ch;
+  }
+
+  .footer__col--brand .footer__albo {
+    max-width: none;
+  }
+
+  /* Senza la colonna del brand accanto, i titoli non devono più
+     allinearsi a una prima riga che sta altrove. */
+  .footer__main > .footer__col:not(.footer__col--brand) .footer__title {
+    padding-top: 0;
   }
 }
 
@@ -1536,28 +1996,33 @@ a.contact-item__value:hover {
     grid-template-columns: 1fr;
   }
 
-  .footer__grid {
+  /* La mappa scende sotto e si allarga su entrambe le colonne. */
+  .footer__main {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-6);
+    gap: var(--s-7) var(--s-6);
   }
 
-  .footer__brand {
+  .footer__col--map {
     grid-column: 1 / -1;
+  }
+
+  /* A tutta larghezza la mappa torna a proporzioni fisse: non deve più
+     pareggiare l'altezza di una colonna che non ha più accanto. */
+  .footer__map {
+    flex: none;
+    min-height: 0;
+    aspect-ratio: 21 / 9;
+  }
+
+  /* La barra finale lascia spazio al selettore di palette, che qui è
+     ancora nell'angolo in basso a destra. */
+  .footer__bar-inner {
+    padding-bottom: var(--s-9);
   }
 }
 
 /* --- <= 640px: layout a colonna singola --- */
 @media (max-width: 640px) {
-  .topbar__inner {
-    justify-content: center;
-  }
-
-  /* A questa larghezza la fascia superiore mostra solo il luogo:
-     il telefono resta raggiungibile dal pannello mobile. */
-  .topbar__phone {
-    display: none;
-  }
-
   .project-grid {
     grid-template-columns: 1fr;
   }
@@ -1571,8 +2036,34 @@ a.contact-item__value:hover {
     columns: 1;
   }
 
+  /* Su schermo stretto anche due colonne spezzano le voci: una per riga. */
+  .marquee-strip__inner {
+    grid-template-columns: 1fr;
+    gap: var(--s-2);
+  }
+
+  .marquee-strip__item,
+  .marquee-strip__item:first-child,
+  .marquee-strip__item:last-child {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .marquee-strip__sep {
+    display: none;
+  }
+
+  /* Colonna singola: la miniatura diventa una fascia a piena larghezza.
+     Le aree dichiarate al breakpoint precedente vanno azzerate, altrimenti
+     continuano a tenere l'immagine di fianco a un testo schiacciato. */
   .service-row {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      'media'
+      'num'
+      'title'
+      'body'
+      'action';
     gap: var(--s-3);
   }
 
@@ -1580,9 +2071,8 @@ a.contact-item__value:hover {
     padding-top: 0;
   }
 
-  .service-row__body,
-  .service-row__action {
-    grid-column: 1;
+  .service-row__media img {
+    aspect-ratio: 16 / 9;
   }
 
   .cta-band {
@@ -1598,13 +2088,34 @@ a.contact-item__value:hover {
     width: 100%;
   }
 
-  .footer__grid {
+  .footer__main {
     grid-template-columns: 1fr;
+    gap: var(--s-6);
   }
 
+  .footer__map {
+    flex: none;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  /* Con poca larghezza tre colonne spezzerebbero la PEC a metà parola. */
+  .footer__company-data {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* La barra finale si impila e resta allineata a sinistra. */
   .footer__bar-inner {
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 1fr;
+    justify-items: start;
+    text-align: left;
+  }
+
+  .footer__legal,
+  .footer__credit {
+    justify-self: start;
+    justify-content: flex-start;
+    text-align: left;
   }
 
   /* Su mobile il selettore si riduce al solo pallino colorato: resta

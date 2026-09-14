@@ -3,11 +3,15 @@ import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-
 import './palettes.css'
 import './App.css'
 import {
+  company,
+  companyDetails,
   disciplines,
   heroCompetences,
+  mapEmbedSrc,
   method,
   navItems,
   palettes,
+  profile,
   projects,
   serviceAreas,
   serviceIndex,
@@ -53,6 +57,56 @@ function IconCheck(props) {
         d="M3 8.5 6.5 12 13 4.5"
         stroke="currentColor"
         strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function IconPhone(props) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M5.4 2.5H3.2c-.6 0-1.1.5-1 1.1.2 2.3 1.2 4.5 2.9 6.2 1.7 1.7 3.9 2.7 6.2 2.9.6.1 1.1-.4 1.1-1v-2.2c0-.5-.4-.9-.9-1l-1.6-.3c-.4-.1-.8.1-1 .4l-.5.8A8.6 8.6 0 0 1 5.6 6l.8-.5c.3-.2.5-.6.4-1l-.4-1.1c-.1-.5-.5-.9-1-.9Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function IconMail(props) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+      <rect x="2" y="3.5" width="12" height="9" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
+      <path d="m2.6 4.6 4.7 3.4c.4.3 1 .3 1.4 0l4.7-3.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconPin(props) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M8 14.2s4.5-4 4.5-7.4a4.5 4.5 0 0 0-9 0C3.5 10.2 8 14.2 8 14.2Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="6.7" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  )
+}
+
+function IconExternal(props) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M6.5 3.5h-3v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9"
+        stroke="currentColor"
+        strokeWidth="1.3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -259,15 +313,6 @@ function Header() {
 
   return (
     <>
-      <div className="topbar">
-        <div className="container topbar__inner">
-          <span className="topbar__place">{studio.place}</span>
-          <a className="topbar__phone" href={studio.phoneHref}>
-            {studio.phoneDisplay}
-          </a>
-        </div>
-      </div>
-
       <header className={scrolled ? 'header header--scrolled' : 'header'}>
         <div className="container header__inner">
           <Link to="/" className="brand" aria-label={`${studio.name}, torna alla home`}>
@@ -495,6 +540,23 @@ function HomePage() {
             {serviceAreas.map((area) => (
               <article key={area.id} className="service-row reveal">
                 <span className="service-row__num">{area.num}</span>
+
+                {/* Il WebP è la sorgente preferita, il PNG resta il fallback:
+                    stessa immagine, un ottavo del peso. */}
+                <figure className="service-row__media">
+                  <picture>
+                    <source srcSet={`${area.image}.webp`} type="image/webp" />
+                    <img
+                      src={`${area.image}.png`}
+                      alt={area.imageAlt}
+                      width="900"
+                      height="600"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
+                </figure>
+
                 <h3 className="service-row__title">{area.title}</h3>
 
                 <div className="service-row__body">
@@ -617,17 +679,23 @@ function StudioBlock() {
           Dietro allo studio c&rsquo;è una persona sola: chi valuta il progetto è la stessa
           che poi segue il cantiere.
         </p>
-        <p className="body-text">
-          Lavoro con un approccio concreto, mettendo al centro la qualità tecnica, la
-          trasparenza e il rapporto diretto con chi mi affida un incarico. Ogni progetto nasce
-          da una lettura attenta delle esigenze d&rsquo;uso e delle condizioni del contesto:
-          prima di proporre una soluzione preferisco capire bene il problema.
-        </p>
-        <p className="body-text">
-          Seguo l&rsquo;intervento dalla prima valutazione fino alla realizzazione, coordinando
-          le competenze necessarie — architettura, strutture, impianti, sicurezza, energia — e
-          mantenendo un solo riferimento per il committente.
-        </p>
+
+        {profile.bio.map((paragraph) => (
+          <p className="body-text" key={paragraph.slice(0, 32)}>
+            {paragraph}
+          </p>
+        ))}
+
+        {/* Titoli e iscrizione all'albo: dati verificabili, tenuti distinti
+            dal testo discorsivo. */}
+        <dl className="credentials">
+          {profile.credentials.map((row) => (
+            <div className="credentials__item" key={row.label}>
+              <dt className="label">{row.label}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
 
         <ul className="discipline-list">
           {disciplines.map((item) => (
@@ -639,15 +707,22 @@ function StudioBlock() {
   )
 }
 
-function ContactSection() {
+/**
+ * Blocco recapiti. In home porta la propria intestazione; nella pagina
+ * Contatti quella è già fornita dal PageHead, quindi va omessa per non
+ * ripetere titolo e occhiello.
+ */
+function ContactSection({ withHead = true }) {
   return (
     <section className="section contact" id="contatti">
       <div className="container">
-        <SectionHead
-          label="Contatti"
-          title="Parliamo del suo progetto."
-          text="Il primo contatto serve a capire se e come posso essere utile. Una telefonata o una mail sono sufficienti per fissare un sopralluogo."
-        />
+        {withHead && (
+          <SectionHead
+            label="Contatti"
+            title="Parliamo del suo progetto."
+            text="Il primo contatto serve a capire se e come posso essere utile. Una telefonata o una mail sono sufficienti per fissare un sopralluogo."
+          />
+        )}
 
         <div className="contact-grid">
           <dl className="contact-list reveal">
@@ -689,13 +764,15 @@ function ContactSection() {
               <source srcSet="/images/studio-esterno.webp" type="image/webp" />
               <img
                 src="/images/studio-esterno.jpg"
-                alt={`Ingresso dello studio in ${studio.address}`}
+                alt="L'edificio d'angolo che ospita lo studio, con la vetrina e l'ingresso su strada"
                 width="1800"
                 height="1200"
                 loading="lazy"
               />
             </picture>
-            <figcaption className="label">L&rsquo;ingresso dello studio</figcaption>
+            <figcaption className="label">
+              All&rsquo;angolo tra via Turati e vicolo Zibramonda
+            </figcaption>
           </figure>
 
           <div className="contact__aside reveal">
@@ -742,6 +819,21 @@ function ServicesPage() {
             {serviceAreas.map((area) => (
               <article key={area.id} className="service-row reveal">
                 <span className="service-row__num">{area.num}</span>
+
+                <figure className="service-row__media">
+                  <picture>
+                    <source srcSet={`${area.image}.webp`} type="image/webp" />
+                    <img
+                      src={`${area.image}.png`}
+                      alt={area.imageAlt}
+                      width="900"
+                      height="600"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
+                </figure>
+
                 <h2 className="service-row__title">{area.title}</h2>
                 <div className="service-row__body">
                   <p className="body-text">{area.text}</p>
@@ -822,7 +914,7 @@ function AboutPage() {
       <PageHead
         label="Lo Studio"
         title="Uno studio tecnico diretto, vicino a chi commissiona il lavoro."
-        text="Un solo riferimento tecnico per l'intero intervento, dalla verifica iniziale alla consegna."
+        text="Un servizio completo lungo l'intero percorso dell'opera: dalle fasi preliminari alla progettazione integrale e coordinata, fino alla realizzazione."
       />
 
       <section className="section">
@@ -872,8 +964,46 @@ function ContactPage() {
         title="Parliamo del suo progetto."
         text="Telefono, mail o un sopralluogo in loco: scelga il modo più comodo per iniziare."
       />
-      <ContactSection />
+      <ContactSection withHead={false} />
+      <CompanySection />
     </>
+  )
+}
+
+/**
+ * Dati societari e canali di fatturazione elettronica. Sezione informativa,
+ * volutamente sobria: sono dati di trasparenza, non materiale promozionale.
+ */
+function CompanySection() {
+  return (
+    <section className="section--tight company" id="dati-societari">
+      <div className="container">
+        <div className="company-box reveal">
+          <div className="company-box__head">
+            <p className="label">Dati societari</p>
+            <p className="company-box__name">{company.legalName}</p>
+          </div>
+
+          <dl className="company-grid">
+            {companyDetails.map((row) => (
+              <div className="company-item" key={row.label}>
+                <dt className="label">{row.label}</dt>
+                <dd className="company-item__value">{row.value}</dd>
+              </div>
+            ))}
+
+            <div className="company-item">
+              <dt className="label">PEC</dt>
+              <dd>
+                <a className="company-item__value" href={company.pecHref}>
+                  {company.pec}
+                </a>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -901,50 +1031,155 @@ function NotFoundPage() {
    --------------------------------------------------------------------------- */
 
 function Footer() {
+  const year = new Date().getFullYear()
+
   return (
     <footer className="footer">
-      <div className="container footer__grid">
-        <div className="footer__brand">
+      {/* Fascia principale: il footer è l'ultimo punto in cui chi legge
+          può agire, quindi contatti e mappa hanno più peso dei link. */}
+      <div className="container footer__main">
+        <div className="footer__col footer__col--brand">
           <p className="footer__name">{studio.name}</p>
           <span className="footer__role">{studio.role}</span>
           <p className="footer__text">
             Studio tecnico di ingegneria a Rivalta sul Mincio. Progettazione, strutture,
             sicurezza e direzione lavori per privati, imprese e committenze pubbliche.
           </p>
+          <p className="footer__albo">
+            Ordine degli Ingegneri di Mantova, n.&nbsp;1495 — settore a) civile e ambientale
+          </p>
         </div>
 
-        <div>
-          <p className="footer__title">Contatti</p>
+        <div className="footer__col">
+          <h2 className="footer__title">Contatti</h2>
           <ul className="footer__list">
-            <li>
-              <a href={studio.phoneHref}>{studio.phone}</a>
+            <li className="footer__item">
+              <IconPhone className="footer__icon" />
+              <a className="footer__link" href={studio.phoneHref}>
+                {studio.phoneDisplay}
+              </a>
             </li>
-            <li>
-              <a href={studio.emailHref}>{studio.email}</a>
+            <li className="footer__item">
+              <IconMail className="footer__icon" />
+              <a className="footer__link footer__link--break" href={studio.emailHref}>
+                {studio.email}
+              </a>
             </li>
-            <li>
-              <a href={studio.mapsHref} target="_blank" rel="noreferrer">
-                {studio.address}
+            <li className="footer__item">
+              <IconPin className="footer__icon" />
+              {/* Le due righe sono blocchi distinti e non un <br>: così lo
+                  screen reader non legge "Turati, 1" e "46040" di seguito. */}
+              <a
+                className="footer__link footer__link--address"
+                href={studio.mapsHref}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>Via Filippo Turati, 1</span>
+                <span>46040 Rivalta sul Mincio (MN)</span>
               </a>
             </li>
           </ul>
         </div>
 
-        <div>
-          <p className="footer__title">Navigazione</p>
+        <div className="footer__col">
+          <h2 className="footer__title">Navigazione</h2>
           <ul className="footer__list">
+            <li className="footer__item">
+              <Link className="footer__link" to="/">
+                Home
+              </Link>
+            </li>
             {navItems.map((item) => (
-              <li key={item.path}>
-                <Link to={item.path}>{item.label}</Link>
+              <li className="footer__item" key={item.path}>
+                <Link className="footer__link" to={item.path}>
+                  {item.label}
+                </Link>
               </li>
             ))}
           </ul>
+
+        </div>
+
+        {/* Mini-mappa. L'iframe è decorativo, caricato in lazy e inerte: il
+            click cade sempre sul link, che apre l'itinerario su Google Maps.
+            Il riquadro ritaglia i controlli di zoom e la barra di OpenStreetMap,
+            perciò l'attribuzione richiesta dalla licenza è resa qui sotto. */}
+        <div className="footer__col footer__col--map">
+          <h2 className="footer__title">Dove siamo</h2>
+          <a
+            className="footer__map"
+            href={studio.mapsHref}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Apri su Google Maps la posizione dello studio: ${studio.address}`}
+          >
+            <span className="footer__map-crop" aria-hidden="true">
+              <iframe
+                className="footer__map-frame"
+                src={mapEmbedSrc}
+                title="Mappa della posizione dello studio a Rivalta sul Mincio"
+                loading="lazy"
+                tabIndex={-1}
+              />
+            </span>
+            <span className="footer__map-veil" aria-hidden="true" />
+            <span className="footer__map-cta" aria-hidden="true">
+              <IconPin className="footer__map-cta-icon" />
+              Apri in Google Maps
+              <IconExternal className="footer__map-cta-icon" />
+            </span>
+          </a>
+          <p className="footer__map-note">
+            Rivalta sul Mincio, alle porte del Parco del Mincio. Cartografia{' '}
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+              © OpenStreetMap
+            </a>
+          </p>
+        </div>
+      </div>
+
+      {/* Dati societari: informazioni obbligatorie ex art. 2250 c.c., che
+          devono comparire su ogni pagina. */}
+      <div className="footer__company">
+        <div className="container footer__company-inner">
+          <h2 className="footer__company-name">{company.legalName}</h2>
+          <dl className="footer__company-data">
+            <div className="footer__company-row">
+              <dt>Sede legale</dt>
+              <dd>{company.address}</dd>
+            </div>
+            <div className="footer__company-row">
+              <dt>P. IVA e C.F.</dt>
+              <dd>{company.vat}</dd>
+            </div>
+            <div className="footer__company-row">
+              <dt>REA</dt>
+              <dd>{company.rea}</dd>
+            </div>
+            <div className="footer__company-row">
+              <dt>Capitale sociale</dt>
+              <dd>{company.shareCapital}</dd>
+            </div>
+            <div className="footer__company-row">
+              <dt>PEC</dt>
+              <dd>
+                <a href={company.pecHref}>{company.pec}</a>
+              </dd>
+            </div>
+            <div className="footer__company-row">
+              <dt>Codice SDI</dt>
+              <dd>{company.sdi}</dd>
+            </div>
+          </dl>
         </div>
       </div>
 
       <div className="footer__bar">
         <div className="container footer__bar-inner">
-          <span>© {new Date().getFullYear()} {studio.name}</span>
+          <span className="footer__copy">
+            © {year} {studio.name}
+          </span>
 
           {/* Le pagine legali non sono ancora disponibili: i collegamenti
               vanno attivati quando i testi saranno forniti dal cliente. */}
