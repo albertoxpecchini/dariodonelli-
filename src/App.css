@@ -364,6 +364,9 @@
   transform: scaleX(1);
 }
 
+/* Segnalibro live: la sezione in lettura resta sottolineata in accento.
+   La sottolineatura è più marcata di quella dell'hover perché deve
+   leggersi come stato, non come reazione al puntatore. */
 .nav__link.is-active {
   color: var(--c-ink);
   font-weight: 600;
@@ -372,6 +375,19 @@
 .nav__link.is-active::after {
   background: var(--c-accent);
   transform: scaleX(1);
+  height: 2px;
+}
+
+/* Lo spostamento del segnalibro segue lo scroll: senza transizione
+   sull'opacità lo stacco fra una voce e l'altra risulta brusco. */
+.nav__link::after {
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__link::after {
+    transition: none;
+  }
 }
 
 .header__actions {
@@ -704,104 +720,112 @@
    6. Servizi
    -------------------------------------------------------------------------- */
 
-/* Elenco a righe, non tre blocchi colorati: legge come un indice tecnico. */
-.service-rows {
-  border-top: 1px solid var(--c-line);
+/* Tre blocchi affiancati, non un elenco a righe: l'immagine deve avere la
+   dimensione per essere guardata, non una miniatura da 150px. */
+.service-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 8vw, 7rem);
 }
 
-.service-row {
+.service-block {
   display: grid;
-  grid-template-columns: auto 150px minmax(0, 1fr) minmax(0, 1.15fr) auto;
-  align-items: start;
-  gap: var(--s-5);
-  padding-block: var(--s-6);
-  border-bottom: 1px solid var(--c-line);
-  transition: background-color var(--dur) var(--ease);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
 }
 
-/* L'immagine è una miniatura, non una figura a piena larghezza: dà un
-   riferimento visivo alla riga senza rompere il ritmo dell'indice. */
-.service-row__media {
+/* Blocco pari (il 02): l'immagine passa a destra. Si scambiano le colonne
+   invece di riordinare il DOM, così l'ordine di lettura resta corretto. */
+.service-block--flip .service-block__media {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.service-block__media {
   margin: 0;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--c-surface-2);
 }
 
-.service-row__media img {
+.service-block__media img {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
   aspect-ratio: 3 / 2;
   object-fit: cover;
   filter: saturate(0.9);
   transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease);
 }
 
-.service-row:hover .service-row__media img {
-  transform: scale(1.04);
+.service-block:hover .service-block__media img {
+  transform: scale(1.03);
   filter: saturate(1);
 }
 
-/* L'hover è una variazione di superficie appena percettibile. */
-.service-row:hover {
-  background: var(--c-accent-wash);
+.service-block__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-4);
 }
 
-.service-row__num {
+.service-block__num {
   font-size: var(--fs-label);
   font-weight: 600;
   letter-spacing: var(--ls-label);
-  color: var(--c-muted);
-  padding-top: 0.35em;
+  color: var(--c-accent);
   font-variant-numeric: tabular-nums;
 }
 
-.service-row__title {
+.service-block__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-xl);
   font-weight: 400;
   line-height: var(--lh-snug);
   letter-spacing: var(--ls-tight);
   color: var(--c-ink);
 }
 
-.service-row__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-
-.service-row__list {
+.service-block__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-4);
+  display: grid;
+  gap: var(--s-2);
 }
 
-.service-row__list li {
+.service-block__list li {
   position: relative;
-  padding-left: var(--s-3);
+  padding-left: var(--s-4);
   font-size: var(--fs-sm);
   color: var(--c-muted);
 }
 
-.service-row__list li::before {
+.service-block__list li::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0.62em;
-  width: 3px;
+  width: 8px;
   height: 1px;
   background: var(--c-muted);
 }
 
-.service-row__action {
-  display: flex;
-  align-items: center;
-  padding-top: 0.2em;
+/* Sotto i 900px le due colonne si impilano: l'immagine sta sempre sopra
+   il testo, compreso il blocco invertito. */
+@media (max-width: 900px) {
+  .service-block,
+  .service-block--flip {
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+  }
+
+  .service-block--flip .service-block__media {
+    grid-column: 1;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1102,29 +1126,36 @@
   color: rgba(255, 255, 255, 0.55);
 }
 
+/* Due colonne: i recapiti a sinistra, la fotografia dell'ingresso a destra.
+   Nessun riquadro interno — l'unica gerarchia è la dimensione del testo. */
 .contact-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
   align-items: start;
 }
 
 .contact-list {
   margin: 0;
-  display: grid;
-  gap: var(--s-5);
-}
-
-.contact-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-  padding-top: var(--s-4);
+  padding: 0;
+  list-style: none;
   border-top: 1px solid var(--c-dark-line);
 }
 
-.contact-item dd {
-  margin: 0;
+.contact-item {
+  border-bottom: 1px solid var(--c-dark-line);
+}
+
+/* Tutta la riga è l'area cliccabile: su telefono si tocca ovunque, non
+   solo sul numero. */
+.contact-item__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5) 0;
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--dur) var(--ease);
 }
 
 /* I recapiti sono il contenuto più importante della sezione: corpo grande. */
@@ -1132,37 +1163,33 @@
   font-family: var(--font-display);
   font-size: var(--fs-lg);
   font-weight: 400;
+  line-height: var(--lh-snug);
   letter-spacing: var(--ls-tight);
   color: var(--c-dark-fg-strong);
   transition: color var(--dur) var(--ease);
   overflow-wrap: anywhere;
 }
 
-a.contact-item__value:hover {
+.contact-item__note {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.contact-item__link:hover .contact-item__value {
   color: var(--c-accent);
 }
 
-.contact__aside {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-5);
-  padding: var(--s-6);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--c-dark-line);
-  border-radius: var(--radius);
+.contact-item__link:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 4px;
 }
 
-/* Fotografia dell'ingresso: sta sotto i recapiti, così chi arriva in via
-   Turati riconosce la porta. L'aside resta nella colonna accanto. */
+/* La fotografia è intera, senza ritaglio. */
 .contact__photo {
-  grid-column: 1;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
 }
 
-/* Anche qui la fotografia è intera, senza ritaglio. */
 .contact__photo img {
   display: block;
   width: 100%;
@@ -1568,22 +1595,16 @@ a.contact-item__value:hover {
 /* Riquadro compatto: i dati societari sono un obbligo informativo, non un
    contenuto da leggere. Stanno in una scheda contenuta, senza titolo di
    sezione né filetti per riga. */
-.company-box {
-  padding: var(--s-6);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-  background: var(--c-surface-2);
-}
-
-.company-box__head {
+.company-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--s-2) var(--s-4);
-  margin-bottom: var(--s-5);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--c-line);
 }
 
-.company-box__name {
+.company-head__name {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--fs-md);
@@ -1593,10 +1614,10 @@ a.contact-item__value:hover {
 }
 
 .company-grid {
-  margin: 0;
+  margin: var(--s-5) 0 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-4) var(--s-5);
+  gap: var(--s-5);
 }
 
 .company-item {
@@ -1613,10 +1634,11 @@ a.contact-item__value:hover {
 .company-item__value {
   font-size: var(--fs-sm);
   line-height: var(--lh-snug);
-  color: var(--c-ink);
+  color: var(--c-ink-2);
 }
 
 a.company-item__value {
+  color: var(--c-ink);
   text-decoration: underline;
   text-underline-offset: 0.2em;
   text-decoration-color: var(--c-line-strong);
@@ -1680,6 +1702,14 @@ a.company-item__value:hover {
   border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-base);
   color: var(--c-ink);
+}
+
+/* L'elenco completo delle prestazioni chiude la sezione Servizi. */
+.service-index {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
 }
 
 /* Blocco di richiamo al contatto in fondo alle pagine interne. */
@@ -1853,41 +1883,8 @@ a.company-item__value:hover {
    14. Breakpoint
    -------------------------------------------------------------------------- */
 
-/* --- <= 1024px: la griglia dei servizi perde la colonna dell'azione --- */
+/* --- <= 1024px --- */
 @media (max-width: 1024px) {
-  /* Tre colonne: numero, miniatura e — incolonnati a destra — titolo,
-     testo e azione. Le aree sono dichiarate per nome perché le righe
-     implicite, qui, disallineavano il testo rispetto all'immagine. */
-  .service-row {
-    grid-template-columns: auto 128px minmax(0, 1fr);
-    grid-template-areas:
-      'num media title'
-      '.   media body'
-      '.   media action';
-    gap: var(--s-3) var(--s-5);
-  }
-
-  .service-row__num {
-    grid-area: num;
-  }
-
-  .service-row__media {
-    grid-area: media;
-  }
-
-  .service-row__title {
-    grid-area: title;
-  }
-
-  .service-row__body {
-    grid-area: body;
-  }
-
-  .service-row__action {
-    grid-area: action;
-    padding-top: var(--s-2);
-  }
-
   .method {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-6) var(--s-5);
@@ -2051,28 +2048,6 @@ a.company-item__value:hover {
 
   .marquee-strip__sep {
     display: none;
-  }
-
-  /* Colonna singola: la miniatura diventa una fascia a piena larghezza.
-     Le aree dichiarate al breakpoint precedente vanno azzerate, altrimenti
-     continuano a tenere l'immagine di fianco a un testo schiacciato. */
-  .service-row {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'media'
-      'num'
-      'title'
-      'body'
-      'action';
-    gap: var(--s-3);
-  }
-
-  .service-row__num {
-    padding-top: 0;
-  }
-
-  .service-row__media img {
-    aspect-ratio: 16 / 9;
   }
 
   .cta-band {

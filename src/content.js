@@ -99,11 +99,16 @@ export const companyDetails = [
   { label: 'Codice destinatario (SDI)', value: company.sdi },
 ]
 
+/**
+ * Voci di navigazione. Il sito è una pagina sola: ogni voce punta a una
+ * sezione tramite ancora, e l'id serve anche allo scroll-spy dell'header
+ * per illuminare la voce corrispondente alla sezione che si sta leggendo.
+ */
 export const navItems = [
-  { label: 'Servizi', path: '/servizi' },
-  { label: 'Progetti', path: '/progetti' },
-  { label: 'Lo Studio', path: '/studio' },
-  { label: 'Contatti', path: '/contatti' },
+  { label: 'Servizi', id: 'servizi' },
+  { label: 'Progetti', id: 'progetti' },
+  { label: 'Lo Studio', id: 'studio' },
+  { label: 'Contatti', id: 'contatti' },
 ]
 
 /** Competenze mostrate nella fascia sotto l'hero. */

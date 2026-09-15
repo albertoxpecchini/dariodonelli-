@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import './palettes.css'
 import './App.css'
 import {
@@ -166,16 +165,81 @@ function useReveal(deps) {
   }, deps)
 }
 
-/** Riporta in cima a ogni cambio di rotta. */
-function ScrollToTop() {
-  const { pathname } = useLocation()
+/**
+ * Scroll-spy: restituisce l'id della sezione che si sta leggendo.
+ *
+ * Non si usa IntersectionObserver con una soglia sola: con sezioni di
+ * altezza molto diversa (l'hero è alta, i contatti sono corti) più sezioni
+ * risultano visibili insieme e la voce attiva sfarfalla. Si misura invece
+ * quale sezione attraversa una linea di riferimento posta poco sotto
+ * l'header, che è il punto che l'occhio considera "dove sono".
+ */
+function useScrollSpy(ids) {
+  const [active, setActive] = useState('')
 
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
+    let frame = 0
 
-  return null
+    const compute = () => {
+      frame = 0
+      // La linea di lettura: sotto l'header, non a metà schermo, così la
+      // voce cambia quando la sezione entra davvero in lettura.
+      const line = window.scrollY + 140
+      let current = ''
+
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (!el) continue
+        if (el.getBoundingClientRect().top + window.scrollY <= line) current = id
+      }
+
+      // In fondo alla pagina l'ultima sezione può essere troppo corta per
+      // raggiungere la linea: chi è arrivato in fondo sta leggendo quella.
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.body.scrollHeight - 2
+      if (atBottom) {
+        const last = ids.filter((id) => document.getElementById(id)).pop()
+        if (last) current = last
+      }
+
+      setActive(current)
+    }
+
+    // Lo scroll è frequente: il calcolo si accoda a un frame solo.
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(compute)
+    }
+
+    compute()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [ids])
+
+  return active
 }
+
+/**
+ * Porta a una sezione tenendo conto dell'header fisso, che altrimenti
+ * coprirebbe il titolo. Rispetta la preferenza di movimento ridotto e
+ * aggiorna l'hash senza far saltare la pagina come farebbe un link nudo.
+ */
+function scrollToSection(id) {
+  const el = document.getElementById(id)
+  if (!el) return
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const top = el.getBoundingClientRect().top + window.scrollY - 96
+
+  window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' })
+  window.history.replaceState(null, '', `#${id}`)
+}
+
+/** Riporta in cima a ogni cambio di rotta. */
 
 /* ---------------------------------------------------------------------------
    Selettore di palette
@@ -275,18 +339,13 @@ function ThemeSwitcher() {
    Header
    --------------------------------------------------------------------------- */
 
+/** Gli id delle sezioni osservate dallo scroll-spy, nell'ordine di pagina. */
+const sectionIds = navItems.map((item) => item.id)
+
 function Header() {
   const scrolled = useScrolled()
-  const { pathname } = useLocation()
-  const [openedAt, setOpenedAt] = useState(null)
-
-  // Il pannello è aperto solo finché si resta sulla rotta da cui è stato
-  // aperto: la navigazione lo chiude senza bisogno di un effetto.
-  const menuOpen = openedAt === pathname
-  const setMenuOpen = useCallback(
-    (next) => setOpenedAt(next ? pathname : null),
-    [pathname],
-  )
+  const [menuOpen, setMenuOpen] = useState(false)
+  const active = useScrollSpy(sectionIds)
 
   // Blocca lo scroll della pagina mentre il pannello è aperto.
   useEffect(() => {
@@ -299,23 +358,36 @@ function Header() {
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (event) => {
-      // setOpenedAt è stabile: chiudere significa sempre azzerare la rotta.
-      if (event.key === 'Escape') setOpenedAt(null)
+      if (event.key === 'Escape') setMenuOpen(false)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [menuOpen])
 
-  const navClass = useCallback(
-    ({ isActive }) => (isActive ? 'nav__link is-active' : 'nav__link'),
-    [],
-  )
+  // Il link resta un vero <a href="#..."> — funziona senza JS, si può aprire
+  // in una nuova scheda — ma l'andata alla sezione la gestiamo noi per
+  // compensare l'header fisso.
+  const go = useCallback((event, id) => {
+    event.preventDefault()
+    setMenuOpen(false)
+    scrollToSection(id)
+  }, [])
 
   return (
     <>
       <header className={scrolled ? 'header header--scrolled' : 'header'}>
         <div className="container header__inner">
-          <Link to="/" className="brand" aria-label={`${studio.name}, torna alla home`}>
+          <a
+            href="#top"
+            className="brand"
+            aria-label={`${studio.name}, torna all'inizio`}
+            onClick={(e) => {
+              e.preventDefault()
+              const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+              window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
+              window.history.replaceState(null, '', ' ')
+            }}
+          >
             <span className="brand__mark">
               <img src="/chatgpt-logo.png" alt="" width="42" height="42" />
             </span>
@@ -323,13 +395,21 @@ function Header() {
               <span className="brand__name">{studio.name}</span>
               <span className="brand__role">{studio.role}</span>
             </span>
-          </Link>
+          </a>
 
           <nav className="nav" aria-label="Navigazione principale">
             {navItems.map((item) => (
-              <NavLink key={item.path} to={item.path} className={navClass}>
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className={active === item.id ? 'nav__link is-active' : 'nav__link'}
+                /* Il segnalibro: la voce della sezione in lettura è anche
+                   la posizione corrente del documento per gli assistivi. */
+                aria-current={active === item.id ? 'true' : undefined}
+                onClick={(e) => go(e, item.id)}
+              >
                 {item.label}
-              </NavLink>
+              </a>
             ))}
           </nav>
 
@@ -337,10 +417,13 @@ function Header() {
             <a className="header__phone" href={studio.phoneHref}>
               {studio.phoneDisplay}
             </a>
-            <Link className="btn btn--primary header__cta" to="/contatti">
+            <a
+              className="btn btn--primary header__cta"
+              href="#contatti"
+              onClick={(e) => go(e, 'contatti')}
+            >
               Richiedi un appuntamento
-            </Link>
-
+            </a>
             <button
               type="button"
               className="menu-toggle"
@@ -390,15 +473,17 @@ function Header() {
 
         <nav className="mobile-nav" aria-label="Navigazione mobile">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                isActive ? 'mobile-nav__link is-active' : 'mobile-nav__link'
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={
+                active === item.id ? 'mobile-nav__link is-active' : 'mobile-nav__link'
               }
+              aria-current={active === item.id ? 'true' : undefined}
+              onClick={(e) => go(e, item.id)}
             >
               {item.label}
-            </NavLink>
+            </a>
           ))}
         </nav>
 
@@ -406,11 +491,14 @@ function Header() {
           <a className="mobile-panel__phone" href={studio.phoneHref}>
             {studio.phoneDisplay}
           </a>
-          <Link className="btn btn--primary" to="/contatti">
+          <a
+            className="btn btn--primary"
+            href="#contatti"
+            onClick={(e) => go(e, 'contatti')}
+          >
             Richiedi un appuntamento
-          </Link>
-        </div>
-      </aside>
+          </a>
+        </div>      </aside>
     </>
   )
 }
@@ -432,36 +520,7 @@ function SectionHead({ label, title, text, action }) {
   )
 }
 
-function CtaBand({ title, text }) {
-  return (
-    <div className="cta-band reveal">
-      <div className="cta-band__text">
-        <h2 className="subhead">{title}</h2>
-        <p className="body-text">{text}</p>
-      </div>
-      <div className="btn-row">
-        <Link className="btn btn--primary" to="/contatti">
-          Richiedi un appuntamento
-        </Link>
-        <a className="btn btn--secondary" href={studio.phoneHref}>
-          {studio.phoneDisplay}
-        </a>
-      </div>
-    </div>
-  )
-}
 
-function PageHead({ label, title, text }) {
-  return (
-    <section className="page-head">
-      <div className="container page-head__inner">
-        <span className="label label--accent">{label}</span>
-        <h1 className="headline">{title}</h1>
-        {text && <p className="lead">{text}</p>}
-      </div>
-    </section>
-  )
-}
 
 /* ---------------------------------------------------------------------------
    Home
@@ -469,6 +528,14 @@ function PageHead({ label, title, text }) {
 
 function HomePage() {
   useReveal([])
+
+  // I link interni alla pagina passano dallo stesso helper della nav, così
+  // l'header fisso non copre il titolo della sezione di destinazione.
+  const onNav = useCallback((event) => {
+    const id = event.currentTarget.getAttribute('href').slice(1)
+    event.preventDefault()
+    scrollToSection(id)
+  }, [])
 
   return (
     <>
@@ -488,12 +555,12 @@ function HomePage() {
             </p>
 
             <div className="btn-row hero__actions">
-              <Link className="btn btn--primary" to="/contatti">
+              <a className="btn btn--primary" href="#contatti" onClick={onNav}>
                 Richiedi un appuntamento
-              </Link>
-              <Link className="btn btn--secondary" to="/servizi">
+              </a>
+              <a className="btn btn--secondary" href="#servizi" onClick={onNav}>
                 Scopri i servizi
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -529,21 +596,17 @@ function HomePage() {
             label="Servizi"
             title="Tre ambiti di intervento, un unico interlocutore."
             text="Lo studio copre il percorso completo di un intervento edilizio. In base alle esigenze si può attivare una singola prestazione oppure affidare l'intera gestione tecnica."
-            action={
-              <Link className="link-arrow" to="/servizi">
-                Tutti i servizi <IconArrow />
-              </Link>
-            }
           />
 
-          <div className="service-rows">
-            {serviceAreas.map((area) => (
-              <article key={area.id} className="service-row reveal">
-                <span className="service-row__num">{area.num}</span>
-
+          <div className="service-blocks">
+            {serviceAreas.map((area, i) => (
+              <article
+                key={area.id}
+                className={`service-block reveal${i % 2 === 1 ? ' service-block--flip' : ''}`}
+              >
                 {/* Il WebP è la sorgente preferita, il PNG resta il fallback:
                     stessa immagine, un ottavo del peso. */}
-                <figure className="service-row__media">
+                <figure className="service-block__media">
                   <picture>
                     <source srcSet={`${area.image}.webp`} type="image/webp" />
                     <img
@@ -557,51 +620,78 @@ function HomePage() {
                   </picture>
                 </figure>
 
-                <h3 className="service-row__title">{area.title}</h3>
-
-                <div className="service-row__body">
+                <div className="service-block__copy">
+                  <span className="service-block__num">{area.num}</span>
+                  <h3 className="service-block__title">{area.title}</h3>
                   <p className="body-text">{area.text}</p>
-                  <ul className="service-row__list">
+
+                  <ul className="service-block__list">
                     {area.items.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                </div>
 
-                <div className="service-row__action">
-                  <Link className="link-arrow" to="/servizi">
-                    Approfondisci <IconArrow />
-                  </Link>
+                  <a className="link-arrow" href="#contatti" onClick={onNav}>
+                    Richiedi <IconArrow />
+                  </a>
                 </div>
               </article>
             ))}
           </div>
+
+          {/* L'elenco completo stava nella pagina Servizi: qui chiude la
+              sezione, per chi cerca una prestazione precisa. */}
+          <div className="service-index reveal">
+            <p className="label">Tutte le prestazioni</p>
+            <ul className="index-list">
+              {serviceIndex.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      <section className="section section--surface">
+      <section className="section section--surface" id="progetti">
         <div className="container">
           <SectionHead
             label="Progetti"
             title="Interventi seguiti sul territorio."
-            action={
-              <Link className="link-arrow" to="/progetti">
-                Tutti i progetti <IconArrow />
-              </Link>
-            }
           />
           <ProjectGrid />
         </div>
       </section>
 
-      <section className="section">
+      <section className="section" id="studio">
         <div className="container">
           <SectionHead label="Lo Studio" title="Un riferimento tecnico diretto." />
           <StudioBlock />
         </div>
       </section>
 
+      {/* Il metodo stava nella pagina "Lo Studio": è la parte che spiega
+          come si lavora, quindi resta attaccata alla sezione sullo studio. */}
+      <section className="section section--surface">
+        <div className="container">
+          <SectionHead
+            label="Metodo"
+            title="Come si sviluppa un incarico."
+            text="Quattro fasi, con un punto di verifica alla fine di ciascuna: si procede alla successiva solo quando il quadro è chiaro."
+          />
+          <div className="method reveal">
+            {method.map((step) => (
+              <div key={step.num} className="method__step">
+                <span className="method__num">{step.num}</span>
+                <h3 className="method__title">{step.title}</h3>
+                <p className="method__text">{step.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <ContactSection />
+      <CompanySection />
     </>
   )
 }
@@ -711,6 +801,11 @@ function StudioBlock() {
  * Blocco recapiti. In home porta la propria intestazione; nella pagina
  * Contatti quella è già fornita dal PageHead, quindi va omessa per non
  * ripetere titolo e occhiello.
+ *
+ * I tre recapiti sono la sostanza della sezione: stanno in colonna, grandi
+ * e cliccabili per intero, senza riquadri che li facciano competere con
+ * altro. La fotografia dell'ingresso sta accanto e serve a riconoscere la
+ * porta una volta arrivati in via Turati.
  */
 function ContactSection({ withHead = true }) {
   return (
@@ -725,39 +820,38 @@ function ContactSection({ withHead = true }) {
         )}
 
         <div className="contact-grid">
-          <dl className="contact-list reveal">
-            <div className="contact-item">
-              <dt className="label">Telefono</dt>
-              <dd>
-                <a className="contact-item__value" href={studio.phoneHref}>
-                  {studio.phone}
-                </a>
-              </dd>
-            </div>
+          <ul className="contact-list reveal">
+            <li className="contact-item">
+              <a className="contact-item__link" href={studio.phoneHref}>
+                <span className="label">Telefono</span>
+                <span className="contact-item__value">{studio.phoneDisplay}</span>
+                <span className="contact-item__note">Risponde direttamente lo studio</span>
+              </a>
+            </li>
 
-            <div className="contact-item">
-              <dt className="label">Email</dt>
-              <dd>
-                <a className="contact-item__value" href={studio.emailHref}>
-                  {studio.email}
-                </a>
-              </dd>
-            </div>
+            <li className="contact-item">
+              <a className="contact-item__link" href={studio.emailHref}>
+                <span className="label">Email</span>
+                <span className="contact-item__value">{studio.email}</span>
+                <span className="contact-item__note">Descriva l&rsquo;immobile e cosa ha in mente</span>
+              </a>
+            </li>
 
-            <div className="contact-item">
-              <dt className="label">Studio</dt>
-              <dd>
-                <a
-                  className="contact-item__value"
-                  href={studio.mapsHref}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {studio.address}
-                </a>
-              </dd>
-            </div>
-          </dl>
+            <li className="contact-item">
+              <a
+                className="contact-item__link"
+                href={studio.mapsHref}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="label">Studio</span>
+                <span className="contact-item__value">{studio.address}</span>
+                <span className="contact-item__note">
+                  All&rsquo;angolo tra via Turati e vicolo Zibramonda
+                </span>
+              </a>
+            </li>
+          </ul>
 
           <figure className="contact__photo reveal">
             <picture>
@@ -770,28 +864,7 @@ function ContactSection({ withHead = true }) {
                 loading="lazy"
               />
             </picture>
-            <figcaption className="label">
-              All&rsquo;angolo tra via Turati e vicolo Zibramonda
-            </figcaption>
           </figure>
-
-          <div className="contact__aside reveal">
-            <h3 className="subhead">Come procediamo</h3>
-            <p className="body-text">
-              Mi descriva l&rsquo;immobile e cosa ha in mente. Se l&rsquo;intervento rientra
-              negli ambiti dello studio, concordiamo un sopralluogo e da lì definiamo tempi,
-              procedure e un ordine di spesa.
-            </p>
-
-            <div className="btn-row">
-              <a className="btn btn--primary" href={studio.emailHref}>
-                Scrivi una mail
-              </a>
-              <a className="btn btn--onDark" href={studio.phoneHref}>
-                Chiama ora
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -802,227 +875,44 @@ function ContactSection({ withHead = true }) {
    Pagine interne
    --------------------------------------------------------------------------- */
 
-function ServicesPage() {
-  useReveal([])
 
-  return (
-    <>
-      <PageHead
-        label="Servizi"
-        title="Servizi tecnici, dal primo sopralluogo alla fine dei lavori."
-        text="Ogni incarico può riguardare una singola prestazione o l'intero percorso. Di seguito gli ambiti principali e l'elenco completo delle prestazioni."
-      />
 
-      <section className="section">
-        <div className="container">
-          <div className="service-rows">
-            {serviceAreas.map((area) => (
-              <article key={area.id} className="service-row reveal">
-                <span className="service-row__num">{area.num}</span>
 
-                <figure className="service-row__media">
-                  <picture>
-                    <source srcSet={`${area.image}.webp`} type="image/webp" />
-                    <img
-                      src={`${area.image}.png`}
-                      alt={area.imageAlt}
-                      width="900"
-                      height="600"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </picture>
-                </figure>
-
-                <h2 className="service-row__title">{area.title}</h2>
-                <div className="service-row__body">
-                  <p className="body-text">{area.text}</p>
-                  <ul className="service-row__list">
-                    {area.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="service-row__action">
-                  <Link className="link-arrow" to="/contatti">
-                    Richiedi <IconArrow />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--surface">
-        <div className="container">
-          <SectionHead label="Elenco" title="Tutte le prestazioni." />
-          <ul className="index-list reveal">
-            {serviceIndex.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="section--tight">
-        <div className="container">
-          <CtaBand
-            title="Non trova quello che cerca?"
-            text="Mi descriva l'intervento: se non rientra nei miei ambiti, le indico a chi rivolgersi."
-          />
-        </div>
-      </section>
-    </>
-  )
-}
-
-function ProjectsPage() {
-  useReveal([])
-
-  return (
-    <>
-      <PageHead
-        label="Progetti"
-        title="Esperienza applicata a interventi reali."
-        text="Gli ambiti in cui lo studio opera più di frequente, sul territorio di Mantova e provincia."
-      />
-
-      <section className="section">
-        <div className="container">
-          <ProjectGrid />
-        </div>
-      </section>
-
-      <section className="section--tight">
-        <div className="container">
-          <CtaBand
-            title="Ha un intervento simile in mente?"
-            text="Fissiamo un sopralluogo per valutarlo insieme."
-          />
-        </div>
-      </section>
-    </>
-  )
-}
-
-function AboutPage() {
-  useReveal([])
-
-  return (
-    <>
-      <PageHead
-        label="Lo Studio"
-        title="Uno studio tecnico diretto, vicino a chi commissiona il lavoro."
-        text="Un servizio completo lungo l'intero percorso dell'opera: dalle fasi preliminari alla progettazione integrale e coordinata, fino alla realizzazione."
-      />
-
-      <section className="section">
-        <div className="container">
-          <StudioBlock />
-        </div>
-      </section>
-
-      <section className="section section--surface">
-        <div className="container">
-          <SectionHead
-            label="Metodo"
-            title="Come si sviluppa un incarico."
-            text="Quattro fasi, con un punto di verifica alla fine di ciascuna: si procede alla successiva solo quando il quadro è chiaro."
-          />
-          <div className="method reveal">
-            {method.map((step) => (
-              <div key={step.num} className="method__step">
-                <span className="method__num">{step.num}</span>
-                <h3 className="method__title">{step.title}</h3>
-                <p className="method__text">{step.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section--tight">
-        <div className="container">
-          <CtaBand
-            title="Parliamone di persona."
-            text="Il primo confronto non impegna: serve a capire se posso esserle utile."
-          />
-        </div>
-      </section>
-    </>
-  )
-}
-
-function ContactPage() {
-  useReveal([])
-
-  return (
-    <>
-      <PageHead
-        label="Contatti"
-        title="Parliamo del suo progetto."
-        text="Telefono, mail o un sopralluogo in loco: scelga il modo più comodo per iniziare."
-      />
-      <ContactSection withHead={false} />
-      <CompanySection />
-    </>
-  )
-}
 
 /**
  * Dati societari e canali di fatturazione elettronica. Sezione informativa,
  * volutamente sobria: sono dati di trasparenza, non materiale promozionale.
+ * Niente riquadro né cornice: in fondo alla pagina devono restare leggibili
+ * senza chiedere attenzione ai recapiti, che sono ciò che serve davvero.
  */
 function CompanySection() {
   return (
     <section className="section--tight company" id="dati-societari">
       <div className="container">
-        <div className="company-box reveal">
-          <div className="company-box__head">
-            <p className="label">Dati societari</p>
-            <p className="company-box__name">{company.legalName}</p>
-          </div>
-
-          <dl className="company-grid">
-            {companyDetails.map((row) => (
-              <div className="company-item" key={row.label}>
-                <dt className="label">{row.label}</dt>
-                <dd className="company-item__value">{row.value}</dd>
-              </div>
-            ))}
-
-            <div className="company-item">
-              <dt className="label">PEC</dt>
-              <dd>
-                <a className="company-item__value" href={company.pecHref}>
-                  {company.pec}
-                </a>
-              </dd>
-            </div>
-          </dl>
+        <div className="company-head reveal">
+          <span className="label">Dati societari</span>
+          <p className="company-head__name">{company.legalName}</p>
         </div>
+
+        <dl className="company-grid reveal">
+          {companyDetails.map((row) => (
+            <div className="company-item" key={row.label}>
+              <dt className="label">{row.label}</dt>
+              <dd className="company-item__value">{row.value}</dd>
+            </div>
+          ))}
+
+          <div className="company-item">
+            <dt className="label">PEC</dt>
+            <dd>
+              <a className="company-item__value" href={company.pecHref}>
+                {company.pec}
+              </a>
+            </dd>
+          </div>
+        </dl>
       </div>
     </section>
-  )
-}
-
-function NotFoundPage() {
-  return (
-    <>
-      <PageHead
-        label="404"
-        title="Questa pagina non esiste."
-        text="L'indirizzo digitato non corrisponde ad alcuna pagina del sito."
-      />
-      <section className="section">
-        <div className="container">
-          <Link className="btn btn--primary" to="/">
-            Torna alla home
-          </Link>
-        </div>
-      </section>
-    </>
   )
 }
 
@@ -1085,16 +975,11 @@ function Footer() {
         <div className="footer__col">
           <h2 className="footer__title">Navigazione</h2>
           <ul className="footer__list">
-            <li className="footer__item">
-              <Link className="footer__link" to="/">
-                Home
-              </Link>
-            </li>
             {navItems.map((item) => (
-              <li className="footer__item" key={item.path}>
-                <Link className="footer__link" to={item.path}>
+              <li className="footer__item" key={item.id}>
+                <a className="footer__link" href={`#${item.id}`}>
                   {item.label}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>
@@ -1203,25 +1088,54 @@ function Footer() {
    Composizione
    --------------------------------------------------------------------------- */
 
+/**
+ * Il sito è una pagina sola. I vecchi percorsi (/servizi, /progetti…)
+ * restano validi come collegamenti: chi arriva da un segnalibro o da un
+ * risultato di ricerca viene portato alla sezione corrispondente invece
+ * di trovare un 404.
+ */
+const legacyPaths = {
+  '/servizi': 'servizi',
+  '/progetti': 'progetti',
+  '/studio': 'studio',
+  '/contatti': 'contatti',
+}
+
 function Layout() {
+  useReveal([])
+
+  // All'arrivo: un vecchio percorso o un hash portano alla sezione giusta.
+  // Si attende un frame perché le immagini sopra la sezione non abbiano
+  // ancora spostato il punto di arrivo.
+  useEffect(() => {
+    const path = window.location.pathname.replace(/\/$/, '')
+    const target = legacyPaths[path] || window.location.hash.slice(1)
+    if (path && legacyPaths[path]) {
+      window.history.replaceState(null, '', `/#${legacyPaths[path]}`)
+    }
+    if (!target) return
+
+    const frame = window.requestAnimationFrame(() => {
+      const el = document.getElementById(target)
+      if (!el) return
+      window.scrollTo({
+        top: el.getBoundingClientRect().top + window.scrollY - 96,
+        behavior: 'auto',
+      })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
   return (
     <>
       <a className="skip-link" href="#contenuto">
         Salta al contenuto
       </a>
 
-      <ScrollToTop />
       <Header />
 
       <main className="site-main" id="contenuto">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/servizi" element={<ServicesPage />} />
-          <Route path="/progetti" element={<ProjectsPage />} />
-          <Route path="/studio" element={<AboutPage />} />
-          <Route path="/contatti" element={<ContactPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <HomePage />
       </main>
 
       <Footer />
@@ -1231,9 +1145,5 @@ function Layout() {
 }
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
-  )
+  return <Layout />
 }
