@@ -307,24 +307,35 @@
 .brand__copy {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  /* align-items: start fa sì che il filetto sotto il nome si fermi alla
+     larghezza del testo, invece di attraversare tutta la colonna. */
+  align-items: flex-start;
+  gap: 2px;
   line-height: 1.15;
 }
 
+/* Il nome è composto come sulle targhe dello studio: tutto maiuscolo,
+   in grottesco, con una spaziatura leggermente aperta perché l'incisione
+   su metallo non regge le lettere strette. */
 .brand__name {
-  font-size: var(--fs-base);
-  font-weight: 600;
-  letter-spacing: var(--ls-tight);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
   color: var(--c-ink);
   white-space: nowrap;
 }
 
+/* La riga sotto ripete l'impaginazione della targa: qualifica minuta,
+   separata dal nome da un filetto sottile come quello inciso. */
 .brand__role {
   font-size: var(--fs-label);
   font-weight: 500;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--c-muted);
+  padding-top: 3px;
+  border-top: 1px solid var(--c-line-strong);
 }
 
 /* --- Navigazione desktop --- */
@@ -535,7 +546,7 @@
   position: fixed;
   inset: 0;
   z-index: 55;
-  background: rgba(20, 22, 26, 0.4);
+  background: rgba(0, 0, 0, 0.4);
   border: 0;
   padding: 0;
   cursor: pointer;
@@ -1233,13 +1244,16 @@
   gap: var(--s-3);
 }
 
+/* Stessa incisione del marchio in testata, in negativo: il footer è la
+   targa vista di notte, con la luce sopra accesa. */
 .footer__name {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  font-weight: 400;
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 700;
   line-height: 1.2;
-  letter-spacing: var(--ls-tight);
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
   color: var(--c-dark-fg-strong);
 }
 
@@ -1411,9 +1425,9 @@
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(20, 22, 26, 0.85) 0%,
-    rgba(20, 22, 26, 0.35) 45%,
-    rgba(20, 22, 26, 0.06) 100%
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    rgba(0, 0, 0, 0.06) 100%
   );
   transition: opacity var(--dur) var(--ease);
 }
@@ -1732,110 +1746,7 @@ a.company-item__value:hover {
 }
 
 /* --------------------------------------------------------------------------
-   12. Selettore di palette (strumento di presentazione)
-   -------------------------------------------------------------------------- */
-
-.theme-switch {
-  position: fixed;
-  right: var(--s-4);
-  bottom: var(--s-4);
-  z-index: 70;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--s-3);
-}
-
-.theme-switch__toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  height: 40px;
-  padding-inline: var(--s-4);
-  border: 1px solid var(--c-line-strong);
-  border-radius: 999px;
-  background: var(--c-surface);
-  color: var(--c-ink);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
-  transition: border-color var(--dur) var(--ease);
-}
-
-.theme-switch__toggle:hover {
-  border-color: var(--c-ink);
-}
-
-.theme-switch__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--c-accent);
-  flex: none;
-}
-
-.theme-switch__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-  width: 210px;
-  padding: var(--s-3);
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  animation: rise 180ms var(--ease) both;
-}
-
-.theme-switch__label {
-  padding: var(--s-2) var(--s-2) var(--s-3);
-  color: var(--c-muted);
-}
-
-.theme-switch__option {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-2) var(--s-3);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--c-ink);
-  font-size: var(--fs-sm);
-  text-align: left;
-  cursor: pointer;
-  transition: background-color var(--dur) var(--ease);
-}
-
-.theme-switch__option:hover {
-  background: var(--c-surface-2);
-}
-
-.theme-switch__option[aria-pressed='true'] {
-  font-weight: 600;
-  background: var(--c-surface-2);
-}
-
-.theme-switch__swatch {
-  width: 16px;
-  height: 16px;
-  flex: none;
-  border-radius: 50%;
-  border: 1px solid var(--c-line-strong);
-}
-
-.theme-switch__check {
-  margin-left: auto;
-  width: 14px;
-  height: 14px;
-  color: var(--c-accent);
-}
-
-/* --------------------------------------------------------------------------
-   13. Animazioni — solo ingressi leggeri
+   12. Animazioni — solo ingressi leggeri
    -------------------------------------------------------------------------- */
 
 @keyframes rise {
@@ -1880,7 +1791,7 @@ a.company-item__value:hover {
 }
 
 /* --------------------------------------------------------------------------
-   14. Breakpoint
+   13. Breakpoint
    -------------------------------------------------------------------------- */
 
 /* --- <= 1024px --- */
@@ -2093,27 +2004,6 @@ a.company-item__value:hover {
     text-align: left;
   }
 
-  /* Su mobile il selettore si riduce al solo pallino colorato: resta
-     raggiungibile senza coprire il contenuto. */
-  .theme-switch {
-    right: var(--s-3);
-    bottom: var(--s-3);
-  }
-
-  .theme-switch__toggle {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    justify-content: center;
-  }
-
-  .theme-switch__name {
-    display: none;
-  }
-
-  .theme-switch__panel {
-    width: min(240px, calc(100vw - var(--s-6)));
-  }
 }
 
 /* --- <= 380px: dispositivi stretti --- */

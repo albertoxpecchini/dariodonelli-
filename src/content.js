@@ -254,12 +254,3 @@ export const disciplines = [
   'Infrastrutture',
   'Idraulica e ambiente',
 ]
-
-/** Palette proposte al cliente. Lo swatch mostra il colore d'accento. */
-export const palettes = [
-  { id: 'terracotta', name: 'Terracotta', swatch: '#b4541b' },
-  { id: 'blu', name: 'Blu tecnico', swatch: '#1f4e79' },
-  { id: 'oliva', name: 'Verde oliva', swatch: '#4a5a33' },
-  { id: 'grafite', name: 'Grafite', swatch: '#33343a' },
-  { id: 'bordeaux', name: 'Bordeaux', swatch: '#7a2431' },
-]

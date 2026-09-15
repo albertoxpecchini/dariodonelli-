@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import './palettes.css'
 import './App.css'
 import {
   company,
@@ -9,7 +8,6 @@ import {
   mapEmbedSrc,
   method,
   navItems,
-  palettes,
   profile,
   projects,
   serviceAreas,
@@ -44,20 +42,6 @@ function IconClose(props) {
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function IconCheck(props) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M3 8.5 6.5 12 13 4.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   )
@@ -237,102 +221,6 @@ function scrollToSection(id) {
 
   window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' })
   window.history.replaceState(null, '', `#${id}`)
-}
-
-/** Riporta in cima a ogni cambio di rotta. */
-
-/* ---------------------------------------------------------------------------
-   Selettore di palette
-   --------------------------------------------------------------------------- */
-
-const THEME_KEY = 'dd-theme'
-
-/** Legge la palette salvata. Isolata perché localStorage può lanciare. */
-function readSavedTheme() {
-  try {
-    const saved = window.localStorage.getItem(THEME_KEY)
-    if (saved && palettes.some((p) => p.id === saved)) return saved
-  } catch {
-    // localStorage non disponibile: si resta sul default.
-  }
-  return 'terracotta'
-}
-
-function ThemeSwitcher() {
-  // Inizializzazione pigra: evita un secondo render al primo caricamento.
-  const [theme, setTheme] = useState(readSavedTheme)
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef(null)
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    try {
-      window.localStorage.setItem(THEME_KEY, theme)
-    } catch {
-      // Ignora: la palette resta comunque applicata per la sessione.
-    }
-  }, [theme])
-
-  // Chiude il pannello con Esc o con un clic all'esterno.
-  useEffect(() => {
-    if (!open) return
-
-    const onKey = (event) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    const onClick = (event) => {
-      if (rootRef.current && !rootRef.current.contains(event.target)) {
-        setOpen(false)
-      }
-    }
-
-    document.addEventListener('keydown', onKey)
-    document.addEventListener('mousedown', onClick)
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.removeEventListener('mousedown', onClick)
-    }
-  }, [open])
-
-  const current = palettes.find((p) => p.id === theme) ?? palettes[0]
-
-  return (
-    <div className="theme-switch" ref={rootRef}>
-      {open && (
-        <div className="theme-switch__panel" role="group" aria-label="Palette del sito">
-          <span className="label theme-switch__label">Palette</span>
-          {palettes.map((palette) => (
-            <button
-              key={palette.id}
-              type="button"
-              className="theme-switch__option"
-              aria-pressed={palette.id === theme}
-              onClick={() => setTheme(palette.id)}
-            >
-              <span
-                className="theme-switch__swatch"
-                style={{ background: palette.swatch }}
-                aria-hidden="true"
-              />
-              {palette.name}
-              {palette.id === theme && <IconCheck className="theme-switch__check" />}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <button
-        type="button"
-        className="theme-switch__toggle"
-        aria-expanded={open}
-        aria-label={`Palette: ${current.name}. Cambia palette`}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="theme-switch__dot" aria-hidden="true" />
-        <span className="theme-switch__name">{current.name}</span>
-      </button>
-    </div>
-  )
 }
 
 /* ---------------------------------------------------------------------------
@@ -1139,7 +1027,6 @@ function Layout() {
       </main>
 
       <Footer />
-      <ThemeSwitcher />
     </>
   )
 }

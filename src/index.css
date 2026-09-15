@@ -3,32 +3,35 @@
 /* ==========================================================================
    SISTEMA DI DESIGN — Ing. Dario Donelli
    Un unico punto di verità per colore, tipografia, spazio e superfici.
-   Le palette alternative sono definite in palettes.css e attivate
-   tramite l'attributo data-theme su <html>.
+   La palette è una sola, in bianco e nero: non esistono temi alternativi.
    ========================================================================== */
 
 :root {
-  /* --- Palette di base: "Grafite" (default) ------------------------------ */
-  --c-ink: #14161a;
-  --c-ink-2: #2b3037;
-  --c-body: #545c66;
-  --c-muted: #5f6874;
+  /* --- Palette: bianco e nero -------------------------------------------
+     Monocromatica per scelta. Il colore lo mette solo la fotografia.
+     Il riferimento sono le targhe dello studio: incisione nera su metallo
+     chiaro, filetti sottili, nessun accento cromatico. L'enfasi si ottiene
+     con il peso tipografico e la linea, non con la tinta. */
+  --c-ink: #000000;
+  --c-ink-2: #1c1c1c;
+  --c-body: #4a4a4a;
+  --c-muted: #6b6b6b;
 
-  --c-page: #f7f7f5;
+  --c-page: #f4f4f2;
   --c-surface: #ffffff;
-  --c-surface-2: #f1f1ee;
-  --c-line: rgba(20, 22, 26, 0.1);
-  --c-line-strong: rgba(20, 22, 26, 0.18);
+  --c-surface-2: #eaeae7;
+  --c-line: rgba(0, 0, 0, 0.12);
+  --c-line-strong: rgba(0, 0, 0, 0.22);
 
-  --c-accent: #b4541b;
-  --c-accent-hover: #8f4215;
+  --c-accent: #000000;
+  --c-accent-hover: #333333;
   --c-accent-ink: #ffffff;
-  --c-accent-wash: rgba(180, 84, 27, 0.08);
+  --c-accent-wash: rgba(0, 0, 0, 0.06);
 
-  --c-dark-bg: #14161a;
-  --c-dark-fg: rgba(255, 255, 255, 0.72);
+  --c-dark-bg: #000000;
+  --c-dark-fg: rgba(255, 255, 255, 0.74);
   --c-dark-fg-strong: #ffffff;
-  --c-dark-line: rgba(255, 255, 255, 0.12);
+  --c-dark-line: rgba(255, 255, 255, 0.16);
 
   /* --- Tipografia -------------------------------------------------------- */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
@@ -73,8 +76,8 @@
   /* --- Superfici --------------------------------------------------------- */
   --radius-sm: 2px;
   --radius: 3px;
-  --shadow-sm: 0 1px 2px rgba(20, 22, 26, 0.04);
-  --shadow-md: 0 6px 24px -8px rgba(20, 22, 26, 0.16);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 6px 24px -8px rgba(0, 0, 0, 0.16);
 
   /* --- Movimento ---------------------------------------------------------- */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
