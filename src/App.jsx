@@ -1,35 +1,79 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import {
   company,
   companyDetails,
   disciplines,
   heroCompetences,
+  heroFacts,
+  hotspots,
+  infoline,
+  manifesto,
+  lakes,
   mapEmbedSrc,
   method,
+  mincio,
   navItems,
+  places,
   profile,
   projects,
+  sections,
   serviceAreas,
   serviceIndex,
   studio,
 } from './content.js'
 
 /* ---------------------------------------------------------------------------
-   Icone — disegnate inline per evitare una dipendenza da una icon library
-   per soli tre glifi, e per tenerle coerenti di peso (1.5px).
+   Marchio
+   Il logo della targa ridisegnato in vettoriale: una "D" a doppio profilo,
+   in nero, sovrapposta alla sua immagine speculare in grigio. I tracciati
+   hanno pathLength="1" così il CSS può "disegnarli" con un dash.
+   --------------------------------------------------------------------------- */
+
+const LOGO_OUTER = 'M64 64H520A456 456 0 0 1 520 976H64Z'
+const LOGO_INNER = 'M164 164H520A356 356 0 0 1 520 876H164Z'
+
+function Logo({ className = '', draw = false, ...props }) {
+  return (
+    <svg
+      viewBox="0 0 1040 1040"
+      fill="none"
+      aria-hidden="true"
+      className={`logo${draw ? ' logo--draw' : ''} ${className}`}
+      {...props}
+    >
+      <g className="logo__ghost" stroke="#8a8a8a" strokeWidth="48" transform="matrix(-1 0 0 1 1040 0)">
+        <path d={LOGO_OUTER} pathLength="1" />
+        <path d={LOGO_INNER} pathLength="1" />
+      </g>
+      <g className="logo__ink" stroke="currentColor" strokeWidth="48">
+        <path d={LOGO_OUTER} pathLength="1" />
+        <path d={LOGO_INNER} pathLength="1" />
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * La "D" minima: il dettaglio ricorrente del sito. Fa da punto elenco,
+ * separatore, marcatore sulla mappa e sulla fotografia, cursore.
+ */
+function DMark(props) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className="dmark" {...props}>
+      <path d="M2.5 2.5h5.5a5.5 5.5 0 0 1 0 11H2.5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   Icone
    --------------------------------------------------------------------------- */
 
 function IconArrow(props) {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M2.5 8h11m0 0L9 3.5M13.5 8 9 12.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M2.5 8h11m0 0L9 3.5M13.5 8 9 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -37,12 +81,7 @@ function IconArrow(props) {
 function IconClose(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M6 6l12 12M18 6L6 18"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   )
 }
@@ -72,12 +111,7 @@ function IconMail(props) {
 function IconPin(props) {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M8 14.2s4.5-4 4.5-7.4a4.5 4.5 0 0 0-9 0C3.5 10.2 8 14.2 8 14.2Z"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinejoin="round"
-      />
+      <path d="M8 14.2s4.5-4 4.5-7.4a4.5 4.5 0 0 0-9 0C3.5 10.2 8 14.2 8 14.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
       <circle cx="8" cy="6.7" r="1.6" stroke="currentColor" strokeWidth="1.3" />
     </svg>
   )
@@ -86,13 +120,7 @@ function IconPin(props) {
 function IconExternal(props) {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M6.5 3.5h-3v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M6.5 3.5h-3v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -101,36 +129,29 @@ function IconExternal(props) {
    Hook di supporto
    --------------------------------------------------------------------------- */
 
-/** Aggiunge una classe all'header dopo una breve soglia di scroll. */
 function useScrolled(threshold = 24) {
   const [scrolled, setScrolled] = useState(false)
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > threshold)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [threshold])
-
   return scrolled
 }
 
 /**
- * Rivelazione allo scroll. Un solo observer per tutti gli elementi .reveal
- * presenti nella pagina corrente; gli elementi già visibili non vengono
- * ri-animati quando escono dallo schermo.
+ * Rivelazione allo scroll. Un solo observer per tutti gli elementi .reveal;
+ * gli elementi già visibili non vengono ri-animati quando escono.
  */
-function useReveal(deps) {
+function useReveal() {
   useEffect(() => {
     const nodes = document.querySelectorAll('.reveal:not(.is-visible)')
     if (!nodes.length) return
-
-    // Se il browser non supporta l'observer, mostra tutto subito.
     if (typeof IntersectionObserver === 'undefined') {
       nodes.forEach((node) => node.classList.add('is-visible'))
       return
     }
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -142,58 +163,38 @@ function useReveal(deps) {
       },
       { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
     )
-
     nodes.forEach((node) => observer.observe(node))
     return () => observer.disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps)
+  }, [])
 }
 
 /**
- * Scroll-spy: restituisce l'id della sezione che si sta leggendo.
- *
- * Non si usa IntersectionObserver con una soglia sola: con sezioni di
- * altezza molto diversa (l'hero è alta, i contatti sono corti) più sezioni
- * risultano visibili insieme e la voce attiva sfarfalla. Si misura invece
- * quale sezione attraversa una linea di riferimento posta poco sotto
- * l'header, che è il punto che l'occhio considera "dove sono".
+ * Scroll-spy: l'id della sezione che attraversa la linea di lettura, posta
+ * poco sotto l'header. Alimenta la navigazione e l'indicatore nell'angolo.
  */
 function useScrollSpy(ids) {
   const [active, setActive] = useState('')
-
   useEffect(() => {
     let frame = 0
-
     const compute = () => {
       frame = 0
-      // La linea di lettura: sotto l'header, non a metà schermo, così la
-      // voce cambia quando la sezione entra davvero in lettura.
-      const line = window.scrollY + 140
+      const line = window.scrollY + 160
       let current = ''
-
       for (const id of ids) {
         const el = document.getElementById(id)
         if (!el) continue
         if (el.getBoundingClientRect().top + window.scrollY <= line) current = id
       }
-
-      // In fondo alla pagina l'ultima sezione può essere troppo corta per
-      // raggiungere la linea: chi è arrivato in fondo sta leggendo quella.
-      const atBottom =
-        window.innerHeight + window.scrollY >= document.body.scrollHeight - 2
+      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 2
       if (atBottom) {
         const last = ids.filter((id) => document.getElementById(id)).pop()
         if (last) current = last
       }
-
       setActive(current)
     }
-
-    // Lo scroll è frequente: il calcolo si accoda a un frame solo.
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(compute)
     }
-
     compute()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
@@ -203,39 +204,63 @@ function useScrollSpy(ids) {
       window.removeEventListener('resize', onScroll)
     }
   }, [ids])
-
   return active
 }
 
-/**
- * Porta a una sezione tenendo conto dell'header fisso, che altrimenti
- * coprirebbe il titolo. Rispetta la preferenza di movimento ridotto e
- * aggiorna l'hash senza far saltare la pagina come farebbe un link nudo.
- */
 function scrollToSection(id) {
   const el = document.getElementById(id)
   if (!el) return
-
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const top = el.getBoundingClientRect().top + window.scrollY - 96
-
+  const top = el.getBoundingClientRect().top + window.scrollY - 88
   window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' })
   window.history.replaceState(null, '', `#${id}`)
 }
 
+function useAnchorNav() {
+  return useCallback((event) => {
+    const id = event.currentTarget.getAttribute('href').slice(1)
+    event.preventDefault()
+    scrollToSection(id)
+  }, [])
+}
+
 /* ---------------------------------------------------------------------------
-   Header
+   Header, binario laterale, indicatore d'angolo
    --------------------------------------------------------------------------- */
 
-/** Gli id delle sezioni osservate dallo scroll-spy, nell'ordine di pagina. */
-const sectionIds = navItems.map((item) => item.id)
+const sectionIds = sections.map((section) => section.id)
 
-function Header() {
+function Brand({ className = '', draw = false }) {
+  return (
+    <span className={`brand__inner ${className}`}>
+      <span className="brand__mark">
+        <Logo draw={draw} />
+      </span>
+      <span className="brand__copy">
+        <span className="brand__name">{studio.name}</span>
+        <span className="brand__role">{studio.role}</span>
+      </span>
+    </span>
+  )
+}
+
+/** Il telefono mostra "Telefono" e rivela il numero al passaggio. */
+function PhoneReveal({ className = '' }) {
+  return (
+    <a className={`phone ${className}`} href={studio.phoneHref} aria-label={`Chiama ${studio.phoneDisplay}`}>
+      <IconPhone />
+      <span className="phone__text">
+        <span className="phone__label">Telefono</span>
+        <span className="phone__num">{studio.phoneDisplay}</span>
+      </span>
+    </a>
+  )
+}
+
+function Header({ active }) {
   const scrolled = useScrolled()
   const [menuOpen, setMenuOpen] = useState(false)
-  const active = useScrollSpy(sectionIds)
 
-  // Blocca lo scroll della pagina mentre il pannello è aperto.
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     return () => {
@@ -252,9 +277,6 @@ function Header() {
     return () => document.removeEventListener('keydown', onKey)
   }, [menuOpen])
 
-  // Il link resta un vero <a href="#..."> — funziona senza JS, si può aprire
-  // in una nuova scheda — ma l'andata alla sezione la gestiamo noi per
-  // compensare l'header fisso.
   const go = useCallback((event, id) => {
     event.preventDefault()
     setMenuOpen(false)
@@ -276,13 +298,7 @@ function Header() {
               window.history.replaceState(null, '', ' ')
             }}
           >
-            <span className="brand__mark">
-              <img src="/chatgpt-logo.png" alt="" width="42" height="42" />
-            </span>
-            <span className="brand__copy">
-              <span className="brand__name">{studio.name}</span>
-              <span className="brand__role">{studio.role}</span>
-            </span>
+            <Brand draw />
           </a>
 
           <nav className="nav" aria-label="Navigazione principale">
@@ -291,26 +307,19 @@ function Header() {
                 key={item.id}
                 href={`#${item.id}`}
                 className={active === item.id ? 'nav__link is-active' : 'nav__link'}
-                /* Il segnalibro: la voce della sezione in lettura è anche
-                   la posizione corrente del documento per gli assistivi. */
                 aria-current={active === item.id ? 'true' : undefined}
                 onClick={(e) => go(e, item.id)}
               >
+                <sup className="nav__num">{item.num}</sup>
                 {item.label}
               </a>
             ))}
           </nav>
 
           <div className="header__actions">
-            <a className="header__phone" href={studio.phoneHref}>
-              {studio.phoneDisplay}
-            </a>
-            <a
-              className="btn btn--primary header__cta"
-              href="#contatti"
-              onClick={(e) => go(e, 'contatti')}
-            >
-              Richiedi un appuntamento
+            <PhoneReveal className="header__phone" />
+            <a className="btn btn--primary header__cta" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+              Parliamo del progetto
             </a>
             <button
               type="button"
@@ -329,32 +338,17 @@ function Header() {
         </div>
       </header>
 
-      {menuOpen && (
-        <button
-          type="button"
-          className="scrim"
-          aria-label="Chiudi il menu"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
+      {menuOpen && <button type="button" className="scrim" aria-label="Chiudi il menu" onClick={() => setMenuOpen(false)} />}
 
       <aside
         id="mobile-panel"
         className={menuOpen ? 'mobile-panel is-open' : 'mobile-panel'}
         aria-hidden={!menuOpen}
-        {...(!menuOpen && { inert: '' })}
+        inert={!menuOpen}
       >
         <div className="mobile-panel__head">
-          <span className="brand__copy">
-            <span className="brand__name">{studio.name}</span>
-            <span className="brand__role">{studio.role}</span>
-          </span>
-          <button
-            type="button"
-            className="mobile-panel__close"
-            aria-label="Chiudi il menu"
-            onClick={() => setMenuOpen(false)}
-          >
+          <Brand />
+          <button type="button" className="mobile-panel__close" aria-label="Chiudi il menu" onClick={() => setMenuOpen(false)}>
             <IconClose />
           </button>
         </div>
@@ -364,12 +358,11 @@ function Header() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className={
-                active === item.id ? 'mobile-nav__link is-active' : 'mobile-nav__link'
-              }
+              className={active === item.id ? 'mobile-nav__link is-active' : 'mobile-nav__link'}
               aria-current={active === item.id ? 'true' : undefined}
               onClick={(e) => go(e, item.id)}
             >
+              <span className="mobile-nav__num">{item.num}</span>
               {item.label}
             </a>
           ))}
@@ -379,15 +372,43 @@ function Header() {
           <a className="mobile-panel__phone" href={studio.phoneHref}>
             {studio.phoneDisplay}
           </a>
-          <a
-            className="btn btn--primary"
-            href="#contatti"
-            onClick={(e) => go(e, 'contatti')}
-          >
-            Richiedi un appuntamento
+          <a className="mobile-panel__mail" href={studio.emailHref}>
+            {studio.email}
           </a>
-        </div>      </aside>
+          <a className="btn btn--primary" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+            Parliamo del progetto
+          </a>
+        </div>
+      </aside>
     </>
+  )
+}
+
+/**
+ * Binario laterale: nome, indirizzo e telefono restano sempre a portata,
+ * in verticale lungo il bordo destro, come la costa di un fascicolo.
+ */
+function SideRail() {
+  return (
+    <a className="rail" href={studio.mapsHref} target="_blank" rel="noreferrer" aria-label={`${studio.name}, ${studio.address}, ${studio.phoneDisplay}`}>
+      <span>{studio.name}</span>
+      <DMark />
+      <span>Via Filippo Turati 1, Rivalta sul Mincio</span>
+      <DMark />
+      <span>{studio.phoneDisplay}</span>
+    </a>
+  )
+}
+
+/** Indicatore d'angolo: "STUDIO · 03", segue la sezione in lettura. */
+function Corner({ active }) {
+  const current = sections.find((section) => section.id === active)
+  return (
+    <div className="corner" aria-hidden="true">
+      <span className="corner__word">Studio</span>
+      <DMark />
+      <span className="corner__num">{current ? current.num : '00'}</span>
+    </div>
   )
 }
 
@@ -395,577 +416,1065 @@ function Header() {
    Blocchi riutilizzabili
    --------------------------------------------------------------------------- */
 
-function SectionHead({ label, title, text, action }) {
+/**
+ * Intestazione di sezione. Il filetto attraversa tutta la pagina, da bordo
+ * a bordo: è il filo conduttore. Il numero sta sul filo, come una quota.
+ */
+function SectionHead({ id, title, text }) {
+  const section = sections.find((s) => s.id === id)
   return (
     <div className="section-head reveal">
       <div className="section-head__meta">
-        <span className="label label--accent">{label}</span>
-        {action}
+        <span className="section-head__index" aria-hidden="true">
+          {section.num}
+        </span>
+        <span className="label">{section.label}</span>
       </div>
-      <h2 className="headline">{title}</h2>
-      {text && <p className="lead">{text}</p>}
+      <div className="section-head__body">
+        <h2 className="headline">{title}</h2>
+        {text && <p className="lead">{text}</p>}
+      </div>
     </div>
   )
 }
 
-
-
-/* ---------------------------------------------------------------------------
-   Home
-   --------------------------------------------------------------------------- */
-
-function HomePage() {
-  useReveal([])
-
-  // I link interni alla pagina passano dallo stesso helper della nav, così
-  // l'header fisso non copre il titolo della sezione di destinazione.
-  const onNav = useCallback((event) => {
-    const id = event.currentTarget.getAttribute('href').slice(1)
-    event.preventDefault()
-    scrollToSection(id)
-  }, [])
-
+function Photo({ base, ext = 'jpg', alt, width, height, eager = false, className = '' }) {
   return (
-    <>
-      <section className="hero">
-        <div className="container hero__grid">
-          <div className="hero__copy">
-            <span className="label hero__place">{studio.place}</span>
-
-            <h1 className="display hero__title">
-              Progettare e seguire <em>ogni fase</em> dell&rsquo;intervento.
-            </h1>
-
-            <p className="lead hero__lead">
-              Studio tecnico di ingegneria a Rivalta sul Mincio. Seguo privati, imprese e
-              committenze pubbliche dalla verifica di fattibilità alla chiusura del cantiere,
-              con un unico riferimento tecnico per tutto il percorso.
-            </p>
-
-            <div className="btn-row hero__actions">
-              <a className="btn btn--primary" href="#contatti" onClick={onNav}>
-                Richiedi un appuntamento
-              </a>
-              <a className="btn btn--secondary" href="#servizi" onClick={onNav}>
-                Scopri i servizi
-              </a>
-            </div>
-          </div>
-
-          <figure className="hero__visual">
-            <img
-              src="/ggg-min.png"
-              alt="Due tecnici in cantiere consultano un elaborato di progetto"
-              width="1000"
-              height="880"
-            />
-            <figcaption className="hero__stat">
-              <strong>Rivalta sul Mincio</strong>
-              <span className="label">Mantova e provincia</span>
-            </figcaption>
-          </figure>
-        </div>
-
-        <div className="marquee-strip">
-          <div className="container marquee-strip__inner">
-            {heroCompetences.map((item, index) => (
-              <span key={item} style={{ display: 'contents' }}>
-                {index > 0 && <span className="marquee-strip__sep" aria-hidden="true" />}
-                <span className="marquee-strip__item">{item}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section" id="servizi">
-        <div className="container">
-          <SectionHead
-            label="Servizi"
-            title="Tre ambiti di intervento, un unico interlocutore."
-            text="Lo studio copre il percorso completo di un intervento edilizio. In base alle esigenze si può attivare una singola prestazione oppure affidare l'intera gestione tecnica."
-          />
-
-          <div className="service-blocks">
-            {serviceAreas.map((area, i) => (
-              <article
-                key={area.id}
-                className={`service-block reveal${i % 2 === 1 ? ' service-block--flip' : ''}`}
-              >
-                {/* Il WebP è la sorgente preferita, il PNG resta il fallback:
-                    stessa immagine, un ottavo del peso. */}
-                <figure className="service-block__media">
-                  <picture>
-                    <source srcSet={`${area.image}.webp`} type="image/webp" />
-                    <img
-                      src={`${area.image}.png`}
-                      alt={area.imageAlt}
-                      width="900"
-                      height="600"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </picture>
-                </figure>
-
-                <div className="service-block__copy">
-                  <span className="service-block__num">{area.num}</span>
-                  <h3 className="service-block__title">{area.title}</h3>
-                  <p className="body-text">{area.text}</p>
-
-                  <ul className="service-block__list">
-                    {area.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-
-                  <a className="link-arrow" href="#contatti" onClick={onNav}>
-                    Richiedi <IconArrow />
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* L'elenco completo stava nella pagina Servizi: qui chiude la
-              sezione, per chi cerca una prestazione precisa. */}
-          <div className="service-index reveal">
-            <p className="label">Tutte le prestazioni</p>
-            <ul className="index-list">
-              {serviceIndex.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--surface" id="progetti">
-        <div className="container">
-          <SectionHead
-            label="Progetti"
-            title="Interventi seguiti sul territorio."
-          />
-          <ProjectGrid />
-        </div>
-      </section>
-
-      <section className="section" id="studio">
-        <div className="container">
-          <SectionHead label="Lo Studio" title="Un riferimento tecnico diretto." />
-          <StudioBlock />
-        </div>
-      </section>
-
-      {/* Il metodo stava nella pagina "Lo Studio": è la parte che spiega
-          come si lavora, quindi resta attaccata alla sezione sullo studio. */}
-      <section className="section section--surface">
-        <div className="container">
-          <SectionHead
-            label="Metodo"
-            title="Come si sviluppa un incarico."
-            text="Quattro fasi, con un punto di verifica alla fine di ciascuna: si procede alla successiva solo quando il quadro è chiaro."
-          />
-          <div className="method reveal">
-            {method.map((step) => (
-              <div key={step.num} className="method__step">
-                <span className="method__num">{step.num}</span>
-                <h3 className="method__title">{step.title}</h3>
-                <p className="method__text">{step.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <ContactSection />
-      <CompanySection />
-    </>
+    <picture className={`photo ${className}`}>
+      <source srcSet={`${base}.webp`} type="image/webp" />
+      <img
+        src={`${base}.${ext}`}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+        {...(eager && { fetchPriority: 'high' })}
+      />
+    </picture>
   )
 }
 
 /* ---------------------------------------------------------------------------
-   Blocchi condivisi fra home e pagine interne
+   Intro — cambia mentre si scorre
+   Una sezione alta tre schermi con un palcoscenico fisso: la testata
+   enorme atterra in alto a sinistra, entra la targa, poi il manifesto
+   riga per riga. Senza animazioni scroll-driven (o su telefono) è un
+   normale hero statico con gli stessi elementi.
    --------------------------------------------------------------------------- */
 
-function ProjectGrid() {
-  const [lead, ...rest] = projects
+function Plate() {
+  const ref = useRef(null)
+
+  const onMove = useCallback((event) => {
+    const el = ref.current
+    if (!el || event.pointerType !== 'mouse') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const rect = el.getBoundingClientRect()
+    const x = (event.clientX - rect.left) / rect.width - 0.5
+    const y = (event.clientY - rect.top) / rect.height - 0.5
+    el.style.setProperty('--tilt-x', `${(-y * 6).toFixed(2)}deg`)
+    el.style.setProperty('--tilt-y', `${(x * 8).toFixed(2)}deg`)
+  }, [])
+
+  const onLeave = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.removeProperty('--tilt-x')
+    el.style.removeProperty('--tilt-y')
+  }, [])
 
   return (
-    <div className="project-grid">
-      <article className="project project--lead reveal">
-        <figure className="project__figure">
-          <img src={lead.image} alt={lead.title} loading="lazy" />
-        </figure>
-        <div className="project__body">
-          <div className="project__meta">
-            <span className="is-category">{lead.category}</span>
-            <span>
-              {lead.location} · {lead.year}
-            </span>
-          </div>
-          <h3 className="project__title">{lead.title}</h3>
-          <p className="body-text">{lead.text}</p>
-        </div>
-      </article>
+    <div className="plate" ref={ref} onPointerMove={onMove} onPointerLeave={onLeave}>
+      <picture className="plate__picture">
+        <source srcSet="/images/hero-targa.webp" type="image/webp" />
+        <img
+          src="/images/hero-targa.png"
+          alt="La targa dello studio: Ing. Dario Donelli, ingegneria, architettura, ambiente, progettazione integrale e coordinata"
+          width="1489"
+          height="967"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+        />
+      </picture>
+    </div>
+  )
+}
 
-      {rest.map((project) => (
-        <article key={project.id} className="project reveal">
-          <figure className="project__figure">
-            <img src={project.image} alt={project.title} loading="lazy" />
-          </figure>
-          <div className="project__body">
-            <div className="project__meta">
-              <span className="is-category">{project.category}</span>
-              <span>
-                {project.location} · {project.year}
-              </span>
-            </div>
-            <h3 className="project__title">{project.title}</h3>
-            <p className="body-text">{project.text}</p>
+/** FOCUS: una competenza alla volta, a rotazione. */
+function Focus() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timer = window.setInterval(() => setIndex((i) => (i + 1) % serviceIndex.length), 3800)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  return (
+    <div className="focus" aria-live="polite">
+      <span className="focus__label">
+        <DMark />
+        Focus
+      </span>
+      <span className="focus__text" key={index}>
+        {serviceIndex[index]}
+      </span>
+      <span className="focus__count">
+        {String(index + 1).padStart(2, '0')} / {serviceIndex.length}
+      </span>
+    </div>
+  )
+}
+
+function Intro() {
+  const onNav = useAnchorNav()
+
+  return (
+    <section className="intro" id="top">
+      <div className="intro__stage">
+        <div className="container intro__grid">
+          <div className="intro__head">
+            <h1 className="masthead">
+              <span className="masthead__pre">Ing.</span>
+              <span className="masthead__name">Dario Donelli</span>
+            </h1>
+            <p className="infoline">
+              {infoline.map((item, i) => (
+                <Fragment key={item}>
+                  {i > 0 && <DMark />}
+                  <span>{item}</span>
+                </Fragment>
+              ))}
+            </p>
           </div>
-        </article>
+
+          <div className="intro__body">
+            <p className="manifesto">
+              {manifesto.map((line, i) => (
+                <span className="manifesto__line" key={line} style={{ '--i': i }}>
+                  {line}
+                </span>
+              ))}
+            </p>
+            <p className="lead intro__lead">
+              Studio tecnico di ingegneria a Rivalta sul Mincio. Un unico riferimento dalla
+              verifica di fattibilità alla chiusura del cantiere.
+            </p>
+            <div className="btn-row intro__actions">
+              <a className="btn btn--primary" href="#contatti" onClick={onNav}>
+                Parliamo del progetto
+              </a>
+              <a className="btn btn--secondary" href="#servizi" onClick={onNav}>
+                I servizi
+                <IconArrow />
+              </a>
+            </div>
+            <div className="intro__focus">
+              <Focus />
+            </div>
+          </div>
+
+          <figure className="intro__plate">
+            <Plate />
+            <figcaption className="intro__caption">
+              <span className="label">La targa dello studio</span>
+              <span>{studio.address}</span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FactsStrip() {
+  return (
+    <div className="facts-band">
+      <div className="container">
+        <dl className="facts">
+          {heroFacts.map((fact, i) => (
+            <div className="facts__item" key={fact.label} style={{ '--i': i }}>
+              <dt className="label">{fact.label}</dt>
+              <dd>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div className="strip">
+        <div className="container strip__inner">
+          {heroCompetences.map((item, index) => (
+            <Fragment key={item}>
+              {index > 0 && <DMark className="strip__sep" />}
+              <span className="strip__item">{item}</span>
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   01 Servizi
+   --------------------------------------------------------------------------- */
+
+function ServicesSection() {
+  const onNav = useAnchorNav()
+
+  return (
+    <section className="section" id="servizi">
+      <div className="container">
+        <SectionHead
+          id="servizi"
+          title="Tre ambiti di intervento, un unico interlocutore."
+          text="Lo studio copre il percorso completo di un intervento edilizio. In base alle esigenze si può attivare una singola prestazione oppure affidare l'intera gestione tecnica."
+        />
+
+        <div className="service-blocks">
+          {serviceAreas.map((area, i) => (
+            <article key={area.id} className={`service-block reveal${i % 2 === 1 ? ' service-block--flip' : ''}`}>
+              <figure className="service-block__media">
+                <Photo base={area.image} ext="png" alt={area.imageAlt} width="900" height="600" />
+              </figure>
+
+              <div className="service-block__copy">
+                <span className="service-block__num" aria-hidden="true">
+                  {area.num}
+                </span>
+                <h3 className="service-block__title">{area.title}</h3>
+                <p className="body-text">{area.text}</p>
+
+                <ul className="service-block__list reveal reveal-stagger">
+                  {area.items.map((item, j) => (
+                    <li key={item} style={{ '--i': j }}>
+                      <DMark />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <a className="link-arrow" href="#contatti" onClick={onNav}>
+                  Parliamo del progetto <IconArrow />
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="service-index reveal">
+          <div className="service-index__head">
+            <span className="label">Tutte le prestazioni</span>
+            <span className="service-index__count">{serviceIndex.length} voci</span>
+          </div>
+          <ol className="index-list reveal reveal-stagger">
+            {serviceIndex.map((item, i) => (
+              <li key={item} style={{ '--i': i }}>
+                <span className="index-list__num" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                {item}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   02 Progetti
+   --------------------------------------------------------------------------- */
+
+function ProjectsSection() {
+  const [lead, ...rest] = projects
+
+  const card = (project, isLead, i) => (
+    <article key={project.id} className={isLead ? 'project project--lead reveal' : 'project reveal'} style={{ '--i': i }}>
+      <figure className="project__figure">
+        <Photo base={project.image} alt={project.imageAlt} width="1600" height={isLead ? '1067' : '1200'} />
+      </figure>
+      <div className="project__body">
+        <div className="project__meta">
+          <span className="is-category">{project.category}</span>
+          <span>
+            {project.location} · {project.year}
+          </span>
+        </div>
+        <h3 className="project__title">{project.title}</h3>
+        <p className="body-text">{project.text}</p>
+      </div>
+    </article>
+  )
+
+  return (
+    <section className="section section--surface" id="progetti">
+      <div className="container">
+        <SectionHead
+          id="progetti"
+          title="Interventi seguiti sul territorio."
+          text="Residenziale, opere civili, recupero dell'esistente: tre ambiti in cui lo studio segue l'intervento dalla prima valutazione alla consegna."
+        />
+        <div className="project-grid">
+          {card(lead, true, 0)}
+          {rest.map((project, i) => card(project, false, i + 1))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   03 Lo Studio — colonna delle discipline, scheda tecnica, firma
+   --------------------------------------------------------------------------- */
+
+function Signature() {
+  return (
+    <div className="signature reveal">
+      <Logo className="signature__logo" />
+      <div className="signature__text">
+        <span className="signature__name">Dario Donelli</span>
+        <span className="label">Ingegnere · Rivalta sul Mincio</span>
+      </div>
+    </div>
+  )
+}
+
+function StudioSection() {
+  return (
+    <section className="section section--grid" id="studio">
+      <div className="container">
+        <SectionHead id="studio" title="Un riferimento tecnico diretto." />
+
+        <div className="studio-layout">
+          {/* La colonna verticale delle discipline: resta ferma mentre il
+              testo scorre e la voce "in lettura" si accende una alla volta. */}
+          <aside className="studio__rail">
+            <span className="label">Discipline</span>
+            <ol className="rail-list">
+              {disciplines.map((item, i) => (
+                <li key={item} style={{ '--i': i }}>
+                  <span className="rail-list__num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="rail-list__text">{item}</span>
+                </li>
+              ))}
+            </ol>
+          </aside>
+
+          <div className="studio__main">
+            <p className="studio__intro">
+              Dietro allo studio c&rsquo;è una persona sola: chi valuta il progetto è la
+              stessa che poi segue il cantiere.
+            </p>
+
+            <div className="studio__bio">
+              {profile.bio.map((paragraph) => (
+                <p className="body-text" key={paragraph.slice(0, 32)}>
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+
+            {/* Profilo tecnico impostato come scheda, non come paragrafo. */}
+            <div className="datasheet reveal">
+              <div className="datasheet__head">
+                <span className="label">Scheda tecnica</span>
+                <span className="datasheet__ref">
+                  {studio.name} <DMark /> Rev. {new Date().getFullYear()}
+                </span>
+              </div>
+              <dl className="datasheet__rows">
+                {profile.credentials.map((row, i) => (
+                  <div className="datasheet__row" key={row.label}>
+                    <span className="datasheet__num" aria-hidden="true">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <dt>{row.label}</dt>
+                    <dd>{row.value}</dd>
+                  </div>
+                ))}
+                <div className="datasheet__row">
+                  <span className="datasheet__num" aria-hidden="true">
+                    07
+                  </span>
+                  <dt>Sede</dt>
+                  <dd>{studio.address}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <Signature />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   04 Territorio — fotografia con punti di interesse e cartografia minima
+   --------------------------------------------------------------------------- */
+
+function Hotspots() {
+  const [open, setOpen] = useState(-1)
+
+  return (
+    <div className="hotspots">
+      {hotspots.map((spot, i) => (
+        <div
+          key={spot.title}
+          className={`hotspot${open === i ? ' is-open' : ''}${spot.x > 55 ? ' hotspot--flip' : ''}`}
+          style={{ '--x': `${spot.x}%`, '--y': `${spot.y}%` }}
+        >
+          <button
+            type="button"
+            className="hotspot__btn"
+            aria-expanded={open === i}
+            aria-controls={`hotspot-${i}`}
+            aria-label={spot.title}
+            onClick={() => setOpen(open === i ? -1 : i)}
+          >
+            <DMark />
+          </button>
+          <span className="hotspot__tip" id={`hotspot-${i}`} role="tooltip">
+            <strong>{spot.title}</strong>
+            {spot.text}
+          </span>
+        </div>
       ))}
     </div>
   )
 }
 
-function StudioBlock() {
-  return (
-    <div className="studio-grid reveal">
-      {/* In attesa di un ritratto del professionista, la targa dello studio:
-          fotografia reale, stesso rapporto 4:5 previsto per il ritratto. */}
-      <figure className="studio__portrait">
-        <picture>
-          <source srcSet="/images/studio-targa.webp" type="image/webp" />
-          <img
-            src="/images/studio-targa.jpg"
-            alt={`Targa dello studio di ${studio.name} in ${studio.address}`}
-            width="1200"
-            height="1800"
-            loading="lazy"
-          />
-        </picture>
-        <figcaption>
-          <span className="studio__portrait-name">{studio.name}</span>
-          <span className="label">{studio.role}</span>
-        </figcaption>
-      </figure>
+/* --- Cartografia ---
+   Proiezione equirettangolare con il parallelo di riferimento a 45.2°:
+   le distanze est-ovest sono scalate del coseno della latitudine, così
+   la carta è geometricamente corretta e non schiacciata. */
+const MAP = { w: 1200, h: 600, lng0: 10.3, lng1: 11.05, lat0: 45.335 }
+const COS_LAT = Math.cos((45.2 * Math.PI) / 180)
+MAP.lat1 = MAP.lat0 - ((MAP.lng1 - MAP.lng0) * COS_LAT * MAP.h) / MAP.w
+const KM_PER_DEG_LAT = 111.32
 
-      <div className="studio__copy">
-        <p className="lead">
-          Dietro allo studio c&rsquo;è una persona sola: chi valuta il progetto è la stessa
-          che poi segue il cantiere.
-        </p>
+const project = (lat, lng) => ({
+  x: ((lng - MAP.lng0) / (MAP.lng1 - MAP.lng0)) * MAP.w,
+  y: ((MAP.lat0 - lat) / (MAP.lat0 - MAP.lat1)) * MAP.h,
+})
+const kmToPx = (km) => (km / KM_PER_DEG_LAT / (MAP.lat0 - MAP.lat1)) * MAP.h
+const f = (n) => n.toFixed(1)
 
-        {profile.bio.map((paragraph) => (
-          <p className="body-text" key={paragraph.slice(0, 32)}>
-            {paragraph}
-          </p>
-        ))}
+/** Tracciato liscio per punti: curve quadratiche sui punti medi. */
+function smoothPath(points) {
+  if (points.length < 3) return points.map((p, i) => `${i ? 'L' : 'M'}${f(p.x)} ${f(p.y)}`).join(' ')
+  let d = `M${f(points[0].x)} ${f(points[0].y)}`
+  for (let i = 1; i < points.length - 1; i += 1) {
+    const mx = (points[i].x + points[i + 1].x) / 2
+    const my = (points[i].y + points[i + 1].y) / 2
+    d += ` Q${f(points[i].x)} ${f(points[i].y)} ${f(mx)} ${f(my)}`
+  }
+  const last = points[points.length - 1]
+  d += ` L${f(last.x)} ${f(last.y)}`
+  return d
+}
 
-        {/* Titoli e iscrizione all'albo: dati verificabili, tenuti distinti
-            dal testo discorsivo. */}
-        <dl className="credentials">
-          {profile.credentials.map((row) => (
-            <div className="credentials__item" key={row.label}>
-              <dt className="label">{row.label}</dt>
-              <dd>{row.value}</dd>
-            </div>
-          ))}
-        </dl>
+/** Tracciato chiuso liscio: come sopra, ma il giro si richiude su sé stesso. */
+function smoothClosed(points) {
+  const n = points.length
+  const mid = (i) => ({ x: (points[i % n].x + points[(i + 1) % n].x) / 2, y: (points[i % n].y + points[(i + 1) % n].y) / 2 })
+  let d = `M${f(mid(0).x)} ${f(mid(0).y)}`
+  for (let i = 1; i <= n; i += 1) {
+    const c = points[i % n]
+    const m = mid(i)
+    d += ` Q${f(c.x)} ${f(c.y)} ${f(m.x)} ${f(m.y)}`
+  }
+  return `${d}Z`
+}
 
-        <ul className="discipline-list">
-          {disciplines.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
+/** Coordinate in gradi e primi, come sulle carte. */
+function dms(value, axis) {
+  const abs = Math.abs(value)
+  const deg = Math.floor(abs)
+  const min = Math.round((abs - deg) * 60)
+  const hemi = axis === 'lat' ? (value >= 0 ? 'N' : 'S') : value >= 0 ? 'E' : 'O'
+  return `${deg}°${String(min).padStart(2, '0')}′ ${hemi}`
 }
 
 /**
- * Blocco recapiti. In home porta la propria intestazione; nella pagina
- * Contatti quella è già fornita dal PageHead, quindi va omessa per non
- * ripetere titolo e occhiello.
- *
- * I tre recapiti sono la sostanza della sezione: stanno in colonna, grandi
- * e cliccabili per intero, senza riquadri che li facciano competere con
- * altro. La fotografia dell'ingresso sta accanto e serve a riconoscere la
- * porta una volta arrivati in via Turati.
+ * Rosa dei venti da carta tecnica: due cerchi graduati con tacche ogni 10°,
+ * stella a otto punte con le punte divise a metà, bianco e nero, come
+ * nelle rose incise; i cardinali in italiano, il nord più lungo.
  */
-function ContactSection({ withHead = true }) {
+function CompassRose({ cx, cy, r }) {
+  const ticks = []
+  for (let deg = 0; deg < 360; deg += 5) {
+    const major = deg % 90 === 0
+    const mid = deg % 30 === 0
+    const inner = major ? r - 9 : mid ? r - 6 : r - 3.5
+    ticks.push(
+      <line
+        key={deg}
+        x1="0"
+        y1={f(-r)}
+        x2="0"
+        y2={f(-inner)}
+        transform={`rotate(${deg})`}
+        className={major ? 'rose__tick rose__tick--major' : 'rose__tick'}
+      />,
+    )
+  }
+
+  // Una punta: due metà, quella destra piena e quella sinistra vuota.
+  const point = (length, width, key, angle) => (
+    <g key={key} transform={`rotate(${angle})`}>
+      <path d={`M0 ${f(-length)}L${f(width)} 0L0 0Z`} className="rose__half rose__half--ink" />
+      <path d={`M0 ${f(-length)}L${f(-width)} 0L0 0Z`} className="rose__half" />
+    </g>
+  )
+
+  const cardinal = [
+    ['N', 0, -r - 10, 'middle'],
+    ['E', r + 11, 4, 'start'],
+    ['S', 0, r + 17, 'middle'],
+    ['O', -r - 11, 4, 'end'],
+  ]
+
+  return (
+    <g className="rose" transform={`translate(${f(cx)} ${f(cy)})`} aria-hidden="true">
+      <circle r={f(r + 3)} className="rose__disc" />
+      <circle r={f(r)} className="rose__ring" />
+      <circle r={f(r - 12)} className="rose__ring rose__ring--inner" />
+      <g>{ticks}</g>
+      {/* Intercardinali, più corte e sotto */}
+      {[45, 135, 225, 315].map((a) => point(r - 18, 3.2, `i${a}`, a))}
+      {/* Cardinali: il nord si allunga fin quasi al bordo */}
+      {[90, 180, 270].map((a) => point(r - 8, 4.6, `c${a}`, a))}
+      {point(r - 1, 4.6, 'north', 0)}
+      <circle r="3.2" className="rose__hub" />
+      {cardinal.map(([letter, x, y, anchor]) => (
+        <text key={letter} x={f(x)} y={f(y)} textAnchor={anchor} className={letter === 'N' ? 'rose__label rose__label--n' : 'rose__label'}>
+          {letter}
+        </text>
+      ))}
+    </g>
+  )
+}
+
+function MiniMap() {
+  const river = mincio.map(([lat, lng]) => project(lat, lng))
+  const riverPath = smoothPath(river)
+  // Il parco accompagna il fiume da Goito (indice 3) ai laghi (indice 9).
+  const parkPath = smoothPath(river.slice(3, 10))
+  const studioPt = project(45.180182, 10.677598)
+  const rings = [5, 10, 15, 20]
+
+  // Reticolo ogni 0,1°
+  const meridians = []
+  for (let lng = Math.ceil(MAP.lng0 * 10) / 10; lng <= MAP.lng1; lng = Math.round((lng + 0.1) * 10) / 10) {
+    meridians.push(lng)
+  }
+  const parallels = []
+  for (let lat = Math.ceil(MAP.lat1 * 10) / 10; lat <= MAP.lat0; lat = Math.round((lat + 0.1) * 10) / 10) {
+    parallels.push(lat)
+  }
+
+  const scaleKm = [0, 5, 10, 15]
+  const scaleX = 470
+  const scaleY = MAP.h - 44
+  // Cartiglio della sede: in alto a destra del punto, dove la carta è libera.
+  const callout = project(45.262, 10.722)
+
+  return (
+    <svg
+      className="chart"
+      viewBox={`0 0 ${MAP.w} ${MAP.h}`}
+      role="img"
+      aria-label="Carta schematica della provincia di Mantova: la sede dello studio a Rivalta sul Mincio, il fiume Mincio con i laghi di Mantova, i comuni attorno e i raggi di 5, 10, 15 e 20 chilometri dalla sede"
+    >
+      <defs>
+        <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="6" className="chart__hatch" />
+        </pattern>
+        <pattern id="water" width="8" height="8" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="4" x2="8" y2="4" className="chart__water" />
+        </pattern>
+        <clipPath id="frame">
+          <rect x="0" y="0" width={MAP.w} height={MAP.h} />
+        </clipPath>
+      </defs>
+
+      <rect x="0" y="0" width={MAP.w} height={MAP.h} className="chart__bg" />
+
+      <g clipPath="url(#frame)">
+        {/* Reticolo geografico */}
+        <g className="chart__grid">
+          {meridians.map((lng) => {
+            const { x } = project(MAP.lat0, lng)
+            return <line key={`m${lng}`} x1={f(x)} y1="0" x2={f(x)} y2={MAP.h} />
+          })}
+          {parallels.map((lat) => {
+            const { y } = project(lat, MAP.lng0)
+            return <line key={`p${lat}`} x1="0" y1={f(y)} x2={MAP.w} y2={f(y)} />
+          })}
+        </g>
+
+        {/* Raggi dalla sede */}
+        <g className="chart__rings">
+          {rings.map((km) => (
+            <g key={km}>
+              <circle cx={f(studioPt.x)} cy={f(studioPt.y)} r={f(kmToPx(km))} />
+              <text x={f(studioPt.x - kmToPx(km) * 0.707 - 4)} y={f(studioPt.y - kmToPx(km) * 0.707 - 4)} textAnchor="end">
+                {km} km
+              </text>
+            </g>
+          ))}
+        </g>
+
+        {/* Parco del Mincio, fiume, laghi */}
+        <path d={parkPath} className="chart__park" />
+        <path d={parkPath} className="chart__park-hatch" />
+        {lakes.map((poly, i) => (
+          <path key={i} d={smoothClosed(poly.map(([lat, lng]) => project(lat, lng)))} className="chart__lake" />
+        ))}
+        <path d={riverPath} className="chart__river-casing" />
+        <path d={riverPath} className="chart__river" />
+        <text className="chart__toponym" transform={`translate(${f(river[1].x - 10)} ${f(river[1].y + 46)}) rotate(-82)`}>
+          fiume Mincio
+        </text>
+        <text className="chart__toponym" x={f(project(45.208, 10.702).x)} y={f(project(45.208, 10.702).y)}>
+          Parco del Mincio
+        </text>
+        <text className="chart__toponym chart__toponym--small" x={f(project(45.147, 10.716).x)} y={f(project(45.147, 10.716).y)}>
+          laghi di Mantova
+        </text>
+
+        {/* Comuni */}
+        {places.map((place) => {
+          if (place.studio) return null
+          const { x, y } = project(place.lat, place.lng)
+          const side = place.label || (x > MAP.w - 130 ? 'left' : 'right')
+          const anchor = side === 'left' ? 'end' : side === 'above' ? 'middle' : 'start'
+          const dx = side === 'left' ? -9 : side === 'above' ? 0 : 9
+          const dy = side === 'above' ? -8 : 3.5
+          if (place.capital) {
+            return (
+              <g key={place.name} className="chart__capital">
+                <circle cx={f(x)} cy={f(y)} r="7" className="chart__capital-ring" />
+                <circle cx={f(x)} cy={f(y)} r="3.2" className="chart__capital-dot" />
+                <text x={f(x + 13)} y={f(y + 4)} className="chart__label chart__label--capital">
+                  {place.name.toUpperCase()}
+                </text>
+              </g>
+            )
+          }
+          return (
+            <g key={place.name}>
+              <rect x={f(x - 2.5)} y={f(y - 2.5)} width="5" height="5" className="chart__town" />
+              <text x={f(x + dx)} y={f(y + dy)} textAnchor={anchor} className="chart__label">
+                {place.name}
+              </text>
+            </g>
+          )
+        })}
+
+        {/* Sede dello studio: marcatore a D, linea di richiamo, cartiglio */}
+        <g className="chart__studio">
+          <circle cx={f(studioPt.x)} cy={f(studioPt.y)} r="16" className="chart__halo" />
+          <path d={`M${f(studioPt.x - 6)} ${f(studioPt.y - 6)}h6a6 6 0 0 1 0 12h-6z`} className="chart__d" />
+          <path d={`M${f(studioPt.x + 10)} ${f(studioPt.y - 10)}L${f(callout.x)} ${f(callout.y + 76)}`} className="chart__leader" />
+          <g transform={`translate(${f(callout.x)} ${f(callout.y)})`}>
+            <rect x="0" y="0" width="212" height="76" className="chart__callout" />
+            <text x="12" y="20" className="chart__callout-label">
+              Sede dello studio
+            </text>
+            <text x="12" y="40" className="chart__callout-title">
+              Rivalta sul Mincio
+            </text>
+            <text x="12" y="60" className="chart__callout-coords">
+              {dms(45.180182, 'lat')} · {dms(10.677598, 'lng')}
+            </text>
+          </g>
+        </g>
+      </g>
+
+      {/* Etichette del reticolo sui bordi */}
+      <g className="chart__grid-labels">
+        {meridians.map((lng) => {
+          const { x } = project(MAP.lat0, lng)
+          return (
+            <text key={`ml${lng}`} x={f(x + 3)} y="12">
+              {dms(lng, 'lng')}
+            </text>
+          )
+        })}
+        {parallels.map((lat) => {
+          const { y } = project(lat, MAP.lng0)
+          return (
+            <text key={`pl${lat}`} x={MAP.w - 6} y={f(y - 4)} textAnchor="end">
+              {dms(lat, 'lat')}
+            </text>
+          )
+        })}
+      </g>
+
+      {/* Scala grafica a blocchi alterni */}
+      <g className="chart__scale" transform={`translate(${scaleX} ${scaleY})`}>
+        {scaleKm.slice(0, -1).map((km, i) => (
+          <rect
+            key={km}
+            x={f(kmToPx(km))}
+            y="0"
+            width={f(kmToPx(scaleKm[i + 1]) - kmToPx(km))}
+            height="6"
+            className={i % 2 ? 'chart__scale-block chart__scale-block--alt' : 'chart__scale-block'}
+          />
+        ))}
+        {scaleKm.map((km) => (
+          <text key={`t${km}`} x={f(kmToPx(km))} y="20" textAnchor="middle">
+            {km}
+          </text>
+        ))}
+        <text x={f(kmToPx(scaleKm[scaleKm.length - 1]) + 10)} y="20">
+          km
+        </text>
+      </g>
+
+      <CompassRose cx={MAP.w - 84} cy={188} r={50} />
+
+      {/* Legenda */}
+      <g className="chart__legend" transform="translate(24 462)">
+        <rect x="0" y="0" width="212" height="94" className="chart__legend-box" />
+        <path d="M14 14h5a5 5 0 0 1 0 10h-5z" className="chart__d" />
+        <text x="32" y="23">
+          Sede dello studio
+        </text>
+        <circle cx="16.5" cy="41" r="5" className="chart__capital-ring" />
+        <circle cx="16.5" cy="41" r="2.4" className="chart__capital-dot" />
+        <text x="32" y="45">
+          Capoluogo di provincia
+        </text>
+        <rect x="14" y="58" width="5" height="5" className="chart__town" />
+        <text x="32" y="64">
+          Comune
+        </text>
+        <rect x="12" y="74" width="10" height="8" className="chart__park-hatch" />
+        <text x="32" y="82">
+          Parco del Mincio · raggi dalla sede
+        </text>
+      </g>
+    </svg>
+  )
+}
+
+function TerritorySection() {
+  const scroller = useRef(null)
+
+  // Su schermo stretto la carta scorre in orizzontale: si parte centrati
+  // sulla sede, non sul bordo ovest della provincia.
+  useEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    el.scrollLeft = (el.scrollWidth - el.clientWidth) * 0.48
+  }, [])
+
+  return (
+    <section className="section section--surface" id="territorio">
+      <div className="container">
+        <SectionHead
+          id="territorio"
+          title="Sede a Rivalta sul Mincio, attività in tutta la provincia."
+          text="Lo studio ha sede alle porte del Parco del Mincio e opera nel territorio mantovano e nei comuni limitrofi. Sulla fotografia, i punti raccontano l'ingresso."
+        />
+      </div>
+
+      {/* Fotografia a tutto schermo che viene ritagliata alla griglia mentre
+          si scorre; la cartografia le si sovrappone nell'angolo. */}
+      <div className="terr">
+        <figure className="terr__photo">
+          <Photo
+            base="/images/studio-esterno"
+            alt="L'edificio d'angolo che ospita lo studio, con la vetrina e l'ingresso su strada"
+            width="1536"
+            height="1024"
+          />
+          <Hotspots />
+        </figure>
+      </div>
+
+      <div className="container">
+        <div className="terr__map reveal">
+          <div className="terr__map-head">
+            <span className="label">Cartografia</span>
+            <span className="terr__map-title">Provincia di Mantova</span>
+            <span className="terr__map-note">Carta schematica · reticolo 0,1° · equirettangolare, parallelo 45°12′</span>
+          </div>
+          <div className="terr__map-scroll" ref={scroller}>
+            <MiniMap />
+          </div>
+          <p className="terr__map-hint" aria-hidden="true">
+            Scorri la carta in orizzontale <IconArrow />
+          </p>
+        </div>
+
+        <div className="places reveal">
+          <span className="label">Area di riferimento</span>
+          <ul className="places__list">
+            {places.filter((place) => place.near).map((place, i) => (
+              <Fragment key={place.name}>
+                {i > 0 && (
+                  <li className="places__sep" aria-hidden="true">
+                    <DMark />
+                  </li>
+                )}
+                <li className={place.studio ? 'is-studio' : undefined}>{place.name}</li>
+              </Fragment>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   05 Metodo
+   --------------------------------------------------------------------------- */
+
+function MethodSection() {
+  return (
+    <section className="section" id="metodo">
+      <div className="container">
+        <SectionHead
+          id="metodo"
+          title="Come si sviluppa un incarico."
+          text="Quattro fasi, con un punto di verifica alla fine di ciascuna: si procede alla successiva solo quando il quadro è chiaro."
+        />
+        <ol className="method reveal reveal-stagger">
+          {method.map((step, i) => (
+            <li key={step.num} className="method__step" style={{ '--i': i }}>
+              <span className="method__num" aria-hidden="true">
+                {step.num}
+              </span>
+              <h3 className="method__title">{step.title}</h3>
+              <p className="method__text">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   06 Contatti — il blocco nero della pagina
+   --------------------------------------------------------------------------- */
+
+function ContactSection() {
   return (
     <section className="section contact" id="contatti">
       <div className="container">
-        {withHead && (
-          <SectionHead
-            label="Contatti"
-            title="Parliamo del suo progetto."
-            text="Il primo contatto serve a capire se e come posso essere utile. Una telefonata o una mail sono sufficienti per fissare un sopralluogo."
-          />
-        )}
+        <SectionHead
+          id="contatti"
+          title="Parliamo del progetto."
+          text="Il primo contatto serve a capire se e come posso essere utile. Una telefonata o una mail sono sufficienti per fissare un sopralluogo."
+        />
 
         <div className="contact-grid">
-          <ul className="contact-list reveal">
-            <li className="contact-item">
+          <ul className="contact-list reveal reveal-stagger">
+            <li className="contact-item" style={{ '--i': 0 }}>
               <a className="contact-item__link" href={studio.phoneHref}>
-                <span className="label">Telefono</span>
-                <span className="contact-item__value">{studio.phoneDisplay}</span>
-                <span className="contact-item__note">Risponde direttamente lo studio</span>
+                <span className="contact-item__icon">
+                  <IconPhone />
+                </span>
+                <span className="contact-item__text">
+                  <span className="label">Telefono</span>
+                  <span className="contact-item__value">{studio.phoneDisplay}</span>
+                  <span className="contact-item__note">Risponde direttamente lo studio</span>
+                </span>
               </a>
             </li>
-
-            <li className="contact-item">
+            <li className="contact-item" style={{ '--i': 1 }}>
               <a className="contact-item__link" href={studio.emailHref}>
-                <span className="label">Email</span>
-                <span className="contact-item__value">{studio.email}</span>
-                <span className="contact-item__note">Descriva l&rsquo;immobile e cosa ha in mente</span>
+                <span className="contact-item__icon">
+                  <IconMail />
+                </span>
+                <span className="contact-item__text">
+                  <span className="label">Email</span>
+                  <span className="contact-item__value">{studio.email}</span>
+                  <span className="contact-item__note">Descriva l&rsquo;immobile e cosa ha in mente</span>
+                </span>
               </a>
             </li>
-
-            <li className="contact-item">
-              <a
-                className="contact-item__link"
-                href={studio.mapsHref}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="label">Studio</span>
-                <span className="contact-item__value">{studio.address}</span>
-                <span className="contact-item__note">
-                  All&rsquo;angolo tra via Turati e vicolo Zibramonda
+            <li className="contact-item" style={{ '--i': 2 }}>
+              <a className="contact-item__link" href={studio.mapsHref} target="_blank" rel="noreferrer">
+                <span className="contact-item__icon">
+                  <IconPin />
+                </span>
+                <span className="contact-item__text">
+                  <span className="label">Studio</span>
+                  <span className="contact-item__value">
+                    Via Filippo Turati, 1<br />
+                    46040 Rivalta sul Mincio (MN)
+                  </span>
+                  <span className="contact-item__note">All&rsquo;angolo tra via Turati e vicolo Zibramonda</span>
                 </span>
               </a>
             </li>
           </ul>
 
-          <figure className="contact__photo reveal">
-            <picture>
-              <source srcSet="/images/studio-esterno.webp" type="image/webp" />
-              <img
-                src="/images/studio-esterno.jpg"
-                alt="L'edificio d'angolo che ospita lo studio, con la vetrina e l'ingresso su strada"
-                width="1800"
-                height="1200"
-                loading="lazy"
-              />
-            </picture>
-          </figure>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ---------------------------------------------------------------------------
-   Pagine interne
-   --------------------------------------------------------------------------- */
-
-
-
-
-
-/**
- * Dati societari e canali di fatturazione elettronica. Sezione informativa,
- * volutamente sobria: sono dati di trasparenza, non materiale promozionale.
- * Niente riquadro né cornice: in fondo alla pagina devono restare leggibili
- * senza chiedere attenzione ai recapiti, che sono ciò che serve davvero.
- */
-function CompanySection() {
-  return (
-    <section className="section--tight company" id="dati-societari">
-      <div className="container">
-        <div className="company-head reveal">
-          <span className="label">Dati societari</span>
-          <p className="company-head__name">{company.legalName}</p>
-        </div>
-
-        <dl className="company-grid reveal">
-          {companyDetails.map((row) => (
-            <div className="company-item" key={row.label}>
-              <dt className="label">{row.label}</dt>
-              <dd className="company-item__value">{row.value}</dd>
-            </div>
-          ))}
-
-          <div className="company-item">
-            <dt className="label">PEC</dt>
-            <dd>
-              <a className="company-item__value" href={company.pecHref}>
-                {company.pec}
+          <div className="contact__map-col reveal">
+            <a
+              className="map"
+              href={studio.mapsHref}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri su Google Maps la posizione dello studio: ${studio.address}`}
+            >
+              <span className="map__crop" aria-hidden="true">
+                <iframe
+                  className="map__frame"
+                  src={mapEmbedSrc}
+                  title="Mappa della posizione dello studio a Rivalta sul Mincio"
+                  loading="lazy"
+                  tabIndex={-1}
+                />
+              </span>
+              <span className="map__pin" aria-hidden="true">
+                <DMark />
+              </span>
+              <span className="map__cta" aria-hidden="true">
+                Itinerario su Google Maps
+                <IconExternal />
+              </span>
+            </a>
+            <p className="map__note">
+              Cartografia di dettaglio{' '}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+                © OpenStreetMap
               </a>
-            </dd>
+            </p>
           </div>
-        </dl>
+        </div>
       </div>
     </section>
   )
 }
 
 /* ---------------------------------------------------------------------------
-   Footer
+   Footer — impostato come la testata di una tavola: celle, etichette,
+   revisione. Senza fingere di essere un cartiglio.
    --------------------------------------------------------------------------- */
 
 function Footer() {
   const year = new Date().getFullYear()
+  const onNav = useAnchorNav()
+  const updated = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date())
 
   return (
     <footer className="footer">
-      {/* Fascia principale: il footer è l'ultimo punto in cui chi legge
-          può agire, quindi contatti e mappa hanno più peso dei link. */}
-      <div className="container footer__main">
-        <div className="footer__col footer__col--brand">
-          <p className="footer__name">{studio.name}</p>
-          <span className="footer__role">{studio.role}</span>
-          <p className="footer__text">
-            Studio tecnico di ingegneria a Rivalta sul Mincio. Progettazione, strutture,
-            sicurezza e direzione lavori per privati, imprese e committenze pubbliche.
-          </p>
-          <p className="footer__albo">
-            Ordine degli Ingegneri di Mantova, n.&nbsp;1495 — settore a) civile e ambientale
-          </p>
-        </div>
+      <div className="container">
+        <div className="titleblock">
+          {/* Marchio e indirizzo composti come sulla targa. */}
+          <div className="tb tb--brand">
+            <Logo className="tb__logo" />
+            <div className="tb__brand-copy">
+              <span className="tb__name">{studio.name}</span>
+              <span className="tb__role">Ingegneria · Architettura · Ambiente</span>
+            </div>
+            <p className="address-mark">
+              <span>Via Filippo Turati 1</span>
+              <span>46040 Rivalta sul Mincio</span>
+              <span>Mantova · Italia</span>
+            </p>
+          </div>
 
-        <div className="footer__col">
-          <h2 className="footer__title">Contatti</h2>
-          <ul className="footer__list">
-            <li className="footer__item">
-              <IconPhone className="footer__icon" />
-              <a className="footer__link" href={studio.phoneHref}>
-                {studio.phoneDisplay}
-              </a>
-            </li>
-            <li className="footer__item">
-              <IconMail className="footer__icon" />
-              <a className="footer__link footer__link--break" href={studio.emailHref}>
-                {studio.email}
-              </a>
-            </li>
-            <li className="footer__item">
-              <IconPin className="footer__icon" />
-              {/* Le due righe sono blocchi distinti e non un <br>: così lo
-                  screen reader non legge "Turati, 1" e "46040" di seguito. */}
-              <a
-                className="footer__link footer__link--address"
-                href={studio.mapsHref}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span>Via Filippo Turati, 1</span>
-                <span>46040 Rivalta sul Mincio (MN)</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div className="footer__col">
-          <h2 className="footer__title">Navigazione</h2>
-          <ul className="footer__list">
-            {navItems.map((item) => (
-              <li className="footer__item" key={item.id}>
-                <a className="footer__link" href={`#${item.id}`}>
-                  {item.label}
+          <div className="tb">
+            <span className="tb__label">Recapiti</span>
+            <ul className="tb__list">
+              <li>
+                <a href={studio.phoneHref}>{studio.phoneDisplay}</a>
+              </li>
+              <li>
+                <a className="tb__break" href={studio.emailHref}>
+                  {studio.email}
                 </a>
               </li>
-            ))}
-          </ul>
+              <li>
+                <a href={studio.mapsHref} target="_blank" rel="noreferrer">
+                  Itinerario <IconExternal className="tb__ext" />
+                </a>
+              </li>
+            </ul>
+          </div>
 
-        </div>
+          <div className="tb">
+            <span className="tb__label">Iscrizione</span>
+            <ul className="tb__list">
+              <li>Ordine degli Ingegneri della Provincia di Mantova</li>
+              <li>n. 1495 · dal 24 maggio 2010</li>
+              <li>Settore a) civile e ambientale</li>
+            </ul>
+          </div>
 
-        {/* Mini-mappa. L'iframe è decorativo, caricato in lazy e inerte: il
-            click cade sempre sul link, che apre l'itinerario su Google Maps.
-            Il riquadro ritaglia i controlli di zoom e la barra di OpenStreetMap,
-            perciò l'attribuzione richiesta dalla licenza è resa qui sotto. */}
-        <div className="footer__col footer__col--map">
-          <h2 className="footer__title">Dove siamo</h2>
-          <a
-            className="footer__map"
-            href={studio.mapsHref}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Apri su Google Maps la posizione dello studio: ${studio.address}`}
-          >
-            <span className="footer__map-crop" aria-hidden="true">
-              <iframe
-                className="footer__map-frame"
-                src={mapEmbedSrc}
-                title="Mappa della posizione dello studio a Rivalta sul Mincio"
-                loading="lazy"
-                tabIndex={-1}
-              />
-            </span>
-            <span className="footer__map-veil" aria-hidden="true" />
-            <span className="footer__map-cta" aria-hidden="true">
-              <IconPin className="footer__map-cta-icon" />
-              Apri in Google Maps
-              <IconExternal className="footer__map-cta-icon" />
-            </span>
-          </a>
-          <p className="footer__map-note">
-            Rivalta sul Mincio, alle porte del Parco del Mincio. Cartografia{' '}
-            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-              © OpenStreetMap
-            </a>
-          </p>
-        </div>
-      </div>
+          <div className="tb">
+            <span className="tb__label">Sezioni</span>
+            <ul className="tb__list tb__list--nav">
+              {sections.map((item) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`} onClick={onNav}>
+                    <span className="tb__num">{item.num}</span>
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Dati societari: informazioni obbligatorie ex art. 2250 c.c., che
-          devono comparire su ogni pagina. */}
-      <div className="footer__company">
-        <div className="container footer__company-inner">
-          <h2 className="footer__company-name">{company.legalName}</h2>
-          <dl className="footer__company-data">
-            <div className="footer__company-row">
-              <dt>Sede legale</dt>
-              <dd>{company.address}</dd>
-            </div>
-            <div className="footer__company-row">
-              <dt>P. IVA e C.F.</dt>
-              <dd>{company.vat}</dd>
-            </div>
-            <div className="footer__company-row">
-              <dt>REA</dt>
-              <dd>{company.rea}</dd>
-            </div>
-            <div className="footer__company-row">
-              <dt>Capitale sociale</dt>
-              <dd>{company.shareCapital}</dd>
-            </div>
-            <div className="footer__company-row">
-              <dt>PEC</dt>
-              <dd>
-                <a href={company.pecHref}>{company.pec}</a>
-              </dd>
-            </div>
-            <div className="footer__company-row">
-              <dt>Codice SDI</dt>
-              <dd>{company.sdi}</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
+          <div className="tb tb--company">
+            <span className="tb__label">Dati societari</span>
+            <p className="tb__company-name">{company.legalName}</p>
+            <dl className="tb__company">
+              {companyDetails.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
+              <div>
+                <dt>PEC</dt>
+                <dd>
+                  <a className="tb__break" href={company.pecHref}>
+                    {company.pec}
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </div>
 
-      <div className="footer__bar">
-        <div className="container footer__bar-inner">
-          <span className="footer__copy">
-            © {year} {studio.name}
-          </span>
-
-          {/* Le pagine legali non sono ancora disponibili: i collegamenti
-              vanno attivati quando i testi saranno forniti dal cliente. */}
-          <span className="footer__legal">
-            <span>Privacy e cookie policy in preparazione</span>
-          </span>
-
-          <span className="footer__credit">
-            Sito di{' '}
-            <a href="https://albertopecchini.it/" target="_blank" rel="noreferrer">
-              Alberto Pecchini
-            </a>
-          </span>
+          <div className="tb tb--meta">
+            <div>
+              <span className="tb__label">Aggiornamento</span>
+              <span className="tb__value">{updated}</span>
+            </div>
+            <div>
+              <span className="tb__label">Note legali</span>
+              <span className="tb__value">Privacy e cookie policy in preparazione</span>
+            </div>
+            <div>
+              <span className="tb__label">Sito</span>
+              <span className="tb__value">
+                <a href="https://albertopecchini.it/" target="_blank" rel="noreferrer">
+                  Alberto Pecchini
+                </a>
+              </span>
+            </div>
+            <div>
+              <span className="tb__label">Copyright</span>
+              <span className="tb__value">
+                © {year} {studio.name}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
@@ -976,12 +1485,6 @@ function Footer() {
    Composizione
    --------------------------------------------------------------------------- */
 
-/**
- * Il sito è una pagina sola. I vecchi percorsi (/servizi, /progetti…)
- * restano validi come collegamenti: chi arriva da un segnalibro o da un
- * risultato di ricerca viene portato alla sezione corrispondente invece
- * di trovare un 404.
- */
 const legacyPaths = {
   '/servizi': 'servizi',
   '/progetti': 'progetti',
@@ -990,11 +1493,9 @@ const legacyPaths = {
 }
 
 function Layout() {
-  useReveal([])
+  useReveal()
+  const active = useScrollSpy(sectionIds)
 
-  // All'arrivo: un vecchio percorso o un hash portano alla sezione giusta.
-  // Si attende un frame perché le immagini sopra la sezione non abbiano
-  // ancora spostato il punto di arrivo.
   useEffect(() => {
     const path = window.location.pathname.replace(/\/$/, '')
     const target = legacyPaths[path] || window.location.hash.slice(1)
@@ -1002,14 +1503,10 @@ function Layout() {
       window.history.replaceState(null, '', `/#${legacyPaths[path]}`)
     }
     if (!target) return
-
     const frame = window.requestAnimationFrame(() => {
       const el = document.getElementById(target)
       if (!el) return
-      window.scrollTo({
-        top: el.getBoundingClientRect().top + window.scrollY - 96,
-        behavior: 'auto',
-      })
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: 'auto' })
     })
     return () => window.cancelAnimationFrame(frame)
   }, [])
@@ -1020,10 +1517,21 @@ function Layout() {
         Salta al contenuto
       </a>
 
-      <Header />
+      <div className="progress" aria-hidden="true" />
+
+      <Header active={active} />
+      <SideRail />
+      <Corner active={active} />
 
       <main className="site-main" id="contenuto">
-        <HomePage />
+        <Intro />
+        <FactsStrip />
+        <ServicesSection />
+        <ProjectsSection />
+        <StudioSection />
+        <TerritorySection />
+        <MethodSection />
+        <ContactSection />
       </main>
 
       <Footer />

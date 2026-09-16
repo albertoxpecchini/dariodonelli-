@@ -1,16 +1,25 @@
-# React + Vite
+# Sito — Ing. Dario Donelli
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Sito dello studio tecnico dell'Ing. Dario Donelli, Rivalta sul Mincio (MN).
+Pagina singola in React + Vite, identità in bianco e nero ripresa dalla targa
+dello studio.
 
-Currently, two official plugins are available:
+## Comandi
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev       # sviluppo su http://localhost:5173
+npm run build     # produzione in dist/
+npm run preview   # anteprima della build
+npm run lint      # oxlint
+```
 
-## React Compiler
+## Struttura
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `src/content.js` — tutti i testi e i dati (recapiti, servizi, progetti, albo)
+- `src/App.jsx` — componenti della pagina
+- `src/index.css` — token di design (colori, tipografia, spazio)
+- `src/App.css` — stili dei componenti
+- `public/images/` — fotografie (jpg + webp); le foto `14092026 (*).JPG` sono gli originali
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Il deploy è su Vercel (`vercel.json` reindirizza ogni percorso a `index.html`).

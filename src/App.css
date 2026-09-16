@@ -1,7 +1,12 @@
 /* ==========================================================================
    Ing. Dario Donelli — Studio Tecnico
-   Foglio di stile principale. I colori, la tipografia e lo spazio arrivano
-   dai token definiti in index.css: qui non si dichiarano valori grezzi.
+   Foglio di stile principale. Colori, tipografia e spazio arrivano dai token
+   definiti in index.css: qui non si dichiarano valori grezzi.
+
+   Il riferimento visivo è la targa dello studio: incisione nera su metallo
+   chiaro, filetti sottili, maiuscoletto spaziato. Le fotografie sono tutte
+   in bianco e nero. Un solo dettaglio ricorre ovunque: la "D" geometrica
+   del logo, che fa da punto, separatore, marcatore e cursore.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -16,16 +21,14 @@
 }
 
 .section {
+  --bg: var(--c-page);
+  position: relative;
   padding-block: var(--section-y);
 }
 
-.section--tight {
-  padding-block: calc(var(--section-y) * 0.62);
-}
-
 .section--surface {
+  --bg: var(--c-surface);
   background: var(--c-surface);
-  border-block: 1px solid var(--c-line);
 }
 
 .site-main {
@@ -49,22 +52,39 @@
   top: var(--s-4);
 }
 
+/* Tutte le fotografie del sito sono in bianco e nero. */
+.photo {
+  display: block;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: grayscale(1) contrast(1.04);
+}
+
+/* La D minima */
+.dmark {
+  width: 0.7em;
+  height: 0.7em;
+  flex: none;
+  vertical-align: -0.05em;
+}
+
+/* Cursore a forma di D sugli elementi "da toccare". */
+.plate,
+.hotspot__btn,
+.terr__map {
+  cursor:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M6 4h9a10 10 0 0 1 0 20H6z' fill='white' stroke='black' stroke-width='2'/></svg>")
+      14 14,
+    pointer;
+}
+
 /* --------------------------------------------------------------------------
    2. Tipografia
    -------------------------------------------------------------------------- */
-
-.display {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--fs-3xl);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-display);
-  color: var(--c-ink);
-  /* Fraunces è un'optical-size font: a corpo grande si stringe. */
-  font-variation-settings: 'opsz' 120;
-  text-wrap: balance;
-}
 
 .headline {
   margin: 0;
@@ -74,21 +94,10 @@
   line-height: var(--lh-snug);
   letter-spacing: var(--ls-display);
   color: var(--c-ink);
-  font-variation-settings: 'opsz' 72;
+  font-variation-settings: 'opsz' 96;
   text-wrap: balance;
 }
 
-.subhead {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--fs-xl);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-/* Etichetta tecnica: l'unico posto in cui si usa il maiuscoletto spaziato. */
 .label {
   display: block;
   margin: 0;
@@ -98,10 +107,6 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--c-muted);
-}
-
-.label--accent {
-  color: var(--c-accent);
 }
 
 .lead {
@@ -122,29 +127,63 @@
   margin-top: var(--s-4);
 }
 
-/* Filo sottile sopra i titoli di sezione: segna il ritmo editoriale. */
+/* --- Intestazione di sezione ---
+   Il filetto va da bordo a bordo dello schermo: è il filo che attraversa
+   tutta la pagina. Il numero siede sul filo, dentro un riquadro con il
+   fondo della sezione, come una quota su una linea di misura. */
 .section-head {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--c-line-strong);
-  margin-bottom: var(--s-8);
+  position: relative;
+  display: grid;
+  gap: var(--s-5);
+  padding-top: var(--s-6);
+  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+
+.section-head::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  height: 1px;
+  transform: translateX(-50%);
+  background: var(--c-ink);
 }
 
 .section-head__meta {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-4);
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.section-head__index {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-50%);
+  padding: 3px 10px;
+  border: 1px solid var(--c-ink);
+  background: var(--bg, var(--c-page));
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-ink);
+}
+
+.section-head__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: var(--s-4) clamp(2rem, 5vw, 4rem);
+  align-items: end;
 }
 
 .section-head .lead {
-  max-width: 54ch;
+  max-width: 46ch;
 }
 
 /* --------------------------------------------------------------------------
-   3. Azioni — pulsanti e link
+   3. Azioni
    -------------------------------------------------------------------------- */
 
 .btn {
@@ -152,19 +191,31 @@
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  min-height: 48px;
+  min-height: 50px;
   padding: 0 var(--s-6);
   border: 1px solid transparent;
   border-radius: var(--radius);
   font-family: var(--font-body);
   font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
   transition:
     background-color var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     color var(--dur) var(--ease);
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  transition: transform var(--dur) var(--ease);
+}
+
+.btn:hover svg {
+  transform: translateX(3px);
 }
 
 .btn--primary {
@@ -180,24 +231,12 @@
 
 .btn--secondary {
   background: transparent;
-  border-color: var(--c-line-strong);
+  border-color: var(--c-ink);
   color: var(--c-ink);
 }
 
 .btn--secondary:hover {
-  border-color: var(--c-ink);
   background: var(--c-accent-wash);
-}
-
-.btn--onDark {
-  background: transparent;
-  border-color: var(--c-dark-line);
-  color: var(--c-dark-fg-strong);
-}
-
-.btn--onDark:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .btn-row {
@@ -206,15 +245,17 @@
   gap: var(--s-3);
 }
 
-/* Link testuale con freccia: sostituisce i pulsanti "VEDI". */
 .link-arrow {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--c-ink);
   font-size: var(--fs-sm);
   font-weight: 600;
-  color: var(--c-accent);
-  transition: gap var(--dur) var(--ease);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-ink);
 }
 
 .link-arrow svg {
@@ -224,31 +265,123 @@
   transition: transform var(--dur) var(--ease);
 }
 
-.link-arrow:hover {
-  gap: var(--s-3);
-}
-
 .link-arrow:hover svg {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
 /* --------------------------------------------------------------------------
-   4. Header
+   4. Marchio e logo che si disegna
+   -------------------------------------------------------------------------- */
+
+.logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* All'apertura il marchio si costruisce: prima il profilo grigio, poi
+   quello nero, tracciati come con un tiralinee. */
+.logo--draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1100ms var(--ease) both;
+}
+
+.logo--draw .logo__ghost path:nth-child(1) {
+  animation-delay: 80ms;
+}
+
+.logo--draw .logo__ghost path:nth-child(2) {
+  animation-delay: 260ms;
+}
+
+.logo--draw .logo__ink path:nth-child(1) {
+  animation-delay: 520ms;
+}
+
+.logo--draw .logo__ink path:nth-child(2) {
+  animation-delay: 720ms;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  flex: none;
+}
+
+.brand__inner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.brand__mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  color: var(--c-ink);
+  transition:
+    width var(--dur) var(--ease),
+    height var(--dur) var(--ease);
+}
+
+.header--scrolled .brand__mark {
+  width: 34px;
+  height: 34px;
+}
+
+.brand__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  line-height: 1.1;
+}
+
+.brand__name {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+
+.brand__role {
+  align-self: stretch;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+  padding-top: 3px;
+  border-top: 1px solid var(--c-ink);
+}
+
+/* --------------------------------------------------------------------------
+   5. Header
    -------------------------------------------------------------------------- */
 
 .header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--c-page) 88%, transparent);
-  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--c-page) 86%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid transparent;
   transition:
     border-color var(--dur) var(--ease),
     background-color var(--dur) var(--ease);
 }
 
-/* Stato compatto: attivato via JS dopo lo scroll. */
 .header--scrolled {
   background: color-mix(in srgb, var(--c-page) 94%, transparent);
   border-bottom-color: var(--c-line);
@@ -259,8 +392,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-5);
-  /* L'altezza si riduce durante lo scroll senza far saltare il layout. */
-  height: 84px;
+  height: var(--header-h);
   transition: height var(--dur) var(--ease);
 }
 
@@ -268,77 +400,6 @@
   height: 66px;
 }
 
-/* --- Marchio --- */
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
-  flex: none;
-}
-
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  flex: none;
-  border: 1px solid var(--c-line);
-  background: var(--c-surface);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  transition:
-    width var(--dur) var(--ease),
-    height var(--dur) var(--ease);
-}
-
-/* Il logo è un monogramma su fondo bianco: va contenuto, non ritagliato. */
-.brand__mark img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 3px;
-}
-
-.header--scrolled .brand__mark {
-  width: 36px;
-  height: 36px;
-}
-
-.brand__copy {
-  display: flex;
-  flex-direction: column;
-  /* align-items: start fa sì che il filetto sotto il nome si fermi alla
-     larghezza del testo, invece di attraversare tutta la colonna. */
-  align-items: flex-start;
-  gap: 2px;
-  line-height: 1.15;
-}
-
-/* Il nome è composto come sulle targhe dello studio: tutto maiuscolo,
-   in grottesco, con una spaziatura leggermente aperta perché l'incisione
-   su metallo non regge le lettere strette. */
-.brand__name {
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-  color: var(--c-ink);
-  white-space: nowrap;
-}
-
-/* La riga sotto ripete l'impaginazione della targa: qualifica minuta,
-   separata dal nome da un filetto sottile come quello inciso. */
-.brand__role {
-  font-size: var(--fs-label);
-  font-weight: 500;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-muted);
-  padding-top: 3px;
-  border-top: 1px solid var(--c-line-strong);
-}
-
-/* --- Navigazione desktop --- */
 .nav {
   display: flex;
   align-items: center;
@@ -347,10 +408,23 @@
 
 .nav__link {
   position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
   padding-block: var(--s-2);
   font-size: var(--fs-sm);
   font-weight: 500;
+  white-space: nowrap;
   color: var(--c-body);
+  transition: color var(--dur) var(--ease);
+}
+
+.nav__num {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
   transition: color var(--dur) var(--ease);
 }
 
@@ -367,57 +441,92 @@
   transition: transform var(--dur) var(--ease);
 }
 
-.nav__link:hover {
+.nav__link:hover,
+.nav__link.is-active {
   color: var(--c-ink);
 }
 
-.nav__link:hover::after {
+.nav__link:hover::after,
+.nav__link.is-active::after {
   transform: scaleX(1);
 }
 
-/* Segnalibro live: la sezione in lettura resta sottolineata in accento.
-   La sottolineatura è più marcata di quella dell'hover perché deve
-   leggersi come stato, non come reazione al puntatore. */
 .nav__link.is-active {
-  color: var(--c-ink);
   font-weight: 600;
 }
 
-.nav__link.is-active::after {
-  background: var(--c-accent);
-  transform: scaleX(1);
-  height: 2px;
-}
-
-/* Lo spostamento del segnalibro segue lo scroll: senza transizione
-   sull'opacità lo stacco fra una voce e l'altra risulta brusco. */
-.nav__link::after {
-  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nav__link::after {
-    transition: none;
-  }
+.nav__link.is-active .nav__num {
+  color: var(--c-ink);
 }
 
 .header__actions {
   display: flex;
   align-items: center;
-  gap: var(--s-4);
+  gap: var(--s-5);
   flex: none;
 }
 
-.header__phone {
+/* --- Telefono che rivela il numero ---
+   Il numero è sempre in flusso ma invisibile, così l'ingombro non cambia;
+   l'etichetta "Telefono" gli sta sopra e al passaggio i due si scambiano. */
+.phone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
   font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--c-ink);
   white-space: nowrap;
+}
+
+.phone svg {
+  width: 14px;
+  height: 14px;
+  color: var(--c-muted);
   transition: color var(--dur) var(--ease);
 }
 
-.header__phone:hover {
-  color: var(--c-accent);
+.phone__text {
+  position: relative;
+  display: inline-grid;
+}
+
+.phone__text > * {
+  grid-area: 1 / 1;
+  transition:
+    opacity 260ms var(--ease),
+    transform 260ms var(--ease);
+}
+
+.phone__label {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  align-self: center;
+}
+
+.phone__num {
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.phone:hover .phone__label,
+.phone:focus-visible .phone__label {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.phone:hover .phone__num,
+.phone:focus-visible .phone__num {
+  opacity: 1;
+  transform: none;
+}
+
+.phone:hover svg {
+  color: var(--c-ink);
 }
 
 .header__cta {
@@ -439,7 +548,7 @@
 
 .menu-toggle__bars {
   position: relative;
-  width: 20px;
+  width: 22px;
   height: 12px;
 }
 
@@ -449,7 +558,7 @@
   width: 100%;
   height: 1.5px;
   background: var(--c-ink);
-  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  transition: transform var(--dur) var(--ease);
 }
 
 .menu-toggle__bars span:nth-child(1) {
@@ -473,14 +582,14 @@
   position: fixed;
   inset: 0 0 0 auto;
   z-index: 60;
-  width: min(360px, 86vw);
+  width: min(380px, 88vw);
   display: flex;
   flex-direction: column;
-  padding: var(--s-6) var(--s-5) var(--s-7);
+  padding: var(--s-5) var(--s-5) var(--s-7);
   background: var(--c-surface);
   border-left: 1px solid var(--c-line);
   transform: translateX(100%);
-  transition: transform 260ms var(--ease);
+  transition: transform 280ms var(--ease);
   overflow-y: auto;
 }
 
@@ -492,7 +601,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--s-6);
+  min-height: 44px;
+  margin-bottom: var(--s-7);
 }
 
 .mobile-panel__close {
@@ -515,38 +625,60 @@
 .mobile-nav {
   display: flex;
   flex-direction: column;
+  border-top: 1px solid var(--c-ink);
 }
 
 .mobile-nav__link {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
   padding-block: var(--s-4);
   border-bottom: 1px solid var(--c-line);
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+.mobile-nav__num {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mobile-nav__link.is-active .mobile-nav__num {
+  color: var(--c-ink);
+}
+
+.mobile-panel__foot {
+  margin-top: auto;
+  padding-top: var(--s-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.mobile-panel__phone {
   font-family: var(--font-display);
   font-size: var(--fs-lg);
   color: var(--c-ink);
 }
 
-.mobile-nav__link.is-active {
-  color: var(--c-accent);
-}
-
-.mobile-panel__foot {
-  margin-top: var(--s-7);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-}
-
-.mobile-panel__phone {
-  font-size: var(--fs-md);
-  font-weight: 600;
-  color: var(--c-ink);
+.mobile-panel__mail {
+  margin-bottom: var(--s-3);
+  font-size: var(--fs-sm);
+  color: var(--c-body);
+  overflow-wrap: anywhere;
 }
 
 .scrim {
   position: fixed;
   inset: 0;
   z-index: 55;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   border: 0;
   padding: 0;
   cursor: pointer;
@@ -554,148 +686,364 @@
 }
 
 /* --------------------------------------------------------------------------
-   5. Hero
+   6. Binario laterale e indicatore d'angolo (solo desktop largo)
    -------------------------------------------------------------------------- */
 
-.hero {
-  padding-block: clamp(3rem, 6vw, 5.5rem) 0;
-  overflow: hidden;
+.rail {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-2);
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  border-right: 1px solid var(--c-line);
+  transition: color var(--dur) var(--ease);
 }
 
-.hero__grid {
+.rail:hover {
+  color: var(--c-ink);
+}
+
+.rail .dmark {
+  transform: rotate(90deg);
+}
+
+.corner {
+  position: fixed;
+  left: var(--s-5);
+  bottom: var(--s-5);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 6px 10px;
+  border: 1px solid var(--c-ink);
+  background: var(--c-page);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+.corner__num {
+  font-family: var(--font-display);
+  font-size: var(--fs-base);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1200px) {
+  .rail,
+  .corner {
+    display: inline-flex;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Intro
+   -------------------------------------------------------------------------- */
+
+.intro {
+  position: relative;
+}
+
+/* Il foglio millimetrato, sotto tutto. La sua visibilità varia con lo
+   scroll nel palcoscenico fisso. */
+.intro::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--c-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
+  pointer-events: none;
+}
+
+.intro__stage {
+  position: relative;
+  z-index: 1;
+  padding-top: clamp(2.5rem, 5vw, 4rem);
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.intro__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-  /* Le due colonne chiudono sulla stessa linea di base. */
-  align-items: end;
-  gap: clamp(2rem, 5vw, 4.5rem);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-rows: auto 1fr;
+  gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 6vw, 5.5rem);
+  align-items: center;
 }
 
-.hero__copy {
+.intro__head {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+/* --- Testata --- */
+.masthead {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  line-height: 0.92;
+  color: var(--c-ink);
+}
+
+.masthead__pre {
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+/* Come inciso sulla targa: grottesco pesante, maiuscolo, stretto. */
+.masthead__name {
+  display: block;
+  font-family: var(--font-body);
+  font-size: clamp(2.75rem, 5.4vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform-origin: left top;
+}
+
+/* --- Riga informativa --- */
+.infoline {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+.infoline .dmark {
+  color: var(--c-muted);
+}
+
+/* --- Manifesto --- */
+.intro__body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s-5);
-  /* Stacca il testo dal filo inferiore per non incollarlo alla fascia. */
-  padding-bottom: clamp(1rem, 3vw, 2.5rem);
-  /* Il testo entra con un movimento minimo: presenza, non spettacolo. */
-  animation: rise 600ms var(--ease) both;
 }
 
-.hero__place {
+.manifesto {
+  margin: 0;
   display: flex;
-  align-items: center;
-  gap: var(--s-3);
+  flex-direction: column;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: var(--fs-3xl);
+  line-height: 1.02;
+  letter-spacing: var(--ls-display);
+  color: var(--c-ink);
+  font-variation-settings: 'opsz' 144;
 }
 
-/* Trattino tipografico che precede l'indicazione di luogo. */
-.hero__place::before {
-  content: '';
-  width: 24px;
-  height: 1px;
-  background: var(--c-accent);
+.manifesto__line {
+  display: block;
 }
 
-.hero__title {
-  max-width: 15ch;
+.intro__lead {
+  max-width: 40ch;
 }
 
-/* L'ultima riga del titolo porta l'accento: un solo gesto di colore. */
-.hero__title em {
-  font-style: normal;
-  color: var(--c-accent);
-}
-
-.hero__lead {
-  max-width: 46ch;
-}
-
-.hero__actions {
+.intro__focus {
+  width: 100%;
+  max-width: 460px;
   margin-top: var(--s-2);
 }
 
-/* --- Visuale ---
-   La fotografia è un ritaglio su fondo trasparente: non può funzionare come
-   immagine al vivo. La si tratta come figura appoggiata su un piano, con
-   una fascia di colore che le dà peso e la àncora alla composizione. */
-.hero__visual {
-  position: relative;
+/* FOCUS: una riga che cambia ogni pochi secondi. */
+.focus {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-top: 1px solid var(--c-ink);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.focus__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+.focus__text {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: rise 520ms var(--ease) both;
+}
+
+.focus__count {
+  font-size: var(--fs-label);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Targa --- */
+.intro__plate {
   margin: 0;
-  align-self: end;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  animation: rise 600ms 80ms var(--ease) both;
+  align-self: center;
 }
 
-/* Piano di fondo su cui la figura appoggia. Si ferma alla linea di base
-   dell'immagine, così il ritaglio non sembra tagliato dal riquadro. */
-.hero__visual::before {
-  content: '';
-  position: absolute;
-  /* Il piano parte sotto la linea dei caschi: la figura lo scavalca
-     dall'alto, che è ciò che dà profondità alla composizione. */
-  inset: 22% 0 0 0;
-  background: var(--c-surface-2);
-  border-radius: var(--radius);
+.plate {
+  perspective: 1400px;
 }
 
-/* L'immagine è un ritaglio su fondo trasparente: deve restare intera e
-   poggiare sul bordo inferiore del piano, mai essere ritagliata. */
-.hero__visual img {
-  position: relative;
+.plate__picture {
+  display: block;
+  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 500ms var(--ease);
+  will-change: transform;
+}
+
+.plate__picture img {
   display: block;
   width: 100%;
-  max-width: 540px;
   height: auto;
-  /* Desatura leggermente: la foto stock non deve dominare la pagina. */
-  filter: saturate(0.82) contrast(1.02);
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.12));
 }
 
-/* Scheda dei dati: ancorata all'angolo in basso a sinistra, fuori dal
-   soggetto, così non copre le mani e l'elaborato. */
-.hero__stat {
-  position: absolute;
-  /* Sporge a sinistra del piano, sotto il soggetto: non copre le mani
-     né l'elaborato, che sono il contenuto della fotografia. */
-  left: calc(var(--s-6) * -1);
-  bottom: calc(var(--s-5) * -1);
-  z-index: 1;
+.intro__caption {
   display: flex;
   flex-direction: column;
-  gap: var(--s-1);
-  padding: var(--s-4) var(--s-5);
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
+  gap: 2px;
+  margin-top: var(--s-4);
+  padding-left: var(--s-4);
+  border-left: 1px solid var(--c-ink);
+  font-size: var(--fs-sm);
+  color: var(--c-body);
 }
 
-.hero__stat strong {
+/* --- Ingressi all'apertura (indipendenti dallo scroll) --- */
+.masthead__pre,
+.infoline,
+.intro__lead,
+.intro__actions,
+.intro__focus,
+.intro__caption {
+  animation: rise 640ms var(--ease) both;
+}
+
+.masthead__name {
+  animation: rise 700ms 60ms var(--ease) both;
+}
+
+.masthead__pre {
+  animation-delay: 240ms;
+}
+
+.infoline {
+  animation-delay: 360ms;
+}
+
+.manifesto__line {
+  animation: rise 640ms var(--ease) both;
+  animation-delay: calc(420ms + var(--i, 0) * 120ms);
+}
+
+.intro__lead {
+  animation-delay: 820ms;
+}
+
+.intro__actions {
+  animation-delay: 920ms;
+}
+
+.intro__focus {
+  animation-delay: 1020ms;
+}
+
+.intro__plate .plate {
+  animation: rise 800ms 500ms var(--ease) both;
+}
+
+.intro__caption {
+  animation-delay: 900ms;
+}
+
+/* --- Fascia dei dati di albo e delle competenze --- */
+.facts-band {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--c-ink);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-5) var(--s-6);
+  margin: 0;
+  padding-block: var(--s-5);
+}
+
+.facts__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.facts__item:not(:first-child) {
+  padding-left: var(--s-6);
+  border-left: 1px solid var(--c-line);
+}
+
+.facts__item dd {
+  margin: 0;
   font-family: var(--font-display);
   font-size: var(--fs-lg);
-  font-weight: 500;
+  line-height: var(--lh-snug);
   letter-spacing: var(--ls-tight);
   color: var(--c-ink);
 }
 
-/* --- Fascia delle competenze sotto l'hero --- */
-.marquee-strip {
-  /* Lo spazio tiene conto della scheda che sporge dal riquadro immagine. */
-  margin-top: clamp(3.5rem, 6vw, 5.5rem);
+.strip {
   border-block: 1px solid var(--c-line);
   background: var(--c-surface);
 }
 
-/* Le voci occupano tutta la riga invece di ammassarsi a sinistra. Una
-   griglia a colonne uguali con i pallini fra l'una e l'altra: le voci
-   restano incolonnate a passo regolare, come un testo giustificato.
-   Il separatore è una colonna a sé, così non si appiccica al testo. */
-/* Le voci si distendono su tutta la riga invece di ammassarsi a sinistra.
-   Ogni voce sta su una riga sola e lo spazio residuo si divide in parti
-   uguali fra una voce e l'altra: è l'effetto del testo giustificato.
-   Colonne a "auto" e non a "1fr" perché le voci hanno lunghezze molto
-   diverse e a misura uguale la più lunga andrebbe a capo da sola. */
-.marquee-strip__inner {
+.strip__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -703,36 +1051,23 @@
   padding-block: var(--s-4);
 }
 
-.marquee-strip__item {
+.strip__item {
   font-size: var(--fs-sm);
-  color: var(--c-body);
+  font-weight: 500;
+  color: var(--c-ink);
   white-space: nowrap;
 }
 
-/* La prima e l'ultima voce si allineano ai margini della colonna, così la
-   fascia non sembra rientrata rispetto al resto della pagina. */
-.marquee-strip__item:first-child {
-  text-align: left;
-}
-
-.marquee-strip__item:last-child {
-  text-align: right;
-}
-
-.marquee-strip__sep {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--c-accent);
-  justify-self: center;
+.strip__sep {
+  width: 10px;
+  height: 10px;
+  color: var(--c-ink);
 }
 
 /* --------------------------------------------------------------------------
-   6. Servizi
+   8. Servizi
    -------------------------------------------------------------------------- */
 
-/* Tre blocchi affiancati, non un elenco a righe: l'immagine deve avere la
-   dimensione per essere guardata, non una miniatura da 150px. */
 .service-blocks {
   display: flex;
   flex-direction: column;
@@ -742,12 +1077,10 @@
 .service-block {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 4.5rem);
+  gap: clamp(2rem, 5vw, 5rem);
   align-items: center;
 }
 
-/* Blocco pari (il 02): l'immagine passa a destra. Si scambiano le colonne
-   invece di riordinare il DOM, così l'ordine di lettura resta corretto. */
 .service-block--flip .service-block__media {
   grid-column: 2;
   grid-row: 1;
@@ -756,23 +1089,19 @@
 .service-block__media {
   margin: 0;
   overflow: hidden;
+  border: 1px solid var(--c-line-strong);
   border-radius: var(--radius);
   background: var(--c-surface-2);
 }
 
 .service-block__media img {
-  display: block;
-  width: 100%;
-  height: auto;
   aspect-ratio: 3 / 2;
   object-fit: cover;
-  filter: saturate(0.9);
-  transition: transform var(--dur) var(--ease), filter var(--dur) var(--ease);
+  transition: transform 700ms var(--ease);
 }
 
 .service-block:hover .service-block__media img {
   transform: scale(1.03);
-  filter: saturate(1);
 }
 
 .service-block__copy {
@@ -783,10 +1112,12 @@
 }
 
 .service-block__num {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-accent);
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: var(--ls-display);
+  color: rgba(0, 0, 0, 0.32);
   font-variant-numeric: tabular-nums;
 }
 
@@ -801,86 +1132,116 @@
 }
 
 .service-block__list {
-  margin: 0;
+  margin: var(--s-2) 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: var(--s-2);
+  width: 100%;
+  border-top: 1px solid var(--c-line);
 }
 
 .service-block__list li {
-  position: relative;
-  padding-left: var(--s-4);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding-block: var(--s-3);
+  border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-sm);
+  color: var(--c-ink-2);
+}
+
+.service-block__list .dmark {
+  width: 10px;
+  height: 10px;
   color: var(--c-muted);
 }
 
-.service-block__list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.62em;
-  width: 8px;
-  height: 1px;
-  background: var(--c-muted);
+.service-index {
+  margin-top: clamp(3.5rem, 7vw, 6rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
 }
 
-/* Sotto i 900px le due colonne si impilano: l'immagine sta sempre sopra
-   il testo, compreso il blocco invertito. */
-@media (max-width: 900px) {
-  .service-block,
-  .service-block--flip {
-    grid-template-columns: 1fr;
-    gap: var(--s-5);
-  }
+.service-index__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
 
-  .service-block--flip .service-block__media {
-    grid-column: 1;
-  }
+.service-index__count {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.index-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--c-ink);
+  columns: 2;
+  column-gap: clamp(2rem, 5vw, 4rem);
+}
+
+.index-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  break-inside: avoid;
+  padding-block: var(--s-4);
+  border-bottom: 1px solid var(--c-line);
+  font-size: var(--fs-base);
+  color: var(--c-ink);
+}
+
+.index-list__num {
+  flex: none;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* --------------------------------------------------------------------------
-   7. Progetti
+   9. Progetti
    -------------------------------------------------------------------------- */
 
-/* Griglia editoriale: il primo progetto occupa l'intera larghezza. */
 .project-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1.5rem, 3vw, 2.75rem) clamp(1.5rem, 3vw, 2.5rem);
+  gap: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .project--lead {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 3.5rem);
+  gap: clamp(1.5rem, 4vw, 4rem);
 }
 
 .project__figure {
   position: relative;
   margin: 0;
   overflow: hidden;
-  background: var(--c-surface-2);
+  border: 1px solid var(--c-line-strong);
   border-radius: var(--radius);
+  background: var(--c-surface-2);
 }
 
 .project__figure img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   aspect-ratio: 4 / 3;
-  transition: transform 500ms var(--ease);
+  object-fit: cover;
+  transition: transform 700ms var(--ease);
 }
 
-/* Il progetto di apertura è più panoramico: bilancia la colonna di testo,
-   più corta, ed evita il vuoto a fianco dell'immagine. */
 .project--lead .project__figure img {
-  aspect-ratio: 16 / 11;
+  aspect-ratio: 3 / 2;
 }
 
-/* Movimento minimo sull'immagine, nessuna traslazione della card. */
 .project:hover .project__figure img {
   transform: scale(1.025);
 }
@@ -889,7 +1250,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding-top: var(--s-4);
+  padding-top: var(--s-5);
 }
 
 .project--lead .project__body {
@@ -898,6 +1259,7 @@
 
 .project__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s-3);
 }
@@ -911,7 +1273,9 @@
 }
 
 .project__meta .is-category {
-  color: var(--c-accent);
+  padding: 4px var(--s-2);
+  border: 1px solid var(--c-ink);
+  color: var(--c-ink);
 }
 
 .project__title {
@@ -929,174 +1293,800 @@
 }
 
 /* --------------------------------------------------------------------------
-   8. Lo Studio
+   10. Lo Studio
    -------------------------------------------------------------------------- */
 
-.studio-grid {
+/* La griglia riaffiora leggermente in questo passaggio. */
+.section--grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  background-image:
+    linear-gradient(var(--c-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  pointer-events: none;
+}
+
+.section--grid > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.studio-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  gap: clamp(2rem, 5vw, 4.5rem);
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
+  gap: clamp(2rem, 6vw, 6rem);
   align-items: start;
 }
 
-.studio__portrait {
-  position: relative;
-  margin: 0;
-}
-
-.studio__portrait picture {
-  display: block;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--c-surface-2);
-}
-
-/* L'immagine è mostrata per intero: niente ritaglio, la figura assume
-   il rapporto della fotografia originale. */
-.studio__portrait img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: saturate(0.85);
-}
-
-/* Didascalia sotto la fotografia, non sovrapposta: l'immagine resta
-   leggibile per intero. */
-.studio__portrait figcaption {
+/* Colonna verticale delle discipline: fissa mentre il testo scorre. */
+.studio__rail {
+  position: sticky;
+  top: 110px;
   display: flex;
   flex-direction: column;
-  gap: var(--s-1);
-  padding-top: var(--s-4);
+  gap: var(--s-4);
 }
 
-.studio__portrait figcaption .studio__portrait-name {
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-/* Segnaposto in attesa della fotografia del professionista. Volutamente
-   sobrio: una scheda anagrafica, non un riquadro vuoto. */
-.studio__portrait--empty {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: var(--s-2);
-  aspect-ratio: 4 / 5;
-  padding: var(--s-6);
-  background: var(--c-surface-2);
-  border: 1px solid var(--c-line);
-}
-
-.studio__portrait--empty::before {
-  /* Monogramma tipografico al posto del ritratto. */
-  content: 'DD';
-  display: block;
-  letter-spacing: var(--ls-display);
-  margin-bottom: auto;
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 7vw, 5rem);
-  line-height: 1;
-  color: var(--c-line-strong);
-}
-
-.studio__portrait--empty figcaption {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-}
-
-.studio__portrait--empty .studio__portrait-name {
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-.studio__copy {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-5);
-}
-
-/* Titoli e albo: scheda compatta a due colonne, staccata dal corpo del
-   testo da un filetto. Dati verificabili, nessuna enfasi grafica. */
-.credentials {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-4) var(--s-6);
-  padding-block: var(--s-5);
-  border-top: 1px solid var(--c-line);
-  border-bottom: 1px solid var(--c-line);
-}
-
-.credentials__item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-}
-
-.credentials__item dd {
-  margin: 0;
-  font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
-  color: var(--c-ink);
-}
-
-@media (max-width: 560px) {
-  .credentials {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Elenco delle competenze: righe sottili, niente "pillole" colorate. */
-.discipline-list {
+.rail-list {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--s-6);
-  border-top: 1px solid var(--c-line);
+  border-top: 1px solid var(--c-ink);
 }
 
-.discipline-list li {
-  padding-block: var(--s-3);
+.rail-list li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--s-3);
+  padding: var(--s-3) 0 var(--s-3) var(--s-3);
   border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-sm);
   color: var(--c-body);
 }
 
-/* Metodo di lavoro: passi numerati. */
-.method {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-6);
-  border-top: 1px solid var(--c-line-strong);
-  padding-top: var(--s-6);
+/* Il segno che si accende: una barra nera a sinistra della voce. */
+.rail-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: -1px;
+  width: 2px;
+  background: var(--c-ink);
+  transform: scaleY(0);
+  transform-origin: top;
 }
 
-.method__step {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-}
-
-.method__num {
+.rail-list__num {
   font-size: var(--fs-label);
   font-weight: 600;
   letter-spacing: var(--ls-label);
-  color: var(--c-accent);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.studio__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-7);
+}
+
+.studio__intro {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+  text-wrap: balance;
+}
+
+.studio__bio {
+  max-width: 64ch;
+}
+
+/* --- Scheda tecnica --- */
+.datasheet {
+  border: 1px solid var(--c-ink);
+  background: var(--c-surface);
+}
+
+.datasheet__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--c-ink);
+}
+
+.datasheet__ref {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+
+.datasheet__rows {
+  margin: 0;
+}
+
+.datasheet__row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--c-line);
+}
+
+.datasheet__row:last-child {
+  border-bottom: 0;
+}
+
+.datasheet__num {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.datasheet__row dt {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.datasheet__row dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--c-ink);
+}
+
+/* --- Firma --- */
+.signature {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--c-ink);
+}
+
+.signature__logo {
+  width: 56px;
+  height: 56px;
+  flex: none;
+  color: var(--c-ink);
+}
+
+.signature__logo path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1400ms var(--ease);
+}
+
+.signature.is-visible .signature__logo .logo__ghost path {
+  stroke-dashoffset: 0;
+}
+
+.signature.is-visible .signature__logo .logo__ink path {
+  stroke-dashoffset: 0;
+  transition-delay: 400ms;
+}
+
+.signature__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.signature__name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  font-size: var(--fs-xl);
+  line-height: 1.1;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+/* --------------------------------------------------------------------------
+   11. Territorio
+   -------------------------------------------------------------------------- */
+
+.terr {
+  position: relative;
+}
+
+/* La fotografia parte a tutto schermo. */
+.terr__photo {
+  position: relative;
+  margin: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  background: var(--c-surface-2);
+}
+
+.terr__photo img {
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  object-position: center 70%;
+}
+
+/* --- Punti di interesse --- */
+.hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hotspot {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.hotspot__btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--c-ink);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--c-ink);
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.hotspot__btn .dmark {
+  width: 14px;
+  height: 14px;
+}
+
+/* Un anello che pulsa piano: invita a toccare senza gridare. */
+.hotspot__btn::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid var(--c-ink);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ping 2.6s var(--ease) infinite;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+.hotspot:hover .hotspot__btn,
+.hotspot.is-open .hotspot__btn {
+  background: var(--c-ink);
+  color: #fff;
+}
+
+.hotspot__tip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: 240px;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--c-ink);
+  background: var(--c-surface);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--c-body);
+  opacity: 0;
+  transform: translate(-6px, -50%);
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+  pointer-events: none;
+}
+
+.hotspot__tip strong {
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.hotspot--flip .hotspot__tip {
+  left: auto;
+  right: calc(100% + 12px);
+  transform: translate(6px, -50%);
+}
+
+.hotspot:hover .hotspot__tip,
+.hotspot.is-open .hotspot__tip {
+  opacity: 1;
+  transform: translate(0, -50%);
+  pointer-events: auto;
+}
+
+/* --- Cartografia ---
+   Sotto la fotografia, a tutta larghezza della colonna. Carta tecnica:
+   reticolo, raggi dalla sede, fiume con laghi, parco tratteggiato,
+   cartiglio della sede, scala a blocchi, legenda. Su schermo stretto
+   scorre in orizzontale invece di rimpicciolirsi fino all'illeggibile. */
+.terr__map {
+  margin-top: clamp(2rem, 4vw, 3rem);
+  border: 1px solid var(--c-ink);
+  background: var(--c-surface);
+}
+
+.terr__map-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--c-ink);
+}
+
+.terr__map-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+.terr__map-note {
+  margin-left: auto;
+  font-size: var(--fs-label);
+  color: var(--c-muted);
+}
+
+.terr__map-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.terr__map-hint {
+  display: none;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0;
+  padding: var(--s-2) var(--s-4);
+  border-top: 1px solid var(--c-line);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.terr__map-hint svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 900px) {
+  .terr__map-hint {
+    display: flex;
+  }
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  min-width: 860px;
+  height: auto;
+  font-family: var(--font-body);
+}
+
+.chart__bg {
+  fill: var(--c-surface);
+}
+
+.chart__grid line {
+  stroke: rgba(0, 0, 0, 0.07);
+  stroke-width: 1;
+}
+
+.chart__grid-labels text {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  fill: var(--c-muted);
+}
+
+.chart__rings circle {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 0.8;
+  stroke-dasharray: 3 5;
+  opacity: 0.28;
+}
+
+.chart__rings text {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  fill: var(--c-muted);
+}
+
+.chart__hatch {
+  stroke: var(--c-ink);
+  stroke-width: 0.8;
+  opacity: 0.35;
+}
+
+.chart__water {
+  stroke: var(--c-ink);
+  stroke-width: 0.6;
+  opacity: 0.35;
+}
+
+.chart__park {
+  fill: none;
+  stroke: var(--c-surface-2);
+  stroke-width: 34;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart__park-hatch {
+  fill: url(#hatch);
+  stroke: url(#hatch);
+  stroke-width: 34;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+rect.chart__park-hatch {
+  stroke: none;
+}
+
+.chart__lake {
+  fill: url(#water);
+  stroke: var(--c-ink);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.chart__river-casing {
+  fill: none;
+  stroke: var(--c-surface);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart__river {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart__toponym {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  fill: var(--c-body);
+}
+
+.chart__toponym--small {
+  font-size: 11px;
+}
+
+.chart__town {
+  fill: var(--c-surface);
+  stroke: var(--c-ink);
+  stroke-width: 1.2;
+}
+
+/* Le etichette hanno un bordo del colore della carta: restano leggibili
+   dove incrociano reticolo, raggi o fiume. */
+.chart__label,
+.chart__grid-labels text,
+.chart__rings text,
+.chart__toponym {
+  paint-order: stroke;
+  stroke: var(--c-surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.chart__label {
+  font-size: 11px;
+  fill: var(--c-ink-2);
+}
+
+.chart__label--capital {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  fill: var(--c-ink);
+}
+
+.chart__capital-ring {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 1.2;
+}
+
+.chart__capital-dot {
+  fill: var(--c-ink);
+}
+
+.chart__halo {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 1;
+  opacity: 0.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ping 3s var(--ease) infinite;
+}
+
+.chart__d {
+  fill: var(--c-ink);
+  stroke: var(--c-ink);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.chart__leader {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.chart__callout {
+  fill: var(--c-surface);
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.chart__callout-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--c-muted);
+}
+
+.chart__callout-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  fill: var(--c-ink);
+}
+
+.chart__callout-coords {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  fill: var(--c-body);
+}
+
+.chart__scale-block {
+  fill: var(--c-ink);
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.chart__scale-block--alt {
+  fill: var(--c-surface);
+}
+
+.chart__scale text {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  fill: var(--c-body);
+}
+
+/* Rosa dei venti */
+.rose__disc {
+  fill: var(--c-surface);
+  fill-opacity: 0.92;
+  stroke: none;
+}
+
+.rose__ring {
+  fill: none;
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.rose__ring--inner {
+  stroke-width: 0.6;
+  opacity: 0.7;
+}
+
+.rose__tick {
+  stroke: var(--c-ink);
+  stroke-width: 0.7;
+  opacity: 0.7;
+}
+
+.rose__tick--major {
+  stroke-width: 1.2;
+  opacity: 1;
+}
+
+.rose__half {
+  fill: var(--c-surface);
+  stroke: var(--c-ink);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.rose__half--ink {
+  fill: var(--c-ink);
+}
+
+.rose__hub {
+  fill: var(--c-surface);
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.rose__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: var(--c-ink);
+  paint-order: stroke;
+  stroke: var(--c-surface);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.rose__label--n {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chart__legend-box {
+  fill: var(--c-surface);
+  stroke: var(--c-ink);
+  stroke-width: 1;
+}
+
+.chart__legend text {
+  font-size: 10px;
+  fill: var(--c-body);
+}
+
+/* --- Fascia dei comuni --- */
+.places {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--c-ink);
+}
+
+.places__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+.places__list .is-studio {
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+
+.places__sep {
+  display: inline-flex;
+  color: var(--c-muted);
+}
+
+.places__sep .dmark {
+  width: 10px;
+  height: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   12. Metodo
+   -------------------------------------------------------------------------- */
+
+.method {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-6);
+}
+
+.method__step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding-top: var(--s-5);
+}
+
+.method__step::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--c-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 700ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 180ms);
+}
+
+.method__step::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  transform: scale(0);
+  transition: transform 360ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 180ms + 520ms);
+}
+
+.method.is-visible .method__step::after {
+  transform: scaleX(1);
+}
+
+.method.is-visible .method__step::before {
+  transform: scale(1);
+}
+
+.method__num {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--c-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .method__title {
   margin: 0;
-  font-size: var(--fs-base);
+  font-size: var(--fs-md);
   font-weight: 600;
   letter-spacing: var(--ls-tight);
   color: var(--c-ink);
@@ -1110,17 +2100,16 @@
 }
 
 /* --------------------------------------------------------------------------
-   9. Contatti
+   13. Contatti — il blocco nero
    -------------------------------------------------------------------------- */
 
 .contact {
+  --bg: var(--c-dark-bg);
   background: var(--c-dark-bg);
   color: var(--c-dark-fg);
 }
 
-.contact .display,
-.contact .headline,
-.contact .subhead {
+.contact .headline {
   color: var(--c-dark-fg-strong);
 }
 
@@ -1129,21 +2118,24 @@
   color: var(--c-dark-fg);
 }
 
-.contact .section-head {
-  border-top-color: var(--c-dark-line);
+.contact .section-head::before {
+  background: var(--c-dark-fg-strong);
+}
+
+.contact .section-head__index {
+  border-color: var(--c-dark-fg-strong);
+  color: var(--c-dark-fg-strong);
 }
 
 .contact .label {
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--c-dark-fg-muted);
 }
 
-/* Due colonne: i recapiti a sinistra, la fotografia dell'ingresso a destra.
-   Nessun riquadro interno — l'unica gerarchia è la dimensione del testo. */
 .contact-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 4.5rem);
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: stretch;
 }
 
 .contact-list {
@@ -1157,19 +2149,43 @@
   border-bottom: 1px solid var(--c-dark-line);
 }
 
-/* Tutta la riga è l'area cliccabile: su telefono si tocca ovunque, non
-   solo sul numero. */
 .contact-item__link {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--s-4);
   padding: var(--s-5) 0;
   color: inherit;
   text-decoration: none;
-  transition: color var(--dur) var(--ease);
 }
 
-/* I recapiti sono il contenuto più importante della sezione: corpo grande. */
+.contact-item__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--c-dark-line);
+  border-radius: 50%;
+  color: var(--c-dark-fg-strong);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.contact-item__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.contact-item__link:hover .contact-item__icon {
+  background: var(--c-dark-fg-strong);
+  color: var(--c-dark-bg);
+}
+
+.contact-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
 .contact-item__value {
   font-family: var(--font-display);
   font-size: var(--fs-lg);
@@ -1177,211 +2193,38 @@
   line-height: var(--lh-snug);
   letter-spacing: var(--ls-tight);
   color: var(--c-dark-fg-strong);
-  transition: color var(--dur) var(--ease);
   overflow-wrap: anywhere;
 }
 
 .contact-item__note {
   font-size: var(--fs-sm);
   line-height: var(--lh-snug);
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.contact-item__link:hover .contact-item__value {
-  color: var(--c-accent);
+  color: var(--c-dark-fg-muted);
 }
 
 .contact-item__link:focus-visible {
-  outline: 2px solid var(--c-accent);
+  outline: 2px solid var(--c-dark-fg-strong);
   outline-offset: 4px;
 }
 
-/* La fotografia è intera, senza ritaglio. */
-.contact__photo {
-  margin: 0;
-}
-
-.contact__photo img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--radius);
-  border: 1px solid var(--c-dark-line);
-  filter: saturate(0.85);
-}
-
-/* --------------------------------------------------------------------------
-   10. Footer
-   -------------------------------------------------------------------------- */
-
-.footer {
-  background: var(--c-dark-bg);
-  color: var(--c-dark-fg);
-  border-top: 1px solid var(--c-dark-line);
-  /* Su fondo scuro il testo appare più grasso: si compensa qui. */
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Quattro colonne: il brand ha più respiro, le due colonne di link hanno
-   la stessa misura, la mappa una larghezza che non si deforma. */
-.footer__main {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
-  /* Le colonne si stirano a tutta altezza: serve alla mappa, che riempie
-     lo spazio residuo della sua colonna invece di restare un francobollo. */
-  align-items: stretch;
-  gap: var(--s-7);
-  padding-block: var(--s-9) var(--s-8);
-}
-
-.footer__col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.footer__col--brand {
-  gap: var(--s-3);
-}
-
-/* Stessa incisione del marchio in testata, in negativo: il footer è la
-   targa vista di notte, con la luce sopra accesa. */
-.footer__name {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--fs-md);
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-  color: var(--c-dark-fg-strong);
-}
-
-.footer__role {
-  font-size: var(--fs-label);
-  font-weight: 500;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.footer__text {
-  margin: 0;
-  max-width: 40ch;
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
-  color: var(--c-dark-fg);
-}
-
-/* L'iscrizione all'albo chiude la colonna del brand: è la credenziale che
-   qualifica lo studio, ma non deve competere con la descrizione. */
-.footer__albo {
-  margin: var(--s-2) 0 0;
-  max-width: 40ch;
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--c-dark-line);
-  font-size: var(--fs-label);
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.footer__title {
-  margin: 0 0 var(--s-4);
-  /* Porta il maiuscoletto sulla stessa linea ottica della prima riga
-     del nome nella colonna del brand. */
-  padding-top: 0.35em;
-  font-family: var(--font-body);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.footer__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: var(--s-3);
-}
-
-/* Icona e testo su due colonne: le righe successive restano rientrate
-   sotto il testo, non sotto l'icona. */
-.footer__item {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
-  align-items: start;
-  gap: var(--s-3);
-  font-size: var(--fs-sm);
-  line-height: 1.55;
-  color: var(--c-dark-fg);
-}
-
-/* Le voci senza icona (navigazione) occupano l'intera riga. */
-.footer__item > :only-child {
-  grid-column: 1 / -1;
-}
-
-.footer__icon {
-  width: 16px;
-  height: 16px;
-  /* Centra il glifo sulla prima riga di testo, non sul blocco. */
-  margin-top: calc((1.55em - 16px) / 2);
-  color: rgba(255, 255, 255, 0.4);
-  flex: none;
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__link {
-  display: inline-block;
-  color: var(--c-dark-fg);
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__link--break {
-  overflow-wrap: anywhere;
-}
-
-.footer__link--address {
+.contact__map-col {
   display: flex;
   flex-direction: column;
 }
 
-.footer__link:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-.footer__item:hover .footer__icon {
-  color: var(--c-accent);
-}
-
-/* --- Mini-mappa --- */
-
-/* L'iframe è decorativo e inerte: tutta l'interazione passa dal link che
-   lo contiene, così un solo click porta all'itinerario. */
-/* La mappa cresce fino a pareggiare l'altezza delle colonne di testo,
-   così le quattro colonne chiudono sulla stessa riga. */
-.footer__map {
+.map {
   position: relative;
   display: block;
-  overflow: hidden;
-  min-height: 260px;
   flex: 1;
+  min-height: 360px;
+  overflow: hidden;
   border: 1px solid var(--c-dark-line);
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--c-dark-bg-2);
   transition: border-color var(--dur) var(--ease);
 }
 
-/* L'embed di OSM disegna i controlli di zoom in alto a destra e la barra
-   di attribuzione in basso. Si sovradimensiona l'iframe e lo si ritaglia,
-   così nel riquadro resta solo la cartografia; l'attribuzione è resa come
-   testo sotto la mappa, come previsto dalla licenza.
-
-   Il ritaglio è dato in pixel perché i controlli di OSM hanno dimensioni
-   fisse, e resta perciò valido a ogni larghezza del riquadro. */
-.footer__map-crop {
+.map__crop {
   position: absolute;
   top: -44px;
   right: -52px;
@@ -1391,368 +2234,309 @@
   overflow: hidden;
 }
 
-.footer__map-frame {
+.map__frame {
   width: 100%;
   height: 100%;
   border: 0;
   pointer-events: none;
-  /* La cartografia OSM è chiara: smorzata si accorda al fondo scuro e
-     torna piena al passaggio del mouse. */
-  filter: grayscale(0.45) contrast(0.95) brightness(0.9);
+  filter: grayscale(1) contrast(1.05) brightness(0.92);
   transition: filter var(--dur) var(--ease);
 }
 
-/* Nota sotto la mappa: un riferimento geografico utile a chi non conosce
-   la zona, più l'attribuzione della cartografia. */
-.footer__map-note {
-  margin: var(--s-3) 0 0;
-  font-size: var(--fs-label);
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.footer__map-note a {
-  color: rgba(255, 255, 255, 0.55);
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__map-note a:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-.footer__map-veil {
+.map__pin {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.85) 0%,
-    rgba(0, 0, 0, 0.35) 45%,
-    rgba(0, 0, 0, 0.06) 100%
-  );
-  transition: opacity var(--dur) var(--ease);
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  transform: translate(-50%, -100%);
+  border-radius: 50%;
+  background: var(--c-ink);
+  color: #fff;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6);
 }
 
-.footer__map-cta {
+.map__pin .dmark {
+  width: 16px;
+  height: 16px;
+}
+
+.map__cta {
   position: absolute;
-  left: var(--s-3);
-  right: var(--s-3);
-  bottom: var(--s-3);
+  left: var(--s-4);
+  bottom: var(--s-4);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: var(--s-2);
   padding: var(--s-2) var(--s-3);
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
+  border-radius: var(--radius);
+  background: var(--c-dark-fg-strong);
+  color: var(--c-ink);
   font-size: var(--fs-label);
   font-weight: 600;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--c-dark-fg-strong);
-  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
-.footer__map-cta-icon {
+.map__cta svg {
   width: 13px;
   height: 13px;
-  flex: none;
 }
 
-.footer__map:hover {
-  border-color: rgba(255, 255, 255, 0.28);
+.map:hover {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-.footer__map:hover .footer__map-frame {
-  filter: grayscale(0) contrast(1) brightness(1);
+.map:hover .map__frame {
+  filter: grayscale(1) contrast(1.05) brightness(1);
 }
 
-.footer__map:hover .footer__map-veil {
-  opacity: 0.6;
-}
-
-.footer__map:hover .footer__map-cta {
-  background: var(--c-accent);
-  color: var(--c-accent-ink);
-}
-
-.footer__map:focus-visible {
-  outline: 2px solid var(--c-accent);
+.map:focus-visible {
+  outline: 2px solid var(--c-dark-fg-strong);
   outline-offset: 3px;
 }
 
-/* Fascia dei dati societari: informativa, tono più basso del resto del
-   footer perché va letta solo quando serve. Etichetta e valore stanno
-   incolonnati, così i dati si scorrono a colpo d'occhio. */
-.footer__company {
-  border-top: 1px solid var(--c-dark-line);
-}
-
-.footer__company-inner {
-  padding-block: var(--s-6);
-}
-
-.footer__company-name {
-  margin: 0 0 var(--s-4);
-  font-family: var(--font-body);
+.map__note {
+  margin: var(--s-3) 0 0;
   font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.6;
+  color: var(--c-dark-fg-muted);
 }
 
-/* Sei voci su tre colonne: due righe piene, senza dati orfani in coda.
-   Sopra i 1100px stanno tutte su una riga sola. */
-.footer__company-data {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-4) var(--s-6);
-  font-size: var(--fs-label);
+.map__note a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
-@media (min-width: 1100px) {
-  .footer__company-data {
-    grid-template-columns: 1.6fr 1fr 1fr 1fr 2fr 1fr;
-  }
-}
-
-.footer__company-row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.footer__company-row dt {
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-}
-
-.footer__company-row dd {
-  margin: 0;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.footer__company-row a {
-  color: rgba(255, 255, 255, 0.62);
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__company-row a:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-/* Barra finale: tre zone, quella centrale ancorata al centro della pagina
-   indipendentemente dalla lunghezza delle due laterali. */
-.footer__bar {
-  border-top: 1px solid var(--c-dark-line);
-}
-
-.footer__bar-inner {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: var(--s-3) var(--s-5);
-  /* Spazio extra in coda: il selettore di palette è fisso nell'angolo in
-     basso a destra e non deve mai coprire il credit. */
-  padding-block: var(--s-5) var(--s-8);
-  font-size: var(--fs-label);
-  color: rgba(255, 255, 255, 0.45);
-}
-
-.footer__copy {
-  justify-self: start;
-}
-
-.footer__legal {
-  justify-self: center;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--s-4);
-  text-align: center;
-}
-
-.footer__legal a {
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__legal a:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-/* Il credit dell'autore resta molto discreto. */
-.footer__credit {
-  justify-self: end;
-  text-align: right;
-}
-
-.footer__credit a {
-  color: rgba(255, 255, 255, 0.6);
-  transition: color var(--dur) var(--ease);
-}
-
-.footer__credit a:hover {
+.map__note a:hover {
   color: var(--c-dark-fg-strong);
 }
 
 /* --------------------------------------------------------------------------
-   10b. Dati societari
+   14. Footer — testata di tavola
    -------------------------------------------------------------------------- */
 
-/* Riquadro compatto: i dati societari sono un obbligo informativo, non un
-   contenuto da leggere. Stanno in una scheda contenuta, senza titolo di
-   sezione né filetti per riga. */
-.company-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--s-2) var(--s-4);
-  padding-bottom: var(--s-4);
-  border-bottom: 1px solid var(--c-line);
+.footer {
+  background: var(--c-dark-bg);
+  color: var(--c-dark-fg);
+  padding-block: var(--s-8);
 }
 
-.company-head__name {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-.company-grid {
-  margin: var(--s-5) 0 0;
+.titleblock {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1.5fr 1fr 1fr 0.8fr;
+  border: 1px solid var(--c-dark-line);
+}
+
+.tb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-5);
+  border-right: 1px solid var(--c-dark-line);
+  border-bottom: 1px solid var(--c-dark-line);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+
+.tb:nth-child(4n) {
+  border-right: 0;
+}
+
+.tb--brand {
+  grid-row: span 2;
   gap: var(--s-5);
 }
 
-.company-item {
+.tb--company {
+  grid-column: span 2;
+}
+
+.tb--meta {
+  grid-column: span 4;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-4);
+  border-bottom: 0;
+  border-right: 0;
+}
+
+.tb--meta > div {
   display: flex;
   flex-direction: column;
   gap: var(--s-1);
   min-width: 0;
 }
 
-.company-item dd {
-  margin: 0;
+/* La cella del marchio è l'ultima della riga 1 e della riga 2 a sinistra:
+   nessun bordo destro doppio. */
+.tb--brand {
+  border-right: 1px solid var(--c-dark-line);
 }
 
-.company-item__value {
-  font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
-  color: var(--c-ink-2);
+.tb--company {
+  border-right: 0;
 }
 
-a.company-item__value {
-  color: var(--c-ink);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  text-decoration-color: var(--c-line-strong);
-  transition: text-decoration-color var(--dur) var(--ease);
-  word-break: break-word;
+.tb__label {
+  display: block;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-muted);
 }
 
-a.company-item__value:hover {
-  text-decoration-color: currentColor;
+.tb__value {
+  color: var(--c-dark-fg);
 }
 
-@media (max-width: 900px) {
-  .company-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+.tb__logo {
+  width: 64px;
+  height: 64px;
+  color: var(--c-dark-fg-strong);
 }
 
-@media (max-width: 560px) {
-  .company-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  /* La PEC è lunga: a due colonne si spezzerebbe a metà parola. */
-  .company-item:last-child {
-    grid-column: 1 / -1;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   11. Pagine interne
-   -------------------------------------------------------------------------- */
-
-.page-head {
-  padding-block: clamp(3rem, 6vw, 5rem) clamp(2rem, 4vw, 3.5rem);
-  border-bottom: 1px solid var(--c-line);
-}
-
-.page-head__inner {
+.tb__brand-copy {
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
+  gap: 4px;
 }
 
-.page-head .lead {
-  max-width: 58ch;
+.tb__name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-dark-fg-strong);
 }
 
-/* Indice dei servizi in pagina interna. */
-.index-list {
+.tb__role {
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-muted);
+}
+
+/* L'indirizzo composto come parte del marchio: righe maiuscole spaziate,
+   separate da filetti, come l'incisione sulla targa. */
+.address-mark {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 260px;
+  border-top: 1px solid var(--c-dark-fg-strong);
+  border-bottom: 1px solid var(--c-dark-fg-strong);
+}
+
+.address-mark span {
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--c-dark-line);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-dark-fg-strong);
+}
+
+.address-mark span:last-child {
+  border-bottom: 0;
+  color: var(--c-dark-fg-muted);
+}
+
+.tb__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--c-line);
-  columns: 2;
-  column-gap: clamp(2rem, 5vw, 4rem);
-}
-
-.index-list li {
-  break-inside: avoid;
-  padding-block: var(--s-4);
-  border-bottom: 1px solid var(--c-line);
-  font-size: var(--fs-base);
-  color: var(--c-ink);
-}
-
-/* L'elenco completo delle prestazioni chiude la sezione Servizi. */
-.service-index {
-  margin-top: clamp(3rem, 6vw, 5rem);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-}
-
-/* Blocco di richiamo al contatto in fondo alle pagine interne. */
-.cta-band {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-5);
-  padding: clamp(2rem, 4vw, 3rem);
-  background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: var(--radius);
-}
-
-.cta-band__text {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--s-2);
 }
 
+.tb__list a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--c-dark-fg);
+  transition: color var(--dur) var(--ease);
+}
+
+.tb__list a:hover,
+.tb__value a:hover {
+  color: var(--c-dark-fg-strong);
+}
+
+.tb__break {
+  overflow-wrap: anywhere;
+}
+
+.tb__ext {
+  width: 12px;
+  height: 12px;
+}
+
+.tb__num {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  color: var(--c-dark-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tb__company-name {
+  margin: 0;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-strong);
+}
+
+.tb__company {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3) var(--s-4);
+  font-size: var(--fs-label);
+}
+
+.tb__company > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tb__company dt {
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.tb__company dd {
+  margin: 0;
+  color: var(--c-dark-fg);
+  overflow-wrap: anywhere;
+}
+
+.tb__value a {
+  color: var(--c-dark-fg-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--c-dark-line);
+}
+
 /* --------------------------------------------------------------------------
-   12. Animazioni — solo ingressi leggeri
+   15. Animazioni: ingressi, rivelazioni, effetti legati allo scroll
    -------------------------------------------------------------------------- */
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -1769,13 +2553,13 @@ a.company-item__value:hover {
   }
 }
 
-/* Rivelazione allo scroll, applicata via IntersectionObserver. */
 .reveal {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(18px);
   transition:
-    opacity 520ms var(--ease),
-    transform 520ms var(--ease);
+    opacity 700ms var(--ease),
+    transform 700ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 110ms);
 }
 
 .reveal.is-visible {
@@ -1783,70 +2567,466 @@ a.company-item__value:hover {
   transform: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
+.reveal-stagger {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 560ms var(--ease),
+    transform 560ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+
+.reveal-stagger.is-visible > * {
+  opacity: 1;
+  transform: none;
+}
+
+/* Intestazioni a tendina: il ritaglio sta sui figli, non sul contenitore
+   osservato (un elemento ritagliato a zero non interseca mai il viewport). */
+.section-head.reveal {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.section-head.reveal > * {
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(14px);
+  transition:
+    clip-path 800ms var(--ease),
+    transform 800ms var(--ease);
+}
+
+.section-head.reveal > .section-head__body {
+  transition-delay: 160ms;
+}
+
+.section-head.reveal.is-visible > * {
+  clip-path: inset(0);
+  transform: none;
+}
+
+/* Il numero sul filo non va ritagliato: sporge sopra il contenitore. */
+.section-head.reveal .section-head__index {
+  clip-path: none;
+}
+
+.section-head.reveal .section-head__meta {
+  clip-path: none;
+  opacity: 0;
+  transition: opacity 600ms var(--ease), transform 800ms var(--ease);
+}
+
+.section-head.reveal.is-visible .section-head__meta {
+  opacity: 1;
+}
+
+/* Filo di avanzamento della lettura. */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 70;
+  height: 2px;
+  background: var(--c-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+@keyframes progress-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes parallax {
+  from {
+    translate: 0 -6%;
+  }
+  to {
+    translate: 0 6%;
+  }
+}
+
+@keyframes grid-pulse {
+  0% {
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-grid {
+  0% {
+    opacity: 0.55;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes rail-highlight {
+  0% {
+    color: var(--c-body);
+  }
+  15%,
+  85% {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+  100% {
+    color: var(--c-body);
+  }
+}
+
+@keyframes rail-bar {
+  0% {
+    transform: scaleY(0);
+  }
+  15%,
+  85% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes photo-crop {
+  from {
+    clip-path: inset(0);
+  }
+  to {
+    clip-path: inset(0 calc((100vw - min(100vw, var(--container))) / 2 + var(--gutter)) 0);
+  }
+}
+
+/* --- Intro che cambia con lo scroll ---
+   Le posizioni finali sono quelle del layout; le animazioni descrivono
+   solo lo stato di partenza. Così, senza supporto, resta l'hero statico. */
+@keyframes masthead-land {
+  from {
+    transform: translate(0, 24vh) scale(1.85);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
     opacity: 1;
     transform: none;
   }
 }
 
+@keyframes plate-in {
+  from {
+    opacity: 0;
+    transform: translateY(55vh) scale(0.86);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    letter-spacing: 0.22em;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: var(--ls-display);
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .progress {
+      animation: progress-grow linear both;
+      animation-timeline: scroll(root);
+    }
+
+    .service-block__media img,
+    .project__figure img {
+      scale: 1.14;
+      animation: parallax linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+
+    /* La griglia affiora nel passaggio dello studio. */
+    .section--grid {
+      view-timeline-name: --grid-section;
+    }
+
+    .section--grid::before {
+      animation: grid-pulse linear both;
+      animation-timeline: --grid-section;
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* Le discipline si accendono una alla volta lungo la sezione. */
+    #studio {
+      view-timeline-name: --studio;
+    }
+
+    .rail-list li {
+      animation: rail-highlight linear both;
+      animation-timeline: --studio;
+      animation-range: cover calc(12% + var(--i, 0) * 76% / 9) cover calc(12% + (var(--i, 0) + 1) * 76% / 9);
+    }
+
+    .rail-list li::before {
+      animation: rail-bar linear both;
+      animation-timeline: --studio;
+      animation-range: cover calc(12% + var(--i, 0) * 76% / 9) cover calc(12% + (var(--i, 0) + 1) * 76% / 9);
+    }
+
+    /* La fotografia del territorio viene ritagliata alla griglia. */
+    .terr__photo {
+      animation: photo-crop linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 55%;
+    }
+  }
+
+  @media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
+    .intro {
+      height: 300vh;
+      view-timeline-name: --intro;
+    }
+
+    .intro::before {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: block;
+      -webkit-mask-image: none;
+      mask-image: none;
+      animation: intro-grid linear both;
+      animation-timeline: --intro;
+      animation-range: contain 0% contain 100%;
+    }
+
+    .intro__stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      margin-top: -100vh;
+      padding-top: var(--header-h);
+      padding-bottom: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .intro__grid {
+      height: 100%;
+      padding-top: var(--s-6);
+      padding-bottom: var(--s-6);
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .intro__head {
+      align-self: start;
+    }
+
+    /* Gli ingressi all'apertura non servono: comanda lo scroll. */
+    .masthead__pre,
+    .infoline,
+    .manifesto__line,
+    .intro__lead,
+    .intro__actions,
+    .intro__focus,
+    .intro__plate .plate,
+    .intro__caption {
+      animation-duration: auto;
+      animation-delay: 0s;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --intro;
+    }
+
+    .masthead__name {
+      animation: masthead-land linear both;
+      animation-timeline: --intro;
+      animation-range: contain 0% contain 30%;
+    }
+
+    .masthead__pre {
+      animation-name: stage-in;
+      animation-range: contain 22% contain 32%;
+    }
+
+    .infoline {
+      animation-name: stage-in;
+      animation-range: contain 26% contain 38%;
+    }
+
+    .manifesto__line {
+      animation-name: word-in;
+      animation-range: contain calc(34% + var(--i, 0) * 12%) contain calc(48% + var(--i, 0) * 12%);
+    }
+
+    .intro__lead {
+      animation-name: stage-in;
+      animation-range: contain 66% contain 78%;
+    }
+
+    .intro__actions {
+      animation-name: stage-in;
+      animation-range: contain 70% contain 82%;
+    }
+
+    .intro__focus {
+      animation-name: stage-in;
+      animation-range: contain 74% contain 86%;
+    }
+
+    .intro__plate .plate {
+      animation-name: plate-in;
+      animation-range: contain 24% contain 58%;
+    }
+
+    .intro__caption {
+      animation-name: stage-in;
+      animation-range: contain 56% contain 66%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-stagger > *,
+  .section-head.reveal > *,
+  .section-head.reveal .section-head__meta {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
+  }
+
+  .method__step::before,
+  .method__step::after,
+  .rail-list li::before {
+    transform: none;
+    transition: none;
+  }
+
+  .logo--draw path,
+  .signature__logo path {
+    stroke-dashoffset: 0;
+    animation: none;
+    transition: none;
+  }
+
+  .hotspot__btn::after,
+  .chart__halo {
+    animation: none;
+  }
+
+  .plate__picture {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* --------------------------------------------------------------------------
-   13. Breakpoint
+   16. Breakpoint
    -------------------------------------------------------------------------- */
 
-/* --- <= 1024px --- */
+@media (max-width: 1240px) {
+  .nav {
+    gap: var(--s-4);
+  }
+
+  .header__phone {
+    display: none;
+  }
+}
+
+/* Con sei voci di menu il pulsante non ci sta più: resta la voce 06. */
+@media (max-width: 1100px) {
+  .header__cta {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) {
   .method {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-6) var(--s-5);
   }
 
-  /* Quattro voci in riga non ci stanno più: due per riga, con i pallini
-     nascosti perché a capo non separano più nulla. */
-  .marquee-strip__inner {
+  .strip__inner {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-2) var(--s-5);
   }
 
-  .marquee-strip__item,
-  .marquee-strip__item:first-child,
-  .marquee-strip__item:last-child {
-    text-align: left;
+  .strip__item {
     white-space: normal;
   }
 
-  .marquee-strip__sep {
+  .strip__sep {
     display: none;
   }
 
-  /* Il footer perde la quarta colonna: il brand passa a tutta larghezza e
-     contatti, navigazione e mappa restano affiancati sotto. */
-  .footer__main {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--s-7) var(--s-6);
+  .titleblock {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .footer__col--brand {
-    grid-column: 1 / -1;
+  .tb:nth-child(4n) {
+    border-right: 1px solid var(--c-dark-line);
   }
 
-  .footer__col--brand .footer__text {
-    max-width: 62ch;
+  .tb:nth-child(2n) {
+    border-right: 0;
   }
 
-  .footer__col--brand .footer__albo {
-    max-width: none;
+  .tb--brand {
+    grid-row: auto;
+    grid-column: span 2;
+    border-right: 0;
   }
 
-  /* Senza la colonna del brand accanto, i titoli non devono più
-     allinearsi a una prima riga che sta altrove. */
-  .footer__main > .footer__col:not(.footer__col--brand) .footer__title {
-    padding-top: 0;
+  .tb--company,
+  .tb--meta {
+    grid-column: span 2;
+  }
+
+  .tb--meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* --- <= 900px: passaggio al menu mobile --- */
 @media (max-width: 900px) {
   .nav,
   .header__phone,
@@ -1863,80 +3043,105 @@ a.company-item__value:hover {
     height: 68px;
   }
 
-  .hero__grid {
+  .brand__mark,
+  .header--scrolled .brand__mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .section-head__body {
     grid-template-columns: 1fr;
+  }
+
+  .section-head .lead {
+    max-width: 60ch;
+  }
+
+  .intro__grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: var(--s-7);
   }
 
-  /* Su mobile l'immagine viene prima del testo solo se resta leggibile:
-     qui il testo mantiene la priorità visiva. */
-  /* Sotto i 900px la scheda esce dal flusso sovrapposto e si dispone
-     sotto l'immagine: la colonna diventa verticale. */
-  .hero__visual {
-    order: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    min-height: 0;
-    /* Immagine e scheda condividono la stessa larghezza: la colonna
-       resta allineata invece di avere l'immagine centrata e la scheda
-       a tutta larghezza. */
-    max-width: 440px;
-    width: 100%;
-    margin-inline: auto;
+  .masthead__name {
+    font-size: clamp(2.5rem, 11.5vw, 4rem);
+    white-space: normal;
+    line-height: 0.95;
   }
 
-  .hero__visual img {
-    max-width: 100%;
-    margin-inline: auto;
+  .manifesto {
+    font-size: clamp(2.25rem, 9vw, 3.25rem);
   }
 
-  .hero__stat {
-    position: static;
-    align-items: flex-start;
-    margin-top: calc(var(--s-4) * -1);
-    box-shadow: none;
+  .intro__plate {
+    max-width: 560px;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-block: 0;
+  }
+
+  .facts__item {
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .facts__item:not(:first-child) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .service-block,
+  .service-block--flip {
+    grid-template-columns: 1fr;
+    gap: var(--s-5);
+  }
+
+  .service-block--flip .service-block__media {
+    grid-column: 1;
   }
 
   .project--lead,
-  .studio-grid,
   .contact-grid {
     grid-template-columns: 1fr;
   }
 
-  /* La mappa scende sotto e si allarga su entrambe le colonne. */
-  .footer__main {
+  .studio-layout {
+    grid-template-columns: 1fr;
+    gap: var(--s-6);
+  }
+
+  .studio__rail {
+    position: static;
+  }
+
+  .rail-list {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-7) var(--s-6);
+    gap: 0 var(--s-5);
   }
 
-  .footer__col--map {
-    grid-column: 1 / -1;
+  .terr__photo img {
+    aspect-ratio: 4 / 3;
   }
 
-  /* A tutta larghezza la mappa torna a proporzioni fisse: non deve più
-     pareggiare l'altezza di una colonna che non ha più accanto. */
-  .footer__map {
+  .hotspot__tip {
+    max-width: 200px;
+  }
+
+  .map {
     flex: none;
     min-height: 0;
-    aspect-ratio: 21 / 9;
-  }
-
-  /* La barra finale lascia spazio al selettore di palette, che qui è
-     ancora nell'angolo in basso a destra. */
-  .footer__bar-inner {
-    padding-bottom: var(--s-9);
+    aspect-ratio: 16 / 10;
   }
 }
 
-/* --- <= 640px: layout a colonna singola --- */
 @media (max-width: 640px) {
-  .project-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .discipline-list,
-  .method {
+  .project-grid,
+  .method,
+  .rail-list {
     grid-template-columns: 1fr;
   }
 
@@ -1944,77 +3149,75 @@ a.company-item__value:hover {
     columns: 1;
   }
 
-  /* Su schermo stretto anche due colonne spezzano le voci: una per riga. */
-  .marquee-strip__inner {
+  .strip__inner {
     grid-template-columns: 1fr;
     gap: var(--s-2);
   }
 
-  .marquee-strip__item,
-  .marquee-strip__item:first-child,
-  .marquee-strip__item:last-child {
-    text-align: left;
-    white-space: normal;
-  }
-
-  .marquee-strip__sep {
-    display: none;
-  }
-
-  .cta-band {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .btn {
-    width: 100%;
-  }
-
+  .btn,
   .btn-row {
     width: 100%;
   }
 
-  .footer__main {
+  .focus {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .focus__count {
+    display: none;
+  }
+
+  .focus__text {
+    white-space: normal;
+  }
+
+  .datasheet__row {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .datasheet__row dd {
+    grid-column: 2;
+  }
+
+  .contact-item__link {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: var(--s-3);
+  }
+
+  .contact-item__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .map {
+    aspect-ratio: 4 / 3;
+  }
+
+  .titleblock {
     grid-template-columns: 1fr;
-    gap: var(--s-6);
   }
 
-  .footer__map {
-    flex: none;
-    min-height: 0;
-    aspect-ratio: 16 / 9;
+  .tb,
+  .tb:nth-child(4n),
+  .tb:nth-child(2n) {
+    border-right: 0;
   }
 
-  /* Con poca larghezza tre colonne spezzerebbero la PEC a metà parola. */
-  .footer__company-data {
+  .tb--brand,
+  .tb--company,
+  .tb--meta {
+    grid-column: auto;
+  }
+
+  .tb--meta {
+    grid-template-columns: 1fr;
+  }
+
+  .tb__company {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* La barra finale si impila e resta allineata a sinistra. */
-  .footer__bar-inner {
-    grid-template-columns: 1fr;
-    justify-items: start;
-    text-align: left;
-  }
-
-  .footer__legal,
-  .footer__credit {
-    justify-self: start;
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-}
-
-/* --- <= 380px: dispositivi stretti --- */
-@media (max-width: 380px) {
-  .brand__name {
-    font-size: var(--fs-sm);
-  }
-
-  .brand__mark,
-  .header--scrolled .brand__mark {
-    width: 36px;
-    height: 36px;
+  .tb__company > div:last-child {
+    grid-column: 1 / -1;
   }
 }
