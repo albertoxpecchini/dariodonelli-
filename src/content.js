@@ -66,39 +66,6 @@ export const profile = {
 }
 
 /**
- * Dati societari della DONELLI S.R.L. COSTRUZIONI GENERALI, la società
- * riferita alla targa dello studio. Sono i dati che devono comparire
- * per obbligo informativo (art. 2250 c.c.) su sito e comunicazioni.
- *
- * Nota: la visura riporta il comune di RODIGO, di cui Rivalta sul Mincio
- * è frazione; l'indirizzo civico è lo stesso dello studio.
- */
-export const company = {
-  name: 'Donelli S.r.l. Costruzioni Generali',
-  legalName: 'DONELLI S.R.L. COSTRUZIONI GENERALI',
-  address: 'Via Filippo Turati, 1 — 46040 Rodigo (MN)',
-  vat: '02728900206',
-  vatEu: 'IT02728900206',
-  taxCode: '02728900206',
-  rea: 'MN 275664',
-  shareCapital: '€ 10.000,00 i.v.',
-  pec: 'donellicostruzionigenerali@pec.it',
-  pecHref: 'mailto:donellicostruzionigenerali@pec.it',
-  sdi: 'M5UXCR1',
-}
-
-/** Righe dei dati societari mostrate nella fascia del footer. */
-export const companyDetails = [
-  // La ragione sociale è già l'intestazione della fascia: non si ripete qui.
-  { label: 'Sede legale', value: company.address },
-  // P. IVA e codice fiscale coincidono: una riga sola, come da prassi.
-  { label: 'P. IVA e C.F.', value: company.vat },
-  { label: 'REA', value: company.rea },
-  { label: 'Capitale sociale', value: company.shareCapital },
-  { label: 'Codice SDI', value: company.sdi },
-]
-
-/**
  * Voci di navigazione. Il sito è una pagina sola: ogni voce punta a una
  * sezione tramite ancora, e l'id serve anche allo scroll-spy dell'header
  * per illuminare la voce corrispondente alla sezione che si sta leggendo.
@@ -203,7 +170,7 @@ export const lakes = [
  */
 export const hotspots = [
   { x: 58, y: 67, title: 'L’ingresso', text: 'Porta a vetri su via Filippo Turati, 1.' },
-  { x: 69, y: 58.5, title: 'Le targhe', text: 'Studio tecnico e Donelli S.r.l., una sopra l’altra.' },
+  { x: 69, y: 61.5, title: 'La targa', text: 'Ing. Dario Donelli: ingegneria, architettura, ambiente.' },
   { x: 44, y: 66, title: 'La vetrina', text: 'L’edificio d’angolo tra via Turati e vicolo Zibramonda.' },
 ]
 
@@ -218,11 +185,16 @@ export const heroCompetences = [
 /**
  * Tre macro-aree. Ognuna spiega cosa comprende, a chi serve e che problema
  * risolve, con un elenco delle prestazioni effettivamente offerte.
+ *
+ * "icon" è il nome di un'icona in /images/icone (png + webp, 512 px su fondo
+ * trasparente): oggetti in nero lucido e acciaio con un solo dettaglio blu,
+ * generati tutti nello stesso foglio perché restino una famiglia.
  */
 export const serviceAreas = [
   {
     id: 'progettazione',
     num: '01',
+    icon: 'compasso',
     image: '/images/servizio-progettazione',
     imageAlt: 'Un tecnico disegna a mano un prospetto su carta da lucido',
     title: 'Progettazione e pratiche edilizie',
@@ -238,6 +210,7 @@ export const serviceAreas = [
   {
     id: 'strutture',
     num: '02',
+    icon: 'trave',
     image: '/images/servizio-strutture',
     imageAlt: 'Armature di ferro predisposte su un solaio prima del getto',
     title: 'Strutture e sicurezza sismica',
@@ -252,6 +225,7 @@ export const serviceAreas = [
   {
     id: 'cantiere',
     num: '03',
+    icon: 'livella',
     image: '/images/servizio-cantiere',
     imageAlt: 'Squadra di tecnici in cantiere sul solaio di un edificio in costruzione',
     title: 'Direzione lavori e consulenza',
@@ -329,25 +303,29 @@ export const heroFacts = [
   { label: 'Laurea', value: 'Ingegneria Edile-Architettura' },
 ]
 
-/** Le quattro fasi del metodo di lavoro. */
+/** Le quattro fasi del metodo di lavoro, ognuna con la sua icona. */
 export const method = [
   {
     num: '01',
+    icon: 'metro',
     title: 'Sopralluogo',
     text: 'Verifica dello stato dei luoghi, della documentazione disponibile e dei vincoli che riguardano l’immobile.',
   },
   {
     num: '02',
+    icon: 'cartellina',
     title: 'Fattibilità',
     text: 'Valutazione di cosa è realizzabile, con un quadro chiaro di tempi, procedure e ordine di spesa.',
   },
   {
     num: '03',
+    icon: 'squadra',
     title: 'Progetto',
     text: 'Sviluppo del progetto nei diversi livelli e predisposizione delle pratiche verso gli enti.',
   },
   {
     num: '04',
+    icon: 'casco',
     title: 'Cantiere',
     text: 'Direzione lavori, controllo delle lavorazioni e rapporto diretto con le imprese fino alla chiusura.',
   },

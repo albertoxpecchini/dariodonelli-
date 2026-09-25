@@ -1,8 +1,15 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import './motion.css'
 import {
-  company,
-  companyDetails,
+  scrollToTarget,
+  setScrollLocked,
+  useMarquee,
+  useReveal,
+  useScrollProgress,
+  useSmoothScroll,
+} from './motion.js'
+import {
   disciplines,
   heroCompetences,
   heroFacts,
@@ -141,34 +148,6 @@ function useScrolled(threshold = 24) {
 }
 
 /**
- * Rivelazione allo scroll. Un solo observer per tutti gli elementi .reveal;
- * gli elementi già visibili non vengono ri-animati quando escono.
- */
-function useReveal() {
-  useEffect(() => {
-    const nodes = document.querySelectorAll('.reveal:not(.is-visible)')
-    if (!nodes.length) return
-    if (typeof IntersectionObserver === 'undefined') {
-      nodes.forEach((node) => node.classList.add('is-visible'))
-      return
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { rootMargin: '0px 0px -10% 0px', threshold: 0.05 },
-    )
-    nodes.forEach((node) => observer.observe(node))
-    return () => observer.disconnect()
-  }, [])
-}
-
-/**
  * Scroll-spy: l'id della sezione che attraversa la linea di lettura, posta
  * poco sotto l'header. Alimenta la navigazione e l'indicatore nell'angolo.
  */
@@ -208,12 +187,49 @@ function useScrollSpy(ids) {
 }
 
 function scrollToSection(id) {
-  const el = document.getElementById(id)
-  if (!el) return
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const top = el.getBoundingClientRect().top + window.scrollY - 88
-  window.scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' })
+  if (!document.getElementById(id)) return
+  scrollToTarget(id)
   window.history.replaceState(null, '', `#${id}`)
+}
+
+/* ---------------------------------------------------------------------------
+   Testo spezzato per le rivelazioni: parole o lettere in maschera
+   (motion.css, sezione 2). Il testo resta testo: gli spazi sono veri.
+   --------------------------------------------------------------------------- */
+
+function Words({ text }) {
+  return text.split(' ').map((word, i) => (
+    <Fragment key={i}>
+      {i > 0 && ' '}
+      <span className="word">
+        <span className="word__in" style={{ '--w': i }}>
+          {word}
+        </span>
+      </span>
+    </Fragment>
+  ))
+}
+
+/** Lettere per la testata; chi usa un lettore di schermo sente il nome intero. */
+function Letters({ text }) {
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {[...text].map((char, i) =>
+          char === ' ' ? (
+            ' '
+          ) : (
+            <span className="char" key={i}>
+              <span className="char__in" style={{ '--c': i }}>
+                {char}
+              </span>
+            </span>
+          ),
+        )}
+      </span>
+    </>
+  )
 }
 
 function useAnchorNav() {
@@ -260,13 +276,33 @@ function PhoneReveal({ className = '' }) {
 function Header({ active }) {
   const scrolled = useScrolled()
   const [menuOpen, setMenuOpen] = useState(false)
+  const navRef = useRef(null)
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
+    setScrollLocked(menuOpen)
     return () => {
       document.body.style.overflow = ''
+      setScrollLocked(false)
     }
   }, [menuOpen])
+
+  // Il segno blu sotto la voce in lettura: uno solo, che scivola da una
+  // voce all'altra invece di spegnersi e riaccendersi.
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const place = () => {
+      const link = nav.querySelector('.nav__link.is-active')
+      nav.dataset.indicator = link ? 'on' : 'off'
+      if (!link) return
+      nav.style.setProperty('--ind-x', `${link.offsetLeft}px`)
+      nav.style.setProperty('--ind-w', String(link.offsetWidth))
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [active])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -280,6 +316,9 @@ function Header({ active }) {
   const go = useCallback((event, id) => {
     event.preventDefault()
     setMenuOpen(false)
+    // Si sblocca subito: riprendere lo scorrimento dopo, nell'effetto,
+    // interromperebbe il viaggio verso la sezione appena partito.
+    setScrollLocked(false)
     scrollToSection(id)
   }, [])
 
@@ -293,15 +332,14 @@ function Header({ active }) {
             aria-label={`${studio.name}, torna all'inizio`}
             onClick={(e) => {
               e.preventDefault()
-              const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-              window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
+              scrollToTarget(0)
               window.history.replaceState(null, '', ' ')
             }}
           >
             <Brand draw />
           </a>
 
-          <nav className="nav" aria-label="Navigazione principale">
+          <nav className="nav" aria-label="Navigazione principale" ref={navRef}>
             {navItems.map((item) => (
               <a
                 key={item.id}
@@ -318,7 +356,10 @@ function Header({ active }) {
 
           <div className="header__actions">
             <PhoneReveal className="header__phone" />
-            <a className="btn btn--primary header__cta" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+            <a className="action header__cta" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+              <Key accent>
+                <IconArrow />
+              </Key>
               Parliamo del progetto
             </a>
             <button
@@ -329,10 +370,12 @@ function Header({ active }) {
               aria-label={menuOpen ? 'Chiudi il menu' : 'Apri il menu'}
               onClick={() => setMenuOpen(!menuOpen)}
             >
-              <span className="menu-toggle__bars" aria-hidden="true">
-                <span />
-                <span />
-              </span>
+              <Key>
+                <span className="menu-toggle__bars">
+                  <span />
+                  <span />
+                </span>
+              </Key>
             </button>
           </div>
         </div>
@@ -345,11 +388,14 @@ function Header({ active }) {
         className={menuOpen ? 'mobile-panel is-open' : 'mobile-panel'}
         aria-hidden={!menuOpen}
         inert={!menuOpen}
+        data-lenis-prevent
       >
         <div className="mobile-panel__head">
           <Brand />
           <button type="button" className="mobile-panel__close" aria-label="Chiudi il menu" onClick={() => setMenuOpen(false)}>
-            <IconClose />
+            <Key>
+              <IconClose />
+            </Key>
           </button>
         </div>
 
@@ -375,7 +421,10 @@ function Header({ active }) {
           <a className="mobile-panel__mail" href={studio.emailHref}>
             {studio.email}
           </a>
-          <a className="btn btn--primary" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+          <a className="action" href="#contatti" onClick={(e) => go(e, 'contatti')}>
+            <Key accent>
+              <IconArrow />
+            </Key>
             Parliamo del progetto
           </a>
         </div>
@@ -400,14 +449,24 @@ function SideRail() {
   )
 }
 
-/** Indicatore d'angolo: "STUDIO · 03", segue la sezione in lettura. */
+/**
+ * Indicatore d'angolo: "STUDIO · 03", segue la sezione in lettura. Il
+ * numero rotola nel verso dello scroll: sale scendendo, scende risalendo.
+ */
 function Corner({ active }) {
-  const current = sections.find((section) => section.id === active)
+  const index = sections.findIndex((section) => section.id === active)
+  const [roll, setRoll] = useState({ index, dir: 'up' })
+  if (roll.index !== index) setRoll({ index, dir: index > roll.index ? 'up' : 'down' })
+
   return (
     <div className="corner" aria-hidden="true">
       <span className="corner__word">Studio</span>
       <DMark />
-      <span className="corner__num">{current ? current.num : '00'}</span>
+      <span className="corner__num">
+        <span className={`corner__roll corner__roll--${roll.dir}`} key={index}>
+          {index >= 0 ? sections[index].num : '00'}
+        </span>
+      </span>
     </div>
   )
 }
@@ -431,7 +490,9 @@ function SectionHead({ id, title, text }) {
         <span className="label">{section.label}</span>
       </div>
       <div className="section-head__body">
-        <h2 className="headline">{title}</h2>
+        <h2 className="headline">
+          <Words text={title} />
+        </h2>
         {text && <p className="lead">{text}</p>}
       </div>
     </div>
@@ -452,6 +513,35 @@ function Photo({ base, ext = 'jpg', alt, width, height, eager = false, className
         {...(eager && { fetchPriority: 'high' })}
       />
     </picture>
+  )
+}
+
+/**
+ * Icona a oggetto: un piccolo modello in nero lucido e acciaio con un solo
+ * dettaglio in Electric Sapphire. È decorativa, il testo accanto dice già
+ * tutto: alt vuoto e nascosta ai lettori di schermo.
+ */
+function Emblem({ name, className = '' }) {
+  return (
+    <picture className={`emblem ${className}`} aria-hidden="true">
+      <source srcSet={`/images/icone/${name}.webp`} type="image/webp" />
+      <img src={`/images/icone/${name}.png`} alt="" width="512" height="512" loading="lazy" decoding="async" />
+    </picture>
+  )
+}
+
+/**
+ * Tasto fotografato: ghiera d'acciaio come i distanziali della targa e
+ * cappuccio in nero lucido con un filo di blu, oppure tutto in Electric
+ * Sapphire per l'azione principale. La foto dà la materia; il simbolo
+ * resta vettoriale sopra il cappuccio, nitido a ogni misura e libero di
+ * muoversi. Il nome dell'azione lo porta sempre il link che lo contiene.
+ */
+function Key({ accent = false, className = '', children }) {
+  return (
+    <span className={`key${accent ? ' key--accent' : ''} ${className}`} aria-hidden="true">
+      {children}
+    </span>
   )
 }
 
@@ -524,6 +614,7 @@ function Focus() {
       <span className="focus__count">
         {String(index + 1).padStart(2, '0')} / {serviceIndex.length}
       </span>
+      <span className="focus__timer" key={`timer-${index}`} aria-hidden="true" />
     </div>
   )
 }
@@ -538,7 +629,9 @@ function Intro() {
           <div className="intro__head">
             <h1 className="masthead">
               <span className="masthead__pre">Ing.</span>
-              <span className="masthead__name">Dario Donelli</span>
+              <span className="masthead__name">
+                <Letters text="Dario Donelli" />
+              </span>
             </h1>
             <p className="infoline">
               {infoline.map((item, i) => (
@@ -554,7 +647,7 @@ function Intro() {
             <p className="manifesto">
               {manifesto.map((line, i) => (
                 <span className="manifesto__line" key={line} style={{ '--i': i }}>
-                  {line}
+                  <span className="manifesto__in">{line}</span>
                 </span>
               ))}
             </p>
@@ -562,13 +655,18 @@ function Intro() {
               Studio tecnico di ingegneria a Rivalta sul Mincio. Un unico riferimento dalla
               verifica di fattibilità alla chiusura del cantiere.
             </p>
-            <div className="btn-row intro__actions">
-              <a className="btn btn--primary" href="#contatti" onClick={onNav}>
+            <div className="action-row intro__actions">
+              <a className="action" href="#contatti" onClick={onNav}>
+                <Key accent>
+                  <IconArrow />
+                </Key>
                 Parliamo del progetto
               </a>
-              <a className="btn btn--secondary" href="#servizi" onClick={onNav}>
+              <a className="action" href="#servizi" onClick={onNav}>
+                <Key>
+                  <IconArrow />
+                </Key>
                 I servizi
-                <IconArrow />
               </a>
             </div>
             <div className="intro__focus">
@@ -576,13 +674,20 @@ function Intro() {
             </div>
           </div>
 
-          <figure className="intro__plate">
+          {/* reveal: su telefono la targa è sotto la piega, e il suo
+              ingresso (con la luce che la attraversa) aspetta di vedersi. */}
+          <figure className="intro__plate reveal">
             <Plate />
             <figcaption className="intro__caption">
               <span className="label">La targa dello studio</span>
               <span>{studio.address}</span>
             </figcaption>
           </figure>
+        </div>
+
+        <div className="intro__hint" aria-hidden="true">
+          <span>Scorri</span>
+          <span className="intro__hint-line" />
         </div>
       </div>
     </section>
@@ -593,7 +698,7 @@ function FactsStrip() {
   return (
     <div className="facts-band">
       <div className="container">
-        <dl className="facts">
+        <dl className="facts reveal reveal-stagger">
           {heroFacts.map((fact, i) => (
             <div className="facts__item" key={fact.label} style={{ '--i': i }}>
               <dt className="label">{fact.label}</dt>
@@ -603,14 +708,34 @@ function FactsStrip() {
         </dl>
       </div>
       <div className="strip">
-        <div className="container strip__inner">
-          {heroCompetences.map((item, index) => (
-            <Fragment key={item}>
-              {index > 0 && <DMark className="strip__sep" />}
-              <span className="strip__item">{item}</span>
-            </Fragment>
-          ))}
-        </div>
+        <Marquee items={heroCompetences} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Il nastro delle competenze. Quattro copie identiche in fila: la prima è
+ * quella che si legge (anche con un lettore di schermo), le altre servono
+ * solo a riempire lo schermo mentre il nastro gira.
+ */
+function Marquee({ items }) {
+  const track = useRef(null)
+  useMarquee(track)
+
+  return (
+    <div className="marquee">
+      <div className="marquee__track" ref={track}>
+        {[0, 1, 2, 3].map((copy) => (
+          <div className="marquee__group" key={copy} aria-hidden={copy > 0 || undefined}>
+            {items.map((item) => (
+              <Fragment key={item}>
+                <span className="marquee__item">{item}</span>
+                <DMark className="marquee__sep" />
+              </Fragment>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -635,14 +760,17 @@ function ServicesSection() {
         <div className="service-blocks">
           {serviceAreas.map((area, i) => (
             <article key={area.id} className={`service-block reveal${i % 2 === 1 ? ' service-block--flip' : ''}`}>
-              <figure className="service-block__media">
+              <figure className="service-block__media wipe">
                 <Photo base={area.image} ext="png" alt={area.imageAlt} width="900" height="600" />
               </figure>
 
               <div className="service-block__copy">
-                <span className="service-block__num" aria-hidden="true">
-                  {area.num}
-                </span>
+                <div className="service-block__head">
+                  <span className="service-block__num" aria-hidden="true">
+                    {area.num}
+                  </span>
+                  <Emblem name={area.icon} className="service-block__emblem" />
+                </div>
                 <h3 className="service-block__title">{area.title}</h3>
                 <p className="body-text">{area.text}</p>
 
@@ -693,7 +821,7 @@ function ProjectsSection() {
 
   const card = (project, isLead, i) => (
     <article key={project.id} className={isLead ? 'project project--lead reveal' : 'project reveal'} style={{ '--i': i }}>
-      <figure className="project__figure">
+      <figure className="project__figure wipe">
         <Photo base={project.image} alt={project.imageAlt} width="1600" height={isLead ? '1067' : '1200'} />
       </figure>
       <div className="project__body">
@@ -764,9 +892,8 @@ function StudioSection() {
           </aside>
 
           <div className="studio__main">
-            <p className="studio__intro">
-              Dietro allo studio c&rsquo;è una persona sola: chi valuta il progetto è la
-              stessa che poi segue il cantiere.
+            <p className="studio__intro reveal reveal--host">
+              <Words text="Dietro allo studio c’è una persona sola: chi valuta il progetto è la stessa che poi segue il cantiere." />
             </p>
 
             <div className="studio__bio">
@@ -787,7 +914,7 @@ function StudioSection() {
               </div>
               <dl className="datasheet__rows">
                 {profile.credentials.map((row, i) => (
-                  <div className="datasheet__row" key={row.label}>
+                  <div className="datasheet__row" key={row.label} style={{ '--i': i }}>
                     <span className="datasheet__num" aria-hidden="true">
                       {String(i + 1).padStart(2, '0')}
                     </span>
@@ -795,7 +922,7 @@ function StudioSection() {
                     <dd>{row.value}</dd>
                   </div>
                 ))}
-                <div className="datasheet__row">
+                <div className="datasheet__row" style={{ '--i': profile.credentials.length }}>
                   <span className="datasheet__num" aria-hidden="true">
                     07
                   </span>
@@ -817,11 +944,37 @@ function StudioSection() {
    04 Territorio — fotografia con punti di interesse e cartografia minima
    --------------------------------------------------------------------------- */
 
+/** Il giro dei punti va da sinistra a destra, come si legge la foto. */
+const hotspotTour = hotspots
+  .map((spot, i) => ({ x: spot.x, i }))
+  .sort((a, b) => a.x - b.x)
+  .map((spot) => spot.i)
+
+/**
+ * Mentre la fotografia attraversa lo schermo i punti si aprono da soli, uno
+ * alla volta, tra il 28% e il 79% del passaggio: chi scorre legge tutto
+ * senza cercare. Un clic prende il comando finché la foto non esce.
+ */
 function Hotspots() {
-  const [open, setOpen] = useState(-1)
+  const ref = useRef(null)
+  const [auto, setAuto] = useState(-1)
+  const [manual, setManual] = useState(null)
+
+  const onProgress = useCallback((p) => {
+    if (p < 0 || p > 1) {
+      setManual(null)
+      setAuto(-1)
+      return
+    }
+    const step = Math.floor((p - 0.28) / 0.17)
+    setAuto(step >= 0 && step < hotspotTour.length ? hotspotTour[step] : -1)
+  }, [])
+  useScrollProgress(ref, onProgress)
+
+  const open = manual ?? auto
 
   return (
-    <div className="hotspots">
+    <div className="hotspots" ref={ref}>
       {hotspots.map((spot, i) => (
         <div
           key={spot.title}
@@ -834,7 +987,7 @@ function Hotspots() {
             aria-expanded={open === i}
             aria-controls={`hotspot-${i}`}
             aria-label={spot.title}
-            onClick={() => setOpen(open === i ? -1 : i)}
+            onClick={() => setManual(open === i ? -1 : i)}
           >
             <DMark />
           </button>
@@ -945,12 +1098,17 @@ function CompassRose({ cx, cy, r }) {
       <circle r={f(r)} className="rose__ring" />
       <circle r={f(r - 12)} className="rose__ring rose__ring--inner" />
       <g>{ticks}</g>
-      {/* Intercardinali, più corte e sotto */}
-      {[45, 135, 225, 315].map((a) => point(r - 18, 3.2, `i${a}`, a))}
-      {/* Cardinali: il nord si allunga fin quasi al bordo */}
-      {[90, 180, 270].map((a) => point(r - 8, 4.6, `c${a}`, a))}
-      {point(r - 1, 4.6, 'north', 0)}
-      <circle r="3.2" className="rose__hub" />
+      {/* La stella gira da sola quando la carta entra (motion.css). Il
+          cerchio invisibile la rende simmetrica, così ruota sul centro. */}
+      <g className="rose__spin">
+        <circle r={f(r - 1)} fill="none" />
+        {/* Intercardinali, più corte e sotto */}
+        {[45, 135, 225, 315].map((a) => point(r - 18, 3.2, `i${a}`, a))}
+        {/* Cardinali: il nord si allunga fin quasi al bordo */}
+        {[90, 180, 270].map((a) => point(r - 8, 4.6, `c${a}`, a))}
+        {point(r - 1, 4.6, 'north', 0)}
+        <circle r="3.2" className="rose__hub" />
+      </g>
       {cardinal.map(([letter, x, y, anchor]) => (
         <text key={letter} x={f(x)} y={f(y)} textAnchor={anchor} className={letter === 'N' ? 'rose__label rose__label--n' : 'rose__label'}>
           {letter}
@@ -1020,8 +1178,8 @@ function MiniMap() {
 
         {/* Raggi dalla sede */}
         <g className="chart__rings">
-          {rings.map((km) => (
-            <g key={km}>
+          {rings.map((km, i) => (
+            <g key={km} style={{ '--i': i }}>
               <circle cx={f(studioPt.x)} cy={f(studioPt.y)} r={f(kmToPx(km))} />
               <text x={f(studioPt.x - kmToPx(km) * 0.707 - 4)} y={f(studioPt.y - kmToPx(km) * 0.707 - 4)} textAnchor="end">
                 {km} km
@@ -1036,8 +1194,9 @@ function MiniMap() {
         {lakes.map((poly, i) => (
           <path key={i} d={smoothClosed(poly.map(([lat, lng]) => project(lat, lng)))} className="chart__lake" />
         ))}
-        <path d={riverPath} className="chart__river-casing" />
-        <path d={riverPath} className="chart__river" />
+        {/* pathLength="1": il fiume si traccia dal Garda ai laghi (motion.css). */}
+        <path d={riverPath} className="chart__river-casing" pathLength="1" />
+        <path d={riverPath} className="chart__river" pathLength="1" />
         <text className="chart__toponym" transform={`translate(${f(river[1].x - 10)} ${f(river[1].y + 46)}) rotate(-82)`}>
           fiume Mincio
         </text>
@@ -1081,18 +1240,24 @@ function MiniMap() {
         <g className="chart__studio">
           <circle cx={f(studioPt.x)} cy={f(studioPt.y)} r="16" className="chart__halo" />
           <path d={`M${f(studioPt.x - 6)} ${f(studioPt.y - 6)}h6a6 6 0 0 1 0 12h-6z`} className="chart__d" />
-          <path d={`M${f(studioPt.x + 10)} ${f(studioPt.y - 10)}L${f(callout.x)} ${f(callout.y + 76)}`} className="chart__leader" />
+          <path
+            d={`M${f(studioPt.x + 10)} ${f(studioPt.y - 10)}L${f(callout.x)} ${f(callout.y + 76)}`}
+            className="chart__leader"
+            pathLength="1"
+          />
           <g transform={`translate(${f(callout.x)} ${f(callout.y)})`}>
-            <rect x="0" y="0" width="212" height="76" className="chart__callout" />
-            <text x="12" y="20" className="chart__callout-label">
-              Sede dello studio
-            </text>
-            <text x="12" y="40" className="chart__callout-title">
-              Rivalta sul Mincio
-            </text>
-            <text x="12" y="60" className="chart__callout-coords">
-              {dms(45.180182, 'lat')} · {dms(10.677598, 'lng')}
-            </text>
+            <g className="chart__callout-in">
+              <rect x="0" y="0" width="212" height="76" className="chart__callout" />
+              <text x="12" y="20" className="chart__callout-label">
+                Sede dello studio
+              </text>
+              <text x="12" y="40" className="chart__callout-title">
+                Rivalta sul Mincio
+              </text>
+              <text x="12" y="60" className="chart__callout-coords">
+                {dms(45.180182, 'lat')} · {dms(10.677598, 'lng')}
+              </text>
+            </g>
           </g>
         </g>
       </g>
@@ -1208,7 +1373,8 @@ function TerritorySection() {
             <span className="terr__map-title">Provincia di Mantova</span>
             <span className="terr__map-note">Carta schematica · reticolo 0,1° · equirettangolare, parallelo 45°12′</span>
           </div>
-          <div className="terr__map-scroll" ref={scroller}>
+          {/* I gesti orizzontali restano alla carta, quelli verticali alla pagina. */}
+          <div className="terr__map-scroll" ref={scroller} data-lenis-prevent-horizontal>
             <MiniMap />
           </div>
           <p className="terr__map-hint" aria-hidden="true">
@@ -1218,15 +1384,17 @@ function TerritorySection() {
 
         <div className="places reveal">
           <span className="label">Area di riferimento</span>
-          <ul className="places__list">
+          <ul className="places__list reveal reveal-stagger">
             {places.filter((place) => place.near).map((place, i) => (
               <Fragment key={place.name}>
                 {i > 0 && (
-                  <li className="places__sep" aria-hidden="true">
+                  <li className="places__sep" aria-hidden="true" style={{ '--i': i }}>
                     <DMark />
                   </li>
                 )}
-                <li className={place.studio ? 'is-studio' : undefined}>{place.name}</li>
+                <li className={place.studio ? 'is-studio' : undefined} style={{ '--i': i }}>
+                  {place.name}
+                </li>
               </Fragment>
             ))}
           </ul>
@@ -1252,9 +1420,12 @@ function MethodSection() {
         <ol className="method reveal reveal-stagger">
           {method.map((step, i) => (
             <li key={step.num} className="method__step" style={{ '--i': i }}>
-              <span className="method__num" aria-hidden="true">
-                {step.num}
-              </span>
+              <div className="method__head">
+                <span className="method__num" aria-hidden="true">
+                  {step.num}
+                </span>
+                <Emblem name={step.icon} className="method__emblem" />
+              </div>
               <h3 className="method__title">{step.title}</h3>
               <p className="method__text">{step.text}</p>
             </li>
@@ -1283,9 +1454,9 @@ function ContactSection() {
           <ul className="contact-list reveal reveal-stagger">
             <li className="contact-item" style={{ '--i': 0 }}>
               <a className="contact-item__link" href={studio.phoneHref}>
-                <span className="contact-item__icon">
+                <Key className="contact-item__icon">
                   <IconPhone />
-                </span>
+                </Key>
                 <span className="contact-item__text">
                   <span className="label">Telefono</span>
                   <span className="contact-item__value">{studio.phoneDisplay}</span>
@@ -1295,9 +1466,9 @@ function ContactSection() {
             </li>
             <li className="contact-item" style={{ '--i': 1 }}>
               <a className="contact-item__link" href={studio.emailHref}>
-                <span className="contact-item__icon">
+                <Key className="contact-item__icon">
                   <IconMail />
-                </span>
+                </Key>
                 <span className="contact-item__text">
                   <span className="label">Email</span>
                   <span className="contact-item__value">{studio.email}</span>
@@ -1307,9 +1478,9 @@ function ContactSection() {
             </li>
             <li className="contact-item" style={{ '--i': 2 }}>
               <a className="contact-item__link" href={studio.mapsHref} target="_blank" rel="noreferrer">
-                <span className="contact-item__icon">
+                <Key className="contact-item__icon">
                   <IconPin />
-                </span>
+                </Key>
                 <span className="contact-item__text">
                   <span className="label">Studio</span>
                   <span className="contact-item__value">
@@ -1374,8 +1545,9 @@ function Footer() {
     <footer className="footer">
       <div className="container">
         <div className="titleblock">
-          {/* Marchio e indirizzo composti come sulla targa. */}
-          <div className="tb tb--brand">
+          {/* Marchio e indirizzo composti come sulla targa. In fondo alla
+              pagina il marchio si ridisegna, come nell'header all'apertura. */}
+          <div className="tb tb--brand reveal reveal--host">
             <Logo className="tb__logo" />
             <div className="tb__brand-copy">
               <span className="tb__name">{studio.name}</span>
@@ -1430,27 +1602,6 @@ function Footer() {
             </ul>
           </div>
 
-          <div className="tb tb--company">
-            <span className="tb__label">Dati societari</span>
-            <p className="tb__company-name">{company.legalName}</p>
-            <dl className="tb__company">
-              {companyDetails.map((row) => (
-                <div key={row.label}>
-                  <dt>{row.label}</dt>
-                  <dd>{row.value}</dd>
-                </div>
-              ))}
-              <div>
-                <dt>PEC</dt>
-                <dd>
-                  <a className="tb__break" href={company.pecHref}>
-                    {company.pec}
-                  </a>
-                </dd>
-              </div>
-            </dl>
-          </div>
-
           <div className="tb tb--meta">
             <div>
               <span className="tb__label">Aggiornamento</span>
@@ -1493,6 +1644,7 @@ const legacyPaths = {
 }
 
 function Layout() {
+  useSmoothScroll()
   useReveal()
   const active = useScrollSpy(sectionIds)
 
@@ -1504,9 +1656,7 @@ function Layout() {
     }
     if (!target) return
     const frame = window.requestAnimationFrame(() => {
-      const el = document.getElementById(target)
-      if (!el) return
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 88, behavior: 'auto' })
+      if (document.getElementById(target)) scrollToTarget(target, { immediate: true })
     })
     return () => window.cancelAnimationFrame(frame)
   }, [])

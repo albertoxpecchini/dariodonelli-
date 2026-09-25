@@ -5,11 +5,12 @@
    ========================================================================== */
 
 :root {
-  /* --- Palette: bianco e nero -------------------------------------------
-     Monocromatica per scelta. Il colore lo mette solo la fotografia.
+  /* --- Palette: bianco e nero, più un blu ------------------------------
      Il riferimento sono le targhe dello studio: incisione nera su metallo
-     chiaro, filetti sottili, nessun accento cromatico. L'enfasi si ottiene
-     con il peso tipografico e la linea, non con la tinta. */
+     chiaro, filetti sottili. L'enfasi si ottiene con il peso tipografico e
+     la linea. L'unica tinta è l'Electric Sapphire, come l'inchiostro blu
+     delle revisioni su una tavola in bianco e nero, e ha un solo compito:
+     segnare dove si è, dove sta lo studio e cosa si può fare. */
   --c-ink: #000000;
   --c-ink-2: #1c1c1c;
   --c-body: #4a4a4a;
@@ -23,10 +24,12 @@
   /* Reticolo da carta millimetrata, usato come texture dell'hero. */
   --c-grid: rgba(0, 0, 0, 0.055);
 
-  --c-accent: #000000;
-  --c-accent-hover: #333333;
+  /* Electric Sapphire. La variante più profonda serve al passaggio del
+     mouse e ai testi piccoli su fondo chiaro, dove il blu pieno è al
+     limite del contrasto. */
+  --c-accent: #4d6cfa;
+  --c-accent-hover: #3b5bef;
   --c-accent-ink: #ffffff;
-  --c-accent-wash: rgba(0, 0, 0, 0.06);
 
   --c-dark-bg: #000000;
   --c-dark-bg-2: #0d0d0d;
@@ -82,9 +85,19 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.18);
 
-  /* --- Movimento ---------------------------------------------------------- */
+  /* --- Movimento ----------------------------------------------------------
+     --ease e --dur per i passaggi del mouse, brevi e discreti. Le curve
+     lunghe servono agli ingressi (motion.css): --ease-out parte deciso e
+     si posa lento, --ease-in-out traccia i filetti, --ease-spring supera
+     appena la meta e ci torna, --ease-scrub ammorbidisce gli effetti che
+     seguono lo scroll. */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --dur: 200ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-scrub: cubic-bezier(0.33, 1, 0.68, 1);
 
   font-family: var(--font-body);
   font-size: 16px;
@@ -153,6 +166,11 @@ blockquote {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+::selection {
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
 }
 
 /* Focus visibile e coerente su tutti gli elementi interattivi */

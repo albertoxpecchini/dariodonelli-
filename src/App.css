@@ -7,6 +7,9 @@
    chiaro, filetti sottili, maiuscoletto spaziato. Le fotografie sono tutte
    in bianco e nero. Un solo dettaglio ricorre ovunque: la "D" geometrica
    del logo, che fa da punto, separatore, marcatore e cursore.
+
+   Il blu (--c-accent) compare poco e sempre per lo stesso motivo: la
+   sezione in lettura, la sede dello studio, l'azione da compiere.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -62,6 +65,33 @@
   width: 100%;
   height: auto;
   filter: grayscale(1) contrast(1.04);
+}
+
+/* Icone a oggetto (servizi e metodo). Sono l'unica immagine a colori oltre
+   alla tinta di sistema, e il colore è proprio quello: nero lucido, acciaio,
+   un dettaglio in Electric Sapphire. Un'ombra di contatto le appoggia sulla
+   carta; al passaggio del mouse l'oggetto si solleva e l'ombra prende il blu. */
+.emblem {
+  display: block;
+  flex: none;
+}
+
+.emblem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.14));
+  transition:
+    transform 500ms var(--ease),
+    filter 500ms var(--ease);
+}
+
+@media (hover: hover) {
+  .service-block:hover .emblem img,
+  .method__step:hover .emblem img {
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1))
+      drop-shadow(0 16px 18px color-mix(in srgb, var(--c-accent) 30%, transparent));
+  }
 }
 
 /* La D minima */
@@ -186,63 +216,118 @@
    3. Azioni
    -------------------------------------------------------------------------- */
 
-.btn {
+/* --- Tasti ---
+   I pulsanti sono fotografie: una ghiera d'acciaio come i distanziali
+   della targa e un cappuccio lucido, generati nello stesso foglio in tre
+   stati (nero con un filo di blu, Electric Sapphire, nero premuto). Sopra
+   il cappuccio il simbolo è vettoriale, bianco come una serigrafia.
+   Gli stati sono strati allo stesso diametro che si scambiano d'opacità:
+   restano caricati, quindi al passaggio non c'è attesa né sfarfallio. */
+.key {
+  --key: 44px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--key);
+  height: var(--key);
+  border-radius: 50%;
+  background: url('/images/tasti/tasto-nero.webp') center / 100% 100% no-repeat;
+  color: #ffffff;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22)) drop-shadow(0 4px 7px rgba(0, 0, 0, 0.16));
+  transition:
+    transform 160ms var(--ease),
+    filter var(--dur) var(--ease);
+}
+
+.key--accent {
+  background-image: url('/images/tasti/tasto-blu.webp');
+}
+
+.key::before,
+.key::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: center / 100% 100% no-repeat;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+/* Acceso: il nero diventa blu al passaggio del mouse. */
+.key::before {
+  background-image: url('/images/tasti/tasto-blu.webp');
+}
+
+/* Premuto: sul touch, dove non c'è passaggio, il cappuccio affonda. */
+.key::after {
+  background-image: url('/images/tasti/tasto-premuto.webp');
+}
+
+.key--accent::before,
+.key--accent::after {
+  content: none;
+}
+
+.key > * {
+  position: relative;
+  z-index: 1;
+}
+
+.key svg {
+  width: 36%;
+  height: 36%;
+  filter: drop-shadow(0 -0.5px 0 rgba(0, 0, 0, 0.5));
+  transition: transform var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+  :is(a, button):hover > .key::before {
+    opacity: 1;
+  }
+
+  :is(a, button):hover > .key--accent {
+    filter: brightness(1.08) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22))
+      drop-shadow(0 6px 10px color-mix(in srgb, var(--c-accent) 35%, transparent));
+  }
+}
+
+@media (hover: none) {
+  :is(a, button):active > .key:not(.key--accent)::after {
+    opacity: 1;
+  }
+}
+
+:is(a, button):active > .key {
+  transform: scale(0.94);
+}
+
+/* Azione: il tasto e il suo nome, senza scatola attorno. */
+.action {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--s-2);
-  min-height: 50px;
-  padding: 0 var(--s-6);
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-  font-family: var(--font-body);
+  gap: var(--s-3);
+  min-height: 44px;
   font-size: var(--fs-sm);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  cursor: pointer;
-  transition:
-    background-color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
-}
-
-.btn svg {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  transition: transform var(--dur) var(--ease);
-}
-
-.btn:hover svg {
-  transform: translateX(3px);
-}
-
-.btn--primary {
-  background: var(--c-accent);
-  border-color: var(--c-accent);
-  color: var(--c-accent-ink);
-}
-
-.btn--primary:hover {
-  background: var(--c-accent-hover);
-  border-color: var(--c-accent-hover);
-}
-
-.btn--secondary {
-  background: transparent;
-  border-color: var(--c-ink);
   color: var(--c-ink);
+  transition: color var(--dur) var(--ease);
 }
 
-.btn--secondary:hover {
-  background: var(--c-accent-wash);
+.action:hover {
+  color: var(--c-accent-hover);
 }
 
-.btn-row {
+.action:hover .key svg {
+  transform: translateX(2px);
+}
+
+.action-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-3);
+  gap: var(--s-3) var(--s-6);
 }
 
 .link-arrow {
@@ -256,6 +341,14 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--c-ink);
+  transition:
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.link-arrow:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent-hover);
 }
 
 .link-arrow svg {
@@ -428,6 +521,34 @@
   transition: color var(--dur) var(--ease);
 }
 
+/* Il passaggio del mouse sottolinea in nero; la voce in lettura ha un solo
+   segno blu, che scivola da una voce all'altra (.nav::after, posizionato
+   dall'header in App.jsx). */
+.nav {
+  position: relative;
+}
+
+.nav::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 2px;
+  background: var(--c-accent);
+  transform: translateX(var(--ind-x, 0px)) scaleX(var(--ind-w, 0));
+  transform-origin: left;
+  opacity: 0;
+  transition:
+    transform 700ms var(--ease-out),
+    opacity 300ms var(--ease);
+  pointer-events: none;
+}
+
+.nav[data-indicator='on']::after {
+  opacity: 1;
+}
+
 .nav__link::after {
   content: '';
   position: absolute;
@@ -438,7 +559,7 @@
   background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform var(--dur) var(--ease);
+  transition: transform 360ms var(--ease-out);
 }
 
 .nav__link:hover,
@@ -446,8 +567,7 @@
   color: var(--c-ink);
 }
 
-.nav__link:hover::after,
-.nav__link.is-active::after {
+.nav__link:hover::after {
   transform: scaleX(1);
 }
 
@@ -456,7 +576,7 @@
 }
 
 .nav__link.is-active .nav__num {
-  color: var(--c-ink);
+  color: var(--c-accent-hover);
 }
 
 .header__actions {
@@ -468,7 +588,8 @@
 
 /* --- Telefono che rivela il numero ---
    Il numero è sempre in flusso ma invisibile, così l'ingombro non cambia;
-   l'etichetta "Telefono" gli sta sopra e al passaggio i due si scambiano. */
+   l'etichetta "Telefono" gli sta sopra e al passaggio i due si scambiano.
+   Appena si scorre il numero resta in vista da solo: non va cercato. */
 .phone {
   display: inline-flex;
   align-items: center;
@@ -494,8 +615,8 @@
 .phone__text > * {
   grid-area: 1 / 1;
   transition:
-    opacity 260ms var(--ease),
-    transform 260ms var(--ease);
+    opacity 360ms var(--ease-out),
+    transform 520ms var(--ease-out);
 }
 
 .phone__label {
@@ -514,13 +635,15 @@
 }
 
 .phone:hover .phone__label,
-.phone:focus-visible .phone__label {
+.phone:focus-visible .phone__label,
+.header--scrolled .phone__label {
   opacity: 0;
   transform: translateY(-6px);
 }
 
 .phone:hover .phone__num,
-.phone:focus-visible .phone__num {
+.phone:focus-visible .phone__num,
+.header--scrolled .phone__num {
   opacity: 1;
   transform: none;
 }
@@ -529,27 +652,33 @@
   color: var(--c-ink);
 }
 
-.header__cta {
-  min-height: 42px;
-  padding-inline: var(--s-5);
+.header__cta .key {
+  --key: 38px;
 }
 
 /* --- Pulsante menu mobile --- */
+/* Un tasto nero con le due barre serigrafate: diventano una X quando il
+   menu è aperto. */
 .menu-toggle {
   display: none;
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-right: calc(var(--s-2) * -1);
+  margin-right: -2px;
+  padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
 }
 
+.menu-toggle .key {
+  --key: 40px;
+}
+
 .menu-toggle__bars {
   position: relative;
-  width: 22px;
-  height: 12px;
+  width: 14px;
+  height: 8px;
 }
 
 .menu-toggle__bars span {
@@ -557,7 +686,8 @@
   left: 0;
   width: 100%;
   height: 1.5px;
-  background: var(--c-ink);
+  border-radius: 1px;
+  background: currentColor;
   transition: transform var(--dur) var(--ease);
 }
 
@@ -570,11 +700,11 @@
 }
 
 .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(1) {
-  transform: translateY(5px) rotate(45deg);
+  transform: translateY(3.25px) rotate(45deg);
 }
 
 .menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(2) {
-  transform: translateY(-5px) rotate(-45deg);
+  transform: translateY(-3.25px) rotate(-45deg);
 }
 
 /* --- Pannello mobile --- */
@@ -610,16 +740,22 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-right: calc(var(--s-2) * -1);
+  margin-right: -2px;
+  padding: 0;
   border: 0;
   background: transparent;
-  color: var(--c-ink);
   cursor: pointer;
 }
 
-.mobile-panel__close svg {
-  width: 20px;
-  height: 20px;
+.mobile-panel__close .key {
+  --key: 40px;
+}
+
+/* La X disegnata su 24 unità occupa metà del riquadro: la si ingrandisce
+   perché abbia lo stesso peso delle barre del menu. */
+.mobile-panel__close .key svg {
+  width: 50%;
+  height: 50%;
 }
 
 .mobile-nav {
@@ -650,7 +786,7 @@
 }
 
 .mobile-nav__link.is-active .mobile-nav__num {
-  color: var(--c-ink);
+  color: var(--c-accent-hover);
 }
 
 .mobile-panel__foot {
@@ -735,11 +871,19 @@
   color: var(--c-ink);
 }
 
+/* Il numero cambia rotolando, come un contatore: sale se si scende nella
+   pagina, scende se si torna su (motion.css). */
 .corner__num {
+  display: inline-flex;
+  overflow: hidden;
   font-family: var(--font-display);
   font-size: var(--fs-base);
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
+}
+
+.corner__roll {
+  display: block;
 }
 
 @media (min-width: 1200px) {
@@ -867,7 +1011,16 @@
   font-variation-settings: 'opsz' 144;
 }
 
+/* Ogni riga è un ritaglio da cui il testo sale; il margine negativo
+   restituisce lo spazio aggiunto per le discendenti. */
 .manifesto__line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.manifesto__in {
   display: block;
 }
 
@@ -910,7 +1063,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  animation: rise 520ms var(--ease) both;
 }
 
 .focus__count {
@@ -955,53 +1107,6 @@
   color: var(--c-body);
 }
 
-/* --- Ingressi all'apertura (indipendenti dallo scroll) --- */
-.masthead__pre,
-.infoline,
-.intro__lead,
-.intro__actions,
-.intro__focus,
-.intro__caption {
-  animation: rise 640ms var(--ease) both;
-}
-
-.masthead__name {
-  animation: rise 700ms 60ms var(--ease) both;
-}
-
-.masthead__pre {
-  animation-delay: 240ms;
-}
-
-.infoline {
-  animation-delay: 360ms;
-}
-
-.manifesto__line {
-  animation: rise 640ms var(--ease) both;
-  animation-delay: calc(420ms + var(--i, 0) * 120ms);
-}
-
-.intro__lead {
-  animation-delay: 820ms;
-}
-
-.intro__actions {
-  animation-delay: 920ms;
-}
-
-.intro__focus {
-  animation-delay: 1020ms;
-}
-
-.intro__plate .plate {
-  animation: rise 800ms 500ms var(--ease) both;
-}
-
-.intro__caption {
-  animation-delay: 900ms;
-}
-
 /* --- Fascia dei dati di albo e delle competenze --- */
 .facts-band {
   position: relative;
@@ -1043,24 +1148,44 @@
   background: var(--c-surface);
 }
 
-.strip__inner {
+/* Le competenze scorrono in fascia come un nastro: vanno da sole e
+   accelerano con lo scroll della pagina (il moto è in motion.js). Ai bordi
+   il nastro sfuma invece di tagliarsi. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+/* Un gruppo è un periodo del nastro: lo spazio a destra è uguale allo
+   spazio tra le voci, così l'aggancio tra un gruppo e il successivo non
+   si vede. */
+.marquee__group {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
+  flex: none;
+  gap: var(--s-6);
+  padding-right: var(--s-6);
   padding-block: var(--s-4);
 }
 
-.strip__item {
+.marquee__item {
   font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--c-ink);
   white-space: nowrap;
 }
 
-.strip__sep {
+.marquee__sep {
   width: 10px;
   height: 10px;
+  flex: none;
   color: var(--c-ink);
 }
 
@@ -1109,6 +1234,26 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--s-4);
+}
+
+/* Numero a sinistra, icona a destra: la testata si legge come l'intestazione
+   di una scheda tecnica. */
+.service-block__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  width: 100%;
+}
+
+.service-block__emblem {
+  width: clamp(4.5rem, 7vw, 6rem);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .service-block:hover .service-block__emblem img {
+    transform: translateY(-4px) rotate(-2deg);
+  }
 }
 
 .service-block__num {
@@ -1350,7 +1495,7 @@
   color: var(--c-body);
 }
 
-/* Il segno che si accende: una barra nera a sinistra della voce. */
+/* Il segno che si accende: una barra blu a sinistra della voce. */
 .rail-list li::before {
   content: '';
   position: absolute;
@@ -1358,7 +1503,7 @@
   top: 0;
   bottom: -1px;
   width: 2px;
-  background: var(--c-ink);
+  background: var(--c-accent);
   transform: scaleY(0);
   transform-origin: top;
 }
@@ -1474,21 +1619,6 @@
   color: var(--c-ink);
 }
 
-.signature__logo path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1400ms var(--ease);
-}
-
-.signature.is-visible .signature__logo .logo__ghost path {
-  stroke-dashoffset: 0;
-}
-
-.signature.is-visible .signature__logo .logo__ink path {
-  stroke-dashoffset: 0;
-  transition-delay: 400ms;
-}
-
 .signature__text {
   display: flex;
   flex-direction: column;
@@ -1589,8 +1719,9 @@
 
 .hotspot:hover .hotspot__btn,
 .hotspot.is-open .hotspot__btn {
-  background: var(--c-ink);
-  color: #fff;
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
 }
 
 .hotspot__tip {
@@ -1609,10 +1740,10 @@
   line-height: 1.5;
   color: var(--c-body);
   opacity: 0;
-  transform: translate(-6px, -50%);
+  transform: translate(-10px, -50%);
   transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
+    opacity 320ms var(--ease-out),
+    transform 600ms var(--ease-out);
   pointer-events: none;
 }
 
@@ -1624,7 +1755,7 @@
 .hotspot--flip .hotspot__tip {
   left: auto;
   right: calc(100% + 12px);
-  transform: translate(6px, -50%);
+  transform: translate(10px, -50%);
 }
 
 .hotspot:hover .hotspot__tip,
@@ -1839,26 +1970,27 @@ rect.chart__park-hatch {
   fill: var(--c-ink);
 }
 
+/* La sede è l'unico punto blu della carta, come sulla mappa dei contatti. */
 .chart__halo {
   fill: none;
-  stroke: var(--c-ink);
+  stroke: var(--c-accent);
   stroke-width: 1;
-  opacity: 0.5;
+  opacity: 0.6;
   transform-box: fill-box;
   transform-origin: center;
   animation: ping 3s var(--ease) infinite;
 }
 
 .chart__d {
-  fill: var(--c-ink);
-  stroke: var(--c-ink);
+  fill: var(--c-accent);
+  stroke: var(--c-accent);
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
 
 .chart__leader {
   fill: none;
-  stroke: var(--c-ink);
+  stroke: var(--c-accent);
   stroke-width: 1;
 }
 
@@ -2004,8 +2136,9 @@ rect.chart__park-hatch {
 .places__list .is-studio {
   font-weight: 500;
   text-decoration: underline;
+  text-decoration-color: var(--c-accent);
   text-underline-offset: 0.22em;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
 }
 
 .places__sep {
@@ -2047,12 +2180,11 @@ rect.chart__park-hatch {
   right: 0;
   height: 1px;
   background: var(--c-ink);
-  transform: scaleX(0);
   transform-origin: left;
-  transition: transform 700ms var(--ease);
-  transition-delay: calc(var(--i, 0) * 180ms);
 }
 
+/* Il punto d'inizio di ogni fase; filo e punto si tracciano in sequenza
+   quando l'elenco entra in vista (motion.css). */
 .method__step::before {
   content: '';
   position: absolute;
@@ -2062,17 +2194,23 @@ rect.chart__park-hatch {
   height: 7px;
   border-radius: 50%;
   background: var(--c-ink);
-  transform: scale(0);
-  transition: transform 360ms var(--ease);
-  transition-delay: calc(var(--i, 0) * 180ms + 520ms);
 }
 
-.method.is-visible .method__step::after {
-  transform: scaleX(1);
+.method__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3);
 }
 
-.method.is-visible .method__step::before {
-  transform: scale(1);
+.method__emblem {
+  width: 4.5rem;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .method__step:hover .method__emblem img {
+    transform: translateY(-4px) rotate(-2deg);
+  }
 }
 
 .method__num {
@@ -2151,32 +2289,17 @@ rect.chart__park-hatch {
 
 .contact-item__link {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   gap: var(--s-4);
   padding: var(--s-5) 0;
   color: inherit;
   text-decoration: none;
 }
 
+/* Tasto nero sul nero: la ghiera d'acciaio lo stacca dal fondo, e al
+   passaggio il cappuccio si accende di blu come faceva il cerchio. */
 .contact-item__icon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--c-dark-line);
-  border-radius: 50%;
-  color: var(--c-dark-fg-strong);
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-
-.contact-item__icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.contact-item__link:hover .contact-item__icon {
-  background: var(--c-dark-fg-strong);
-  color: var(--c-dark-bg);
+  --key: 44px;
 }
 
 .contact-item__text {
@@ -2203,7 +2326,7 @@ rect.chart__park-hatch {
 }
 
 .contact-item__link:focus-visible {
-  outline: 2px solid var(--c-dark-fg-strong);
+  outline: 2px solid var(--c-accent);
   outline-offset: 4px;
 }
 
@@ -2253,8 +2376,8 @@ rect.chart__park-hatch {
   height: 36px;
   transform: translate(-50%, -100%);
   border-radius: 50%;
-  background: var(--c-ink);
-  color: #fff;
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
   box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6);
 }
 
@@ -2294,7 +2417,7 @@ rect.chart__park-hatch {
 }
 
 .map:focus-visible {
-  outline: 2px solid var(--c-dark-fg-strong);
+  outline: 2px solid var(--c-accent);
   outline-offset: 3px;
 }
 
@@ -2347,12 +2470,7 @@ rect.chart__park-hatch {
 }
 
 .tb--brand {
-  grid-row: span 2;
   gap: var(--s-5);
-}
-
-.tb--company {
-  grid-column: span 2;
 }
 
 .tb--meta {
@@ -2369,16 +2487,6 @@ rect.chart__park-hatch {
   flex-direction: column;
   gap: var(--s-1);
   min-width: 0;
-}
-
-/* La cella del marchio è l'ultima della riga 1 e della riga 2 a sinistra:
-   nessun bordo destro doppio. */
-.tb--brand {
-  border-right: 1px solid var(--c-dark-line);
-}
-
-.tb--company {
-  border-right: 0;
 }
 
 .tb__label {
@@ -2485,43 +2593,6 @@ rect.chart__park-hatch {
   font-variant-numeric: tabular-nums;
 }
 
-.tb__company-name {
-  margin: 0;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-dark-fg-strong);
-}
-
-.tb__company {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-3) var(--s-4);
-  font-size: var(--fs-label);
-}
-
-.tb__company > div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.tb__company dt {
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-}
-
-.tb__company dd {
-  margin: 0;
-  color: var(--c-dark-fg);
-  overflow-wrap: anywhere;
-}
-
 .tb__value a {
   color: var(--c-dark-fg-strong);
   text-decoration: underline;
@@ -2530,104 +2601,11 @@ rect.chart__park-hatch {
 }
 
 /* --------------------------------------------------------------------------
-   15. Animazioni: ingressi, rivelazioni, effetti legati allo scroll
+   15. Filo di avanzamento della lettura
+   Il movimento del sito (ingressi, rivelazioni, effetti legati allo
+   scroll) sta tutto in motion.css. Qui restano i componenti fermi.
    -------------------------------------------------------------------------- */
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity 700ms var(--ease),
-    transform 700ms var(--ease);
-  transition-delay: calc(var(--i, 0) * 110ms);
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-.reveal-stagger {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
-
-.reveal-stagger > * {
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 560ms var(--ease),
-    transform 560ms var(--ease);
-  transition-delay: calc(var(--i, 0) * 70ms);
-}
-
-.reveal-stagger.is-visible > * {
-  opacity: 1;
-  transform: none;
-}
-
-/* Intestazioni a tendina: il ritaglio sta sui figli, non sul contenitore
-   osservato (un elemento ritagliato a zero non interseca mai il viewport). */
-.section-head.reveal {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
-
-.section-head.reveal > * {
-  clip-path: inset(0 0 100% 0);
-  transform: translateY(14px);
-  transition:
-    clip-path 800ms var(--ease),
-    transform 800ms var(--ease);
-}
-
-.section-head.reveal > .section-head__body {
-  transition-delay: 160ms;
-}
-
-.section-head.reveal.is-visible > * {
-  clip-path: inset(0);
-  transform: none;
-}
-
-/* Il numero sul filo non va ritagliato: sporge sopra il contenitore. */
-.section-head.reveal .section-head__index {
-  clip-path: none;
-}
-
-.section-head.reveal .section-head__meta {
-  clip-path: none;
-  opacity: 0;
-  transition: opacity 600ms var(--ease), transform 800ms var(--ease);
-}
-
-.section-head.reveal.is-visible .section-head__meta {
-  opacity: 1;
-}
-
-/* Filo di avanzamento della lettura. */
 .progress {
   position: fixed;
   top: 0;
@@ -2635,324 +2613,15 @@ rect.chart__park-hatch {
   right: 0;
   z-index: 70;
   height: 2px;
-  background: var(--c-ink);
+  background: var(--c-accent);
   transform: scaleX(0);
   transform-origin: left;
   pointer-events: none;
 }
 
-@keyframes progress-grow {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes parallax {
-  from {
-    translate: 0 -6%;
-  }
-  to {
-    translate: 0 6%;
-  }
-}
-
-@keyframes grid-pulse {
-  0% {
-    opacity: 0;
-  }
-  35% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes intro-grid {
-  0% {
-    opacity: 0.55;
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.35;
-  }
-}
-
-@keyframes rail-highlight {
-  0% {
-    color: var(--c-body);
-  }
-  15%,
-  85% {
-    color: var(--c-ink);
-    font-weight: 600;
-  }
-  100% {
-    color: var(--c-body);
-  }
-}
-
-@keyframes rail-bar {
-  0% {
-    transform: scaleY(0);
-  }
-  15%,
-  85% {
-    transform: scaleY(1);
-  }
-  100% {
-    transform: scaleY(0);
-  }
-}
-
-@keyframes photo-crop {
-  from {
-    clip-path: inset(0);
-  }
-  to {
-    clip-path: inset(0 calc((100vw - min(100vw, var(--container))) / 2 + var(--gutter)) 0);
-  }
-}
-
-/* --- Intro che cambia con lo scroll ---
-   Le posizioni finali sono quelle del layout; le animazioni descrivono
-   solo lo stato di partenza. Così, senza supporto, resta l'hero statico. */
-@keyframes masthead-land {
-  from {
-    transform: translate(0, 24vh) scale(1.85);
-  }
-  to {
-    transform: none;
-  }
-}
-
-@keyframes stage-in {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes plate-in {
-  from {
-    opacity: 0;
-    transform: translateY(55vh) scale(0.86);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes word-in {
-  from {
-    opacity: 0;
-    letter-spacing: 0.22em;
-    transform: translateY(32px);
-  }
-  to {
-    opacity: 1;
-    letter-spacing: var(--ls-display);
-    transform: none;
-  }
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .progress {
-      animation: progress-grow linear both;
-      animation-timeline: scroll(root);
-    }
-
-    .service-block__media img,
-    .project__figure img {
-      scale: 1.14;
-      animation: parallax linear both;
-      animation-timeline: view();
-      animation-range: entry 0% exit 100%;
-    }
-
-    /* La griglia affiora nel passaggio dello studio. */
-    .section--grid {
-      view-timeline-name: --grid-section;
-    }
-
-    .section--grid::before {
-      animation: grid-pulse linear both;
-      animation-timeline: --grid-section;
-      animation-range: cover 0% cover 100%;
-    }
-
-    /* Le discipline si accendono una alla volta lungo la sezione. */
-    #studio {
-      view-timeline-name: --studio;
-    }
-
-    .rail-list li {
-      animation: rail-highlight linear both;
-      animation-timeline: --studio;
-      animation-range: cover calc(12% + var(--i, 0) * 76% / 9) cover calc(12% + (var(--i, 0) + 1) * 76% / 9);
-    }
-
-    .rail-list li::before {
-      animation: rail-bar linear both;
-      animation-timeline: --studio;
-      animation-range: cover calc(12% + var(--i, 0) * 76% / 9) cover calc(12% + (var(--i, 0) + 1) * 76% / 9);
-    }
-
-    /* La fotografia del territorio viene ritagliata alla griglia. */
-    .terr__photo {
-      animation: photo-crop linear both;
-      animation-timeline: view();
-      animation-range: entry 10% cover 55%;
-    }
-  }
-
-  @media (min-width: 901px) and (prefers-reduced-motion: no-preference) {
-    .intro {
-      height: 300vh;
-      view-timeline-name: --intro;
-    }
-
-    .intro::before {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: block;
-      -webkit-mask-image: none;
-      mask-image: none;
-      animation: intro-grid linear both;
-      animation-timeline: --intro;
-      animation-range: contain 0% contain 100%;
-    }
-
-    .intro__stage {
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      margin-top: -100vh;
-      padding-top: var(--header-h);
-      padding-bottom: 0;
-      overflow: hidden;
-      display: flex;
-      align-items: stretch;
-    }
-
-    .intro__grid {
-      height: 100%;
-      padding-top: var(--s-6);
-      padding-bottom: var(--s-6);
-      grid-template-rows: auto minmax(0, 1fr);
-    }
-
-    .intro__head {
-      align-self: start;
-    }
-
-    /* Gli ingressi all'apertura non servono: comanda lo scroll. */
-    .masthead__pre,
-    .infoline,
-    .manifesto__line,
-    .intro__lead,
-    .intro__actions,
-    .intro__focus,
-    .intro__plate .plate,
-    .intro__caption {
-      animation-duration: auto;
-      animation-delay: 0s;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: --intro;
-    }
-
-    .masthead__name {
-      animation: masthead-land linear both;
-      animation-timeline: --intro;
-      animation-range: contain 0% contain 30%;
-    }
-
-    .masthead__pre {
-      animation-name: stage-in;
-      animation-range: contain 22% contain 32%;
-    }
-
-    .infoline {
-      animation-name: stage-in;
-      animation-range: contain 26% contain 38%;
-    }
-
-    .manifesto__line {
-      animation-name: word-in;
-      animation-range: contain calc(34% + var(--i, 0) * 12%) contain calc(48% + var(--i, 0) * 12%);
-    }
-
-    .intro__lead {
-      animation-name: stage-in;
-      animation-range: contain 66% contain 78%;
-    }
-
-    .intro__actions {
-      animation-name: stage-in;
-      animation-range: contain 70% contain 82%;
-    }
-
-    .intro__focus {
-      animation-name: stage-in;
-      animation-range: contain 74% contain 86%;
-    }
-
-    .intro__plate .plate {
-      animation-name: plate-in;
-      animation-range: contain 24% contain 58%;
-    }
-
-    .intro__caption {
-      animation-name: stage-in;
-      animation-range: contain 56% contain 66%;
-    }
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .reveal-stagger > *,
-  .section-head.reveal > *,
-  .section-head.reveal .section-head__meta {
-    opacity: 1;
-    transform: none;
-    clip-path: none;
-    transition: none;
-  }
-
-  .method__step::before,
-  .method__step::after,
+  .emblem img,
   .rail-list li::before {
-    transform: none;
-    transition: none;
-  }
-
-  .logo--draw path,
-  .signature__logo path {
-    stroke-dashoffset: 0;
-    animation: none;
-    transition: none;
-  }
-
-  .hotspot__btn::after,
-  .chart__halo {
-    animation: none;
-  }
-
-  .plate__picture {
     transform: none;
     transition: none;
   }
@@ -2985,20 +2654,6 @@ rect.chart__park-hatch {
     gap: var(--s-6) var(--s-5);
   }
 
-  .strip__inner {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-2) var(--s-5);
-  }
-
-  .strip__item {
-    white-space: normal;
-  }
-
-  .strip__sep {
-    display: none;
-  }
-
   .titleblock {
     grid-template-columns: 1fr 1fr;
   }
@@ -3012,12 +2667,10 @@ rect.chart__park-hatch {
   }
 
   .tb--brand {
-    grid-row: auto;
     grid-column: span 2;
     border-right: 0;
   }
 
-  .tb--company,
   .tb--meta {
     grid-column: span 2;
   }
@@ -3149,16 +2802,6 @@ rect.chart__park-hatch {
     columns: 1;
   }
 
-  .strip__inner {
-    grid-template-columns: 1fr;
-    gap: var(--s-2);
-  }
-
-  .btn,
-  .btn-row {
-    width: 100%;
-  }
-
   .focus {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -3180,13 +2823,12 @@ rect.chart__park-hatch {
   }
 
   .contact-item__link {
-    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
     gap: var(--s-3);
   }
 
   .contact-item__icon {
-    width: 36px;
-    height: 36px;
+    --key: 40px;
   }
 
   .map {
@@ -3204,20 +2846,11 @@ rect.chart__park-hatch {
   }
 
   .tb--brand,
-  .tb--company,
   .tb--meta {
     grid-column: auto;
   }
 
   .tb--meta {
     grid-template-columns: 1fr;
-  }
-
-  .tb__company {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .tb__company > div:last-child {
-    grid-column: 1 / -1;
   }
 }

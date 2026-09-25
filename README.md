@@ -20,6 +20,6 @@ npm run lint      # oxlint
 - `src/App.jsx` — componenti della pagina
 - `src/index.css` — token di design (colori, tipografia, spazio)
 - `src/App.css` — stili dei componenti
-- `public/images/` — fotografie (jpg + webp); le foto `14092026 (*).JPG` sono gli originali
+- `public/images/` — fotografie (jpg + webp); la foto `14092026 (1).JPG` è l'originale della sede
 
 Il deploy è su Vercel (`vercel.json` reindirizza ogni percorso a `index.html`).

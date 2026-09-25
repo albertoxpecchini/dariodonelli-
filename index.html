@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Con JavaScript attivo gli elementi possono nascondersi in attesa
+         della rivelazione allo scroll; senza, l'HTML prerenderizzato resta
+         tutto visibile. -->
+    <script>document.documentElement.classList.add('js')</script>
     <!-- Logo dello studio come icona: .ico multi-risoluzione (16→256px)
          generato dal logo originale. La variante PNG serve a iOS. -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
