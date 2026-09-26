@@ -294,6 +294,60 @@ export const projects = [
 ]
 
 /**
+ * Elaborati da consultare nel visualizzatore (src/viewer/). ESEMPI: due
+ * file di prova che mostrano come il sito apre un DWG e un PDF così come
+ * escono da AutoCAD o dalla stampa, senza conversioni. Vanno sostituiti
+ * con gli elaborati veri dello studio.
+ *
+ * I file stanno in public/tavole/: il file originale, la miniatura
+ * <nome>.webp (1200 px, fa da anteprima mentre il file si apre) e
+ * <nome>-mini.webp (320 px, per l'elenco).
+ * - DWG (AutoCAD 2010–2018): `dwg` è il file, `box` il riquadro dello
+ *   spazio modello da mostrare (x0, y0, x1, y1 in unità del disegno);
+ *   l'altezza della tavola si ricava dal riquadro. `darken` scurisce i
+ *   colori chiari pensati per lo sfondo nero di AutoCAD; `paper` dà la
+ *   larghezza del foglio, da cui gli spessori di linea.
+ * - PDF: `src` è il file, `page` la pagina (dalla prima); `width` e
+ *   `height` seguono le proporzioni della pagina.
+ */
+const sheetFiles = (name) => ({
+  thumb: `/tavole/${name}.webp`,
+  mini: `/tavole/${name}-mini.webp`,
+})
+
+const exampleBox = [1634445, 4998992, 1638894, 5000944]
+
+export const sheets = [
+  {
+    id: 'esempio-disegno',
+    tag: 'Esempio',
+    title: 'Estratto di mappa con frazionamento',
+    alt: 'Esempio di disegno DWG: estratto di mappa catastale con le linee di frazionamento e le superfici dei lotti',
+    note: 'File DWG di AutoCAD aperto così com’è: linee, testi, tratteggi e layer vengono letti dal file originale e ridisegnati nitidi a ogni ingrandimento.',
+    dwg: '/tavole/esempio-disegno.dwg',
+    src: '/tavole/esempio-disegno.dwg',
+    box: exampleBox,
+    paper: 'A3',
+    width: 1200,
+    height: Math.round((1200 * (exampleBox[3] - exampleBox[1])) / (exampleBox[2] - exampleBox[0])),
+    ...sheetFiles('esempio-disegno'),
+  },
+  {
+    id: 'esempio-documento',
+    tag: 'Esempio',
+    title: 'Documento PDF di una pagina',
+    alt: 'Esempio di documento PDF: una tabella oraria su foglio A4',
+    note: 'PDF originale mostrato nella pagina, senza aprire altri programmi: si ingrandisce fino al dettaglio e si scarica con un clic.',
+    src: '/tavole/esempio-documento.pdf',
+    page: 1,
+    paper: 'A4',
+    width: 1200,
+    height: 1697,
+    ...sheetFiles('esempio-documento'),
+  },
+]
+
+/**
  * Tre dati verificabili accanto all'hero: sono quelli che qualificano
  * il professionista a colpo d'occhio, presi dall'iscrizione all'albo.
  */

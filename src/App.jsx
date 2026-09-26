@@ -27,8 +27,10 @@ import {
   sections,
   serviceAreas,
   serviceIndex,
+  sheets,
   studio,
 } from './content.js'
+import SheetViewer from './viewer/SheetViewer.jsx'
 
 /* ---------------------------------------------------------------------------
    Marchio
@@ -849,8 +851,35 @@ function ProjectsSection() {
           {card(lead, true, 0)}
           {rest.map((project, i) => card(project, false, i + 1))}
         </div>
+        <Drawings />
       </div>
     </section>
+  )
+}
+
+/**
+ * Elaborati consultabili: DWG e PDF aperti direttamente nella pagina.
+ * Per ora due file di esempio (vedi `sheets` in content.js). Il
+ * visualizzatore non sta dentro un .reveal: a schermo intero è fisso e
+ * nessun suo antenato deve avere un transform.
+ */
+function Drawings() {
+  return (
+    <div className="drawings">
+      <div className="drawings__head reveal">
+        <div className="drawings__meta">
+          <span className="label">Elaborati consultabili</span>
+          <span className="drawings__tag">Esempi</span>
+        </div>
+        <h3 className="drawings__title">Disegni e documenti si aprono qui, senza scaricare programmi.</h3>
+        <p className="body-text drawings__lead">
+          Il DWG si legge così come esce da AutoCAD, il PDF così come è stampato: si ingrandisce fino
+          al dettaglio, ci si sposta sul foglio, si scarica l&rsquo;originale. I due file qui sotto
+          sono esempi.
+        </p>
+      </div>
+      <SheetViewer sheets={sheets} label="Elaborati di esempio" />
+    </div>
   )
 }
 

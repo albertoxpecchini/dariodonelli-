@@ -1,0 +1,575 @@
+/* ==========================================================================
+   Visualizzatore delle tavole (SheetViewer.jsx, viewer.js)
+   Due assetti dello stesso componente:
+     · nella pagina: piano, riga dati ed elenco dei file in un riquadro;
+     · .is-full: schermo intero, sopra tutto il resto.
+   Il linguaggio è quello del sito: bordo nero, filetti sottili, etichette
+   in maiuscoletto spaziato, il piano in carta millimetrata. Il blu segna
+   solo la tavola aperta e l'azione (scaricare il file).
+   ========================================================================== */
+
+.viewer {
+  --viewer-stage-h: clamp(18rem, 72vw, 44rem);
+  display: grid;
+  grid-template-areas:
+    'stage'
+    'tools'
+    'info'
+    'panel';
+  grid-template-columns: minmax(0, 1fr);
+  border: 1px solid var(--c-ink);
+  background: var(--c-surface);
+  color: var(--c-ink);
+}
+
+/* Etichette: lo stesso maiuscoletto di .label */
+.viewer__meta,
+.viewer__item-n,
+.viewer__status,
+.viewer__count,
+.viewer__zoom,
+.viewer__link {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Piano
+   -------------------------------------------------------------------------- */
+
+.viewer__stage {
+  grid-area: stage;
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: var(--viewer-stage-h);
+  overflow: hidden;
+  background-color: var(--c-surface-2);
+  background-image:
+    linear-gradient(var(--c-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  outline: none;
+  /* un dito scorre la pagina; con la tavola ingrandita la sposta */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.viewer__stage:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--c-accent);
+}
+
+.viewer.is-ready .viewer__stage {
+  cursor: grab;
+}
+
+.viewer.is-dragging .viewer__stage {
+  cursor: grabbing;
+}
+
+.viewer.is-zoomed .viewer__stage,
+.viewer.is-full .viewer__stage {
+  touch-action: none;
+}
+
+/* Foglio: prima dello script è centrato nel piano; dopo lo posiziona
+   viewer.js con left/top a 0, transform e misura in px. */
+.viewer__sheet {
+  position: relative;
+  height: calc(100% - 2rem);
+  max-width: calc(100% - 2rem);
+  aspect-ratio: var(--ratio);
+  background: #fff;
+  box-shadow:
+    0 0 0 1px var(--c-line),
+    0 30px 60px -36px rgba(0, 0, 0, 0.45);
+}
+
+.viewer.is-ready .viewer__sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: auto;
+  max-width: none;
+  aspect-ratio: auto;
+  transform-origin: 0 0;
+}
+
+.viewer.is-moving .viewer__sheet {
+  will-change: transform;
+}
+
+.viewer__img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* I canvas letti dal file: la base copre tutto il foglio, il dettaglio solo
+   la parte visibile (misure in % del foglio, così seguono lo zoom senza
+   ridisegnare). */
+.viewer__layer {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+
+.viewer__layer.is-in,
+.viewer__layer--detail {
+  opacity: 1;
+}
+
+.viewer__layer--detail {
+  inset: auto;
+  transition: none;
+}
+
+.viewer__layer[hidden] {
+  display: none;
+}
+
+.viewer__status,
+.viewer__hint {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--c-ink);
+  background: color-mix(in srgb, var(--c-surface) 94%, transparent);
+  color: var(--c-ink);
+  pointer-events: none;
+}
+
+.viewer__status {
+  top: 12px;
+  left: 12px;
+}
+
+.viewer__hint {
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  padding: 10px 14px;
+  font-size: var(--fs-sm);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.viewer.is-hinting .viewer__hint {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Strumenti: una riga sotto il piano; da tablet in su, sopra il piano in
+   basso a destra
+   -------------------------------------------------------------------------- */
+
+.viewer__tools {
+  grid-area: tools;
+  z-index: 3;
+  display: flex;
+  border-top: 1px solid var(--c-ink);
+  background: var(--c-surface);
+}
+
+.viewer__tools > * {
+  flex: 1;
+}
+
+@media (min-width: 900px) {
+  .viewer__tools {
+    grid-area: stage;
+    align-self: end;
+    justify-self: end;
+    margin: 12px;
+    border: 1px solid var(--c-ink);
+    box-shadow: var(--shadow-md);
+  }
+
+  .viewer__tools > * {
+    flex: none;
+  }
+}
+
+html:not(.js) .viewer__tools,
+html:not(.js) .viewer__hint,
+html:not(.js) .viewer__status {
+  display: none;
+}
+
+.viewer__tool {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--c-line);
+  background: transparent;
+  color: var(--c-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.viewer__tool:first-child {
+  border-left: 0;
+}
+
+.viewer__tool svg {
+  width: 16px;
+  height: 16px;
+}
+
+.viewer__zoom {
+  min-width: 64px;
+}
+
+.viewer__count {
+  min-width: 68px;
+  white-space: nowrap;
+  color: var(--c-muted);
+  cursor: default;
+}
+
+@media (hover: hover) {
+  button.viewer__tool:hover {
+    background: var(--c-surface-2);
+  }
+}
+
+.viewer__tool[aria-pressed='true'] {
+  color: var(--c-accent-hover);
+}
+
+/* sul telefono il numero della tavola sta già nella riga dati */
+@media (max-width: 599px) {
+  .viewer__count {
+    display: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .viewer__tool {
+    min-width: 38px;
+    padding: 0 4px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Riga dati della tavola
+   -------------------------------------------------------------------------- */
+
+.viewer__info {
+  grid-area: info;
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  border-top: 1px solid var(--c-ink);
+}
+
+.viewer__info p {
+  margin: 0;
+}
+
+.viewer__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-5);
+  color: var(--c-muted);
+}
+
+.viewer__meta span:first-child {
+  color: var(--c-accent-hover);
+}
+
+.viewer__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 400;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+.viewer__note {
+  max-width: 70ch;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--c-body);
+}
+
+.viewer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin-top: var(--s-1);
+}
+
+.viewer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 44px;
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-line-strong);
+  text-underline-offset: 0.35em;
+  transition:
+    color var(--dur) var(--ease),
+    text-decoration-color var(--dur) var(--ease);
+}
+
+.viewer__link svg {
+  width: 16px;
+  height: 16px;
+  color: var(--c-accent);
+}
+
+.viewer__link:hover {
+  color: var(--c-accent-hover);
+  text-decoration-color: var(--c-accent);
+}
+
+/* --------------------------------------------------------------------------
+   Elenco dei file: un nastro sotto il piano; da tablet in su, una colonna
+   a destra
+   -------------------------------------------------------------------------- */
+
+.viewer__panel {
+  grid-area: panel;
+  min-width: 0;
+  border-top: 1px solid var(--c-ink);
+}
+
+.viewer__list {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.viewer__list ol {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.viewer__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px var(--s-3);
+  width: 13rem;
+  height: 100%;
+  padding: var(--s-3) var(--s-4);
+  border-right: 1px solid var(--c-line);
+  color: var(--c-ink);
+  transition: background-color var(--dur) var(--ease);
+}
+
+/* Il segno che si accende sulla tavola aperta, come nella colonna delle
+   discipline: una barra blu. */
+.viewer__item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--c-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur) var(--ease);
+}
+
+.viewer__mini {
+  grid-row: 1 / -1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  background: var(--c-surface-2);
+}
+
+.viewer__mini img {
+  display: block;
+  max-width: 46px;
+  max-height: 46px;
+  width: auto;
+  height: auto;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--c-line-strong);
+}
+
+.viewer__item-n {
+  align-self: end;
+  color: var(--c-muted);
+}
+
+.viewer__item-title {
+  align-self: start;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.viewer__item[aria-current] {
+  background: var(--c-page);
+}
+
+.viewer__item[aria-current]::before {
+  transform: scaleX(1);
+}
+
+.viewer__item[aria-current] .viewer__item-n {
+  color: var(--c-accent-hover);
+}
+
+.viewer__item[aria-current] .viewer__item-title {
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .viewer__item:not([aria-current]):hover {
+    background: var(--c-page);
+  }
+}
+
+.viewer__item:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
+@media (min-width: 900px) {
+  .viewer {
+    --viewer-stage-h: clamp(28rem, 70vh, 44rem);
+    grid-template-areas:
+      'stage panel'
+      'info panel';
+    grid-template-columns: minmax(0, 1fr) 18rem;
+  }
+
+  .viewer__panel {
+    /* l'elenco non allunga il riquadro: scorre dentro l'altezza di piano e riga dati */
+    contain: size;
+    overflow-y: auto;
+    border-top: 0;
+    border-left: 1px solid var(--c-ink);
+    scrollbar-width: thin;
+  }
+
+  .viewer__list {
+    overflow: visible;
+  }
+
+  .viewer__list ol {
+    display: block;
+  }
+
+  .viewer__item {
+    width: auto;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .viewer__item::before {
+    top: 0;
+    right: auto;
+    width: 2px;
+    height: auto;
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .viewer__item[aria-current]::before {
+    transform: scaleY(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Schermo intero
+   -------------------------------------------------------------------------- */
+
+html.has-viewer-full {
+  overflow: hidden;
+}
+
+.viewer.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  grid-template-areas:
+    'stage'
+    'tools'
+    'info'
+    'panel';
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  border: 0;
+}
+
+.viewer.is-full .viewer__stage {
+  height: auto;
+  min-height: 0;
+}
+
+.viewer.is-full .viewer__info {
+  gap: var(--s-1);
+  padding: var(--s-3) var(--s-4);
+}
+
+.viewer.is-full .viewer__note {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.viewer.is-full .viewer__links {
+  margin-top: 0;
+}
+
+@media (max-width: 899px) {
+  .viewer.is-full .viewer__note {
+    display: none;
+  }
+
+  .viewer.is-full .viewer__item {
+    padding-block: var(--s-2);
+  }
+}
+
+@media (min-width: 900px) {
+  .viewer.is-full {
+    grid-template-areas:
+      'stage panel'
+      'info panel';
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) 18rem;
+  }
+}
+
+@media print {
+  .viewer__tools,
+  .viewer__panel {
+    display: none;
+  }
+}
