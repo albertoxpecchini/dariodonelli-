@@ -18,6 +18,7 @@
 // restituisce la funzione che lo smonta, per l'effetto di React.
 
 import { setScrollLocked } from '../motion.js'
+import { setLedText } from '../led.js'
 import { createDwgLayer } from './dwg-sheet.js'
 import { createPdfLayer } from './pdf-sheet.js'
 
@@ -166,7 +167,7 @@ export function setupViewer(root) {
       settleTimer = setTimeout(settle, SETTLE_MS)
     }
     const pct = Math.round((view.z / fitZ) * 100)
-    if (pct !== lastPct && el.zoom) el.zoom.textContent = `${pct}%`
+    if (pct !== lastPct && el.zoom) setLedText(el.zoom, `${pct}%`)
     lastPct = pct
     const z = zoomed()
     if (z !== wasZoomed) {
@@ -317,7 +318,7 @@ export function setupViewer(root) {
       el.file.setAttribute('download', s.download)
     }
     if (el.fileLabel) el.fileLabel.textContent = s.fileLabel
-    if (el.count) el.count.textContent = `${pad2(s.pos)} / ${pad2(sheets.length)}`
+    if (el.count) setLedText(el.count, `${pad2(s.pos)}/${pad2(sheets.length)}`)
 
     measure()
     reset()
@@ -517,10 +518,8 @@ export function setupViewer(root) {
   // con position: fixed; nessun suo antenato ha transform o filtri che lo
   // tratterrebbero. La pagina sotto non scorre e il fuoco resta dentro.
 
+  // Il tasto resta lo stesso: acceso (aria-pressed) finché si è a schermo intero.
   let untrap = null
-  const fullIcon = el.full?.innerHTML
-  const shrinkIcon =
-    '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 2.5V6H2.5M10 2.5V6h3.5M6 13.5V10H2.5M10 13.5V10h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
   function setFull(on) {
     if (on === full) return
@@ -537,7 +536,6 @@ export function setupViewer(root) {
     if (el.full) {
       el.full.setAttribute('aria-pressed', String(on))
       el.full.setAttribute('aria-label', on ? 'Esci dallo schermo intero' : 'Schermo intero')
-      el.full.innerHTML = on ? shrinkIcon : fullIcon
     }
     measure()
     reset()

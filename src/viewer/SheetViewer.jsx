@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { Key } from '../Key.jsx'
+import { LedReadout } from '../LedDisplay.jsx'
+import { Sym } from '../Sym.jsx'
 import './viewer.css'
 
 /* ---------------------------------------------------------------------------
@@ -25,23 +28,6 @@ const metaOf = (s, i, total) => [`${s.tag || 'Tav.'} ${pad2(i + 1)} / ${pad2(tot
 
 const fileLabelOf = (s) => `Scarica il ${kindOf(s) === 'image' ? 'file' : kindOf(s).toUpperCase()}`
 const fileNameOf = (s) => s.src.split('/').pop()
-
-function Icon({ d }) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d={d} stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-const ICON = {
-  prev: 'M13.5 8h-11m0 0L7 3.5M2.5 8 7 12.5',
-  next: 'M2.5 8h11m0 0L9 3.5M13.5 8 9 12.5',
-  minus: 'M3.5 8h9',
-  plus: 'M8 3.5v9M3.5 8h9',
-  full: 'M2.5 6V2.5H6M10 2.5h3.5V6M2.5 10v3.5H6M13.5 10v3.5H10',
-  download: 'M8 2.5v8m0 0L4.5 7M8 10.5 11.5 7M3 13.5h10',
-}
 
 function Item({ sheet, index, total }) {
   const kind = kindOf(sheet)
@@ -177,33 +163,43 @@ export default function SheetViewer({ sheets, label = 'Visualizzatore delle tavo
         </p>
         <p className="viewer__links">
           <a className="viewer__link" href={first.src} download={fileNameOf(first)} data-viewer-file>
-            <Icon d={ICON.download} />
+            <Sym name="tavola" />
             <span data-viewer-file-label>{fileLabelOf(first)}</span>
           </a>
         </p>
       </div>
 
+      {/* La tastiera di una stazione totale: gli stessi tasti del sito,
+          rettangolari con la scritta retroilluminata (PREC, SUCC) e tondi
+          per −, + e lo schermo intero, e due display a LED come l'insegna
+          in fondo alla pagina, per il numero della tavola e
+          l'ingrandimento (viewer.js li aggiorna con setLedText). */}
       <div className="viewer__tools" role="group" aria-label="Strumenti del visualizzatore">
         <button className="viewer__tool" type="button" data-viewer-prev aria-label="Tavola precedente">
-          <Icon d={ICON.prev} />
+          <Key label="Prec" />
         </button>
         <span className="viewer__tool viewer__count" data-viewer-count aria-hidden="true">
-          {pad2(1)} / {pad2(total)}
+          <LedReadout text={`${pad2(1)}/${pad2(total)}`} />
         </span>
         <button className="viewer__tool" type="button" data-viewer-next aria-label="Tavola successiva">
-          <Icon d={ICON.next} />
+          <Key label="Succ" />
         </button>
         <button className="viewer__tool" type="button" data-viewer-out aria-label="Riduci">
-          <Icon d={ICON.minus} />
+          <Key round label="−" />
         </button>
         <button className="viewer__tool viewer__zoom" type="button" data-viewer-zoom aria-label="Adatta la tavola allo schermo">
-          100%
+          {/* cinque celle: l'ingrandimento arriva a quattro cifre */}
+          <LedReadout text="100%" cells={5} />
         </button>
         <button className="viewer__tool" type="button" data-viewer-in aria-label="Ingrandisci">
-          <Icon d={ICON.plus} />
+          <Key round label="+" />
         </button>
         <button className="viewer__tool" type="button" data-viewer-full aria-label="Schermo intero" aria-pressed="false">
-          <Icon d={ICON.full} />
+          <Key round>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2.5 6V2.5H6M10 2.5h3.5V6M2.5 10v3.5H6M13.5 10v3.5H10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Key>
         </button>
       </div>
 

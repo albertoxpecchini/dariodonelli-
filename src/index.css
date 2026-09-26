@@ -31,6 +31,57 @@
   --c-accent-hover: #3b5bef;
   --c-accent-ink: #ffffff;
 
+  /* --- Metallo --------------------------------------------------------------
+     I tasti sono fotografie (Key.jsx); qui restano le superfici disegnate:
+     canna di fucile per la tastiera del visualizzatore, acciaio chiaro per
+     la barra in alto, acciaio brunito per il footer. Ogni superficie ha più
+     strati: la spazzolatura (righe sottili a passo irregolare), i riflessi
+     e il tono di base con la sua curva di luce. */
+  --metal-gunmetal:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #4a4d53 0%, #26282c 42%, #151619 72%, #2c2e33 100%);
+  /* Acciaio brunito per il footer: la canna di fucile stesa in lastra,
+     spazzolata in orizzontale, con i riflessi che virano al blu come il
+     metallo brunito sotto la luce. Scuro abbastanza da tenere i testi
+     chiari del fondo nero. */
+  --metal-blued:
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.14) 0 1px, transparent 1px 7px),
+    linear-gradient(106deg, transparent 6%, rgba(125, 150, 255, 0.11) 22%, transparent 36%, transparent 56%, rgba(150, 172, 255, 0.07) 70%, transparent 84%),
+    radial-gradient(80% 55% at 28% 0%, rgba(170, 188, 240, 0.16), transparent 70%),
+    linear-gradient(180deg, #2c2f36 0%, #1c1e23 28%, #121317 64%, #1b1d22 100%);
+  /* La barra in alto: acciaio chiaro spazzolato per il lungo, un poco più
+     freddo dei cappucci. I riflessi stanno a parte (--metal-bar-glint, su
+     un livello che scorre) e prendono un filo del blu, come il fondo. */
+  --metal-bar:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, transparent 58%, rgba(77, 108, 250, 0.07) 100%),
+    linear-gradient(180deg, #f4f6f9 0%, #e2e6ec 40%, #d3d8e0 68%, #e3e7ed 100%);
+  --metal-bar-glint: linear-gradient(
+    100deg,
+    transparent 8%,
+    rgba(255, 255, 255, 0.7) 15%,
+    rgba(128, 150, 255, 0.16) 19%,
+    rgba(255, 255, 255, 0.4) 22%,
+    transparent 30%,
+    transparent 44%,
+    rgba(128, 150, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.55) 54%,
+    transparent 62%,
+    transparent 72%,
+    rgba(255, 255, 255, 0.5) 78%,
+    rgba(128, 150, 255, 0.15) 82%,
+    transparent 90%
+  );
+  /* Lo spigolo: filo di luce sopra, smusso e un riflesso blu sotto. */
+  --metal-bar-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 0 #a3a9b3,
+    0 2px 0 rgba(77, 108, 250, 0.14),
+    0 10px 20px -14px rgba(14, 22, 48, 0.5);
+
   --c-dark-bg: #000000;
   --c-dark-bg-2: #0d0d0d;
   --c-dark-fg: rgba(255, 255, 255, 0.72);
@@ -42,42 +93,43 @@
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
   --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
 
-  /* Scala tipografica fluida, rapporto ~1.25 */
-  --fs-label: 0.6875rem;
-  --fs-sm: 0.8125rem;
-  --fs-base: 0.9375rem;
-  --fs-md: 1.0625rem;
-  --fs-lg: clamp(1.25rem, 0.9rem + 0.9vw, 1.5rem);
-  --fs-xl: clamp(1.5rem, 1.05rem + 1.5vw, 2.125rem);
-  --fs-2xl: clamp(2rem, 1.2rem + 2.6vw, 3rem);
+  /* Scala tipografica fluida, rapporto ~1.25. Il corpo è largo e
+     l'interlinea ampia: il sito deve respirare, non stare stretto. */
+  --fs-label: 0.72rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1.0625rem;
+  --fs-md: 1.1875rem;
+  --fs-lg: clamp(1.3rem, 0.95rem + 0.9vw, 1.625rem);
+  --fs-xl: clamp(1.6rem, 1.1rem + 1.6vw, 2.375rem);
+  --fs-2xl: clamp(2.2rem, 1.3rem + 2.9vw, 3.5rem);
   --fs-3xl: clamp(2.625rem, 1.5rem + 4vw, 4.75rem);
 
   --lh-tight: 1.06;
-  --lh-snug: 1.22;
-  --lh-body: 1.68;
+  --lh-snug: 1.25;
+  --lh-body: 1.8;
 
   --ls-label: 0.1em;
   --ls-tight: -0.02em;
   --ls-display: -0.03em;
 
-  /* --- Spazio: scala a passo 4px ----------------------------------------- */
+  /* --- Spazio: scala a passo 4px, che si allarga salendo --------------- */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
   --s-4: 1rem;
-  --s-5: 1.5rem;
-  --s-6: 2rem;
-  --s-7: 2.5rem;
-  --s-8: 3rem;
-  --s-9: 4rem;
-  --s-10: 5rem;
-  --s-11: 6.5rem;
+  --s-5: 1.75rem;
+  --s-6: 2.5rem;
+  --s-7: 3.25rem;
+  --s-8: 4rem;
+  --s-9: 5.5rem;
+  --s-10: 7rem;
+  --s-11: 9rem;
 
-  /* Ritmo verticale delle sezioni */
-  --section-y: clamp(4.5rem, 8vw, 8rem);
+  /* Ritmo verticale delle sezioni: tanto bianco tra un capitolo e l'altro */
+  --section-y: clamp(6.5rem, 13vw, 12.5rem);
   --header-h: 84px;
   --container: 1200px;
-  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --gutter: clamp(1.5rem, 5.5vw, 4rem);
 
   /* --- Superfici --------------------------------------------------------- */
   --radius-sm: 2px;

@@ -71,12 +71,12 @@ export const profile = {
  * per illuminare la voce corrispondente alla sezione che si sta leggendo.
  */
 export const sections = [
-  { id: 'servizi', num: '01', label: 'Servizi', nav: true },
-  { id: 'progetti', num: '02', label: 'Progetti', nav: true },
-  { id: 'studio', num: '03', label: 'Lo Studio', nav: true },
-  { id: 'territorio', num: '04', label: 'Territorio', nav: true },
-  { id: 'metodo', num: '05', label: 'Metodo', nav: true },
-  { id: 'contatti', num: '06', label: 'Contatti', nav: true },
+  { id: 'servizi', num: '01', label: 'Servizi', nav: true, sym: 'compasso' },
+  { id: 'progetti', num: '02', label: 'Progetti', nav: true, sym: 'tavola' },
+  { id: 'studio', num: '03', label: 'Lo Studio', nav: true, sym: 'squadra' },
+  { id: 'territorio', num: '04', label: 'Territorio', nav: true, sym: 'stazione-totale' },
+  { id: 'metodo', num: '05', label: 'Metodo', nav: true, sym: 'livella' },
+  { id: 'contatti', num: '06', label: 'Contatti', nav: true, sym: 'casco' },
 ]
 
 export const navItems = sections.filter((section) => section.nav)
@@ -93,18 +93,23 @@ export const infoline = ['Rivalta sul Mincio', 'MN', String(new Date().getFullYe
 /**
  * Territorio. Lo studio ha sede a Rivalta sul Mincio, frazione di Rodigo,
  * e opera nella provincia di Mantova. I comuni sono riferimenti geografici
- * attorno alla sede, non un elenco di cantieri; "near" segna quelli della
- * fascia sotto la carta. Coordinate approssimate al centro abitato.
+ * attorno alla sede, non un elenco di cantieri. Coordinate approssimate al
+ * centro abitato.
+ *
+ * Questo elenco serve alla carta schematica: "label" dice da che parte
+ * sta il nome. La nuvola dell'area di riferimento usa invece tutta la
+ * provincia, comuni e frazioni, da provincia.js; di qui prende solo la
+ * sede, che è l'origine degli assi.
  */
 export const places = [
-  { name: 'Rivalta sul Mincio', lat: 45.18, lng: 10.678, studio: true, near: true },
-  { name: 'Mantova', lat: 45.156, lng: 10.791, capital: true, near: true },
-  { name: 'Rodigo', lat: 45.199, lng: 10.625, near: true, label: 'above' },
-  { name: 'Goito', lat: 45.256, lng: 10.674, near: true },
-  { name: 'Volta Mantovana', lat: 45.322, lng: 10.659, near: true },
-  { name: 'Marmirolo', lat: 45.22, lng: 10.757, near: true },
-  { name: 'Castellucchio', lat: 45.15, lng: 10.65, near: true },
-  { name: 'Curtatone', lat: 45.136, lng: 10.717, near: true },
+  { name: 'Rivalta sul Mincio', lat: 45.18, lng: 10.678, studio: true },
+  { name: 'Mantova', lat: 45.156, lng: 10.791, capital: true },
+  { name: 'Rodigo', lat: 45.199, lng: 10.625, label: 'above' },
+  { name: 'Goito', lat: 45.256, lng: 10.674 },
+  { name: 'Volta Mantovana', lat: 45.322, lng: 10.659 },
+  { name: 'Marmirolo', lat: 45.22, lng: 10.757 },
+  { name: 'Castellucchio', lat: 45.15, lng: 10.65 },
+  { name: 'Curtatone', lat: 45.136, lng: 10.717 },
   { name: 'Porto Mantovano', lat: 45.19, lng: 10.79, label: 'above' },
   { name: 'Roverbella', lat: 45.267, lng: 10.767 },
   { name: 'Gazoldo degli Ippoliti', lat: 45.198, lng: 10.578, label: 'left' },
@@ -165,36 +170,20 @@ export const lakes = [
 ]
 
 /**
- * Punti di interesse sulla fotografia della sede (1536×1024), in
- * percentuale della larghezza e dell'altezza dell'immagine.
- */
-export const hotspots = [
-  { x: 58, y: 67, title: 'L’ingresso', text: 'Porta a vetri su via Filippo Turati, 1.' },
-  { x: 69, y: 61.5, title: 'La targa', text: 'Ing. Dario Donelli: ingegneria, architettura, ambiente.' },
-  { x: 44, y: 66, title: 'La vetrina', text: 'L’edificio d’angolo tra via Turati e vicolo Zibramonda.' },
-]
-
-/** Competenze mostrate nella fascia sotto l'hero. */
-export const heroCompetences = [
-  'Progettazione architettonica e strutturale',
-  'Sicurezza sismica',
-  'Riqualificazione energetica',
-  'Direzione lavori',
-]
-
-/**
  * Tre macro-aree. Ognuna spiega cosa comprende, a chi serve e che problema
  * risolve, con un elenco delle prestazioni effettivamente offerte.
  *
  * "icon" è il nome di un'icona in /images/icone (png + webp, 512 px su fondo
  * trasparente): oggetti in nero lucido e acciaio con un solo dettaglio blu,
- * generati tutti nello stesso foglio perché restino una famiglia.
+ * generati tutti nello stesso foglio perché restino una famiglia. "sym" è
+ * il simbolo accanto al collegamento in fondo al blocco.
  */
 export const serviceAreas = [
   {
     id: 'progettazione',
     num: '01',
     icon: 'compasso',
+    sym: 'matita',
     image: '/images/servizio-progettazione',
     imageAlt: 'Un tecnico disegna a mano un prospetto su carta da lucido',
     title: 'Progettazione e pratiche edilizie',
@@ -211,6 +200,7 @@ export const serviceAreas = [
     id: 'strutture',
     num: '02',
     icon: 'trave',
+    sym: 'ipe',
     image: '/images/servizio-strutture',
     imageAlt: 'Armature di ferro predisposte su un solaio prima del getto',
     title: 'Strutture e sicurezza sismica',
@@ -226,6 +216,7 @@ export const serviceAreas = [
     id: 'cantiere',
     num: '03',
     icon: 'livella',
+    sym: 'gru',
     image: '/images/servizio-cantiere',
     imageAlt: 'Squadra di tecnici in cantiere sul solaio di un edificio in costruzione',
     title: 'Direzione lavori e consulenza',
@@ -239,20 +230,20 @@ export const serviceAreas = [
   },
 ]
 
-/** Elenco completo delle prestazioni, usato nella pagina Servizi. */
+/** Elenco completo delle prestazioni, ognuna con il suo simbolo. */
 export const serviceIndex = [
-  'Studi di fattibilità e progettazione preliminare',
-  'Rendering e fotoinserimenti',
-  'Progettazione definitiva',
-  'Progettazione esecutiva',
-  'Miglioramento e adeguamento sismico di edifici esistenti',
-  'Riqualificazione e certificazione energetica',
-  'Direzione lavori',
-  'Direzione operativa',
-  'Sicurezza',
-  'Pratiche antincendio',
-  'Pratiche catastali',
-  'Perizie, stime e consulenze tecniche',
+  { label: 'Studi di fattibilità e progettazione preliminare', sym: 'matita' },
+  { label: 'Rendering e fotoinserimenti', sym: 'prospettiva' },
+  { label: 'Progettazione definitiva', sym: 'squadra' },
+  { label: 'Progettazione esecutiva', sym: 'quota' },
+  { label: 'Miglioramento e adeguamento sismico di edifici esistenti', sym: 'sisma' },
+  { label: 'Riqualificazione e certificazione energetica', sym: 'energia' },
+  { label: 'Direzione lavori', sym: 'casco' },
+  { label: 'Direzione operativa', sym: 'gru' },
+  { label: 'Sicurezza', sym: 'pericolo' },
+  { label: 'Pratiche antincendio', sym: 'estintore' },
+  { label: 'Pratiche catastali', sym: 'catasto' },
+  { label: 'Perizie, stime e consulenze tecniche', sym: 'lente' },
 ]
 
 /**
@@ -264,6 +255,7 @@ export const projects = [
   {
     id: 'residenze',
     category: 'Residenziale',
+    sym: 'porta',
     title: 'Residenze private',
     location: 'Rivalta sul Mincio (MN)',
     year: '2025',
@@ -274,6 +266,7 @@ export const projects = [
   {
     id: 'pubblici',
     category: 'Opere civili',
+    sym: 'ponte',
     title: 'Interventi pubblici e civili',
     location: 'Provincia di Mantova',
     year: '2024',
@@ -284,6 +277,7 @@ export const projects = [
   {
     id: 'riqualificazione',
     category: 'Riqualificazione',
+    sym: 'mattoni',
     title: 'Riqualificazione e adeguamento strutturale',
     location: 'Mantova e territorio',
     year: '2023',
@@ -352,9 +346,9 @@ export const sheets = [
  * il professionista a colpo d'occhio, presi dall'iscrizione all'albo.
  */
 export const heroFacts = [
-  { label: 'Ordine degli Ingegneri', value: 'Mantova, n. 1495' },
-  { label: 'Iscritto all’albo', value: 'dal 2010' },
-  { label: 'Laurea', value: 'Ingegneria Edile-Architettura' },
+  { label: 'Ordine degli Ingegneri', value: 'Mantova, n. 1495', sym: 'caposaldo' },
+  { label: 'Iscritto all’albo', value: 'dal 2010', sym: 'tavola' },
+  { label: 'Laurea', value: 'Ingegneria Edile-Architettura', sym: 'compasso' },
 ]
 
 /** Le quattro fasi del metodo di lavoro, ognuna con la sua icona. */
@@ -386,13 +380,13 @@ export const method = [
 ]
 
 export const disciplines = [
-  'Progettazione architettonica e strutturale',
-  'Valutazione della sicurezza sismica',
-  'Riabilitazione strutturale e restauro',
-  'Strutture antisismiche',
-  'Energia',
-  'Impianti',
-  'Urbanistica',
-  'Infrastrutture',
-  'Idraulica e ambiente',
+  { label: 'Progettazione architettonica e strutturale', sym: 'compasso' },
+  { label: 'Valutazione della sicurezza sismica', sym: 'sisma' },
+  { label: 'Riabilitazione strutturale e restauro', sym: 'mattoni' },
+  { label: 'Strutture antisismiche', sym: 'pilastro' },
+  { label: 'Energia', sym: 'isolante' },
+  { label: 'Impianti', sym: 'impianti' },
+  { label: 'Urbanistica', sym: 'urbanistica' },
+  { label: 'Infrastrutture', sym: 'ponte' },
+  { label: 'Idraulica e ambiente', sym: 'idraulica' },
 ]

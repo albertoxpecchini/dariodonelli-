@@ -104,7 +104,6 @@
 
 /* Cursore a forma di D sugli elementi "da toccare". */
 .plate,
-.hotspot__btn,
 .terr__map {
   cursor:
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M6 4h9a10 10 0 0 1 0 20H6z' fill='white' stroke='black' stroke-width='2'/></svg>")
@@ -154,7 +153,7 @@
 }
 
 .body-text + .body-text {
-  margin-top: var(--s-4);
+  margin-top: var(--s-5);
 }
 
 /* --- Intestazione di sezione ---
@@ -166,7 +165,7 @@
   display: grid;
   gap: var(--s-5);
   padding-top: var(--s-6);
-  margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: clamp(4rem, 8vw, 7rem);
 }
 
 .section-head::before {
@@ -204,7 +203,7 @@
 .section-head__body {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: var(--s-4) clamp(2rem, 5vw, 4rem);
+  gap: var(--s-5) clamp(2.5rem, 7vw, 6rem);
   align-items: end;
 }
 
@@ -217,89 +216,166 @@
    -------------------------------------------------------------------------- */
 
 /* --- Tasti ---
-   I pulsanti sono fotografie: una ghiera d'acciaio come i distanziali
-   della targa e un cappuccio lucido, generati nello stesso foglio in tre
-   stati (nero con un filo di blu, Electric Sapphire, nero premuto). Sopra
-   il cappuccio il simbolo è vettoriale, bianco come una serigrafia.
-   Gli stati sono strati allo stesso diametro che si scambiano d'opacità:
-   restano caricati, quindi al passaggio non c'è attesa né sfarfallio. */
+   Cappucci in alluminio anodizzato Electric Sapphire, tutti in CSS
+   (Key.jsx): rettangolari come i tasti di una tastiera, tondi come i
+   pulsanti di un computer. La sede (.key) è un pozzetto di metallo scuro;
+   il cappuccio (.key__cap) mostra il fianco tutt'intorno, più alto in
+   basso come su un tasto visto dall'alto, e sopra la faccia spazzolata
+   (::before) con lo smusso cromato. La scritta è retroilluminata: bianca
+   con l'alone blu dei LED. Al passaggio i LED si accendono e la luce
+   esce da sotto il cappuccio; premuto, il cappuccio affonda. */
 .key {
-  --key: 44px;
+  --key-h: 46px;
+  --key-w: calc(var(--key-h) * 1.36);
+  --key-r: 9px;
+  position: relative;
+  display: grid;
+  flex: none;
+  width: var(--key-w);
+  height: var(--key-h);
+  padding: 3px 3px 4px;
+  border-radius: calc(var(--key-r) + 3px);
+  background: linear-gradient(180deg, #30333b 0%, #121317 55%, #22252b 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.5),
+    0 6px 14px -6px rgba(10, 16, 40, 0.5);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+/* Il fianco: blu più cupo, con la luce dall'alto e lo spessore sotto. */
+.key__cap {
   position: relative;
   display: grid;
   place-items: center;
-  flex: none;
-  width: var(--key);
-  height: var(--key);
-  border-radius: 50%;
-  background: url('/images/tasti/tasto-nero.webp') center / 100% 100% no-repeat;
-  color: #ffffff;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22)) drop-shadow(0 4px 7px rgba(0, 0, 0, 0.16));
+  border-radius: var(--key-r);
+  background: linear-gradient(180deg, #8499ff 0%, #4a66f3 28%, #2d47cb 68%, #1c309c 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 40, 0.5),
+    0 2px 0 #14246f,
+    0 3px 3px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1.5px);
   transition:
-    transform 160ms var(--ease),
+    transform 100ms var(--ease),
+    box-shadow 100ms var(--ease),
     filter var(--dur) var(--ease);
 }
 
-.key--accent {
-  background-image: url('/images/tasti/tasto-blu.webp');
-}
-
-.key::before,
-.key::after {
+/* La faccia: rientra dal fianco più in basso che in alto, è spazzolata in
+   orizzontale e ha lo smusso cromato tutt'intorno. */
+.key__cap::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: center / 100% 100% no-repeat;
-  opacity: 0;
-  transition: opacity var(--dur) var(--ease);
+  inset: 2px 4px 6px;
+  border-radius: calc(var(--key-r) - 3px);
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 40, 0.07) 0 1px, transparent 1px 5px),
+    linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.42) 34%, transparent 48%, rgba(255, 255, 255, 0.16) 66%, transparent 80%),
+    radial-gradient(130% 95% at 50% 0%, #a6b7ff 0%, #6c86fc 45%, #4d6cfa 72%, #405ff0 100%);
+  box-shadow:
+    0 0 0 1px rgba(236, 241, 255, 0.95),
+    0 0 0 2px rgba(40, 52, 110, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.55),
+    inset 0 -2px 4px rgba(0, 0, 60, 0.25);
 }
 
-/* Acceso: il nero diventa blu al passaggio del mouse. */
-.key::before {
-  background-image: url('/images/tasti/tasto-blu.webp');
-}
-
-/* Premuto: sul touch, dove non c'è passaggio, il cappuccio affonda. */
-.key::after {
-  background-image: url('/images/tasti/tasto-premuto.webp');
-}
-
-.key--accent::before,
-.key--accent::after {
-  content: none;
-}
-
-.key > * {
+/* La scritta: grande, bianca, con l'alone dei LED che passano attraverso
+   il metallo. Sta al centro della faccia, un filo sopra il centro del
+   cappuccio. */
+.key__label {
   position: relative;
-  z-index: 1;
+  display: grid;
+  place-items: center;
+  transform: translateY(-2px);
+  font-family: var(--font-body);
+  font-size: calc(var(--key-h) * 0.29);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  padding-left: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #f5f8ff;
+  text-shadow:
+    0 0 1px #ffffff,
+    0 0 5px rgba(175, 195, 255, 0.95),
+    0 0 12px rgba(77, 108, 250, 0.9);
+  transition: text-shadow var(--dur) var(--ease);
 }
 
-.key svg {
-  width: 36%;
-  height: 36%;
-  filter: drop-shadow(0 -0.5px 0 rgba(0, 0, 0, 0.5));
-  transition: transform var(--dur) var(--ease);
+.key__label svg {
+  width: calc(var(--key-h) * 0.36);
+  height: calc(var(--key-h) * 0.36);
+  filter: drop-shadow(0 0 2px rgba(175, 195, 255, 0.95)) drop-shadow(0 0 6px rgba(77, 108, 250, 0.9));
+}
+
+/* Tondo, come il pulsante di accensione di un computer. */
+.key--round {
+  --key-w: var(--key-h);
+  border-radius: 50%;
+  padding: 3px 3px 4px;
+}
+
+.key--round .key__cap,
+.key--round .key__cap::before {
+  border-radius: 50%;
+}
+
+.key--round .key__cap::before {
+  inset: 3px 3px 5px;
+}
+
+.key--round .key__label {
+  font-size: calc(var(--key-h) * 0.44);
+  font-weight: 600;
+  letter-spacing: 0;
+  padding-left: 0;
+}
+
+/* L'Invio: largo il doppio, come la barra dell'Invio sulla tastiera. */
+.key--wide {
+  --key-h: 50px;
+  --key-w: calc(var(--key-h) * 2.05);
+}
+
+.key--wide .key__label {
+  font-size: calc(var(--key-h) * 0.3);
+  letter-spacing: 0.12em;
+  padding-left: 0.12em;
 }
 
 @media (hover: hover) {
-  :is(a, button):hover > .key::before {
-    opacity: 1;
+  :is(a, button):hover > .key {
+    box-shadow:
+      inset 0 1px 1px rgba(0, 0, 0, 0.9),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+      0 1px 0 rgba(255, 255, 255, 0.5),
+      0 0 16px 2px color-mix(in srgb, var(--c-accent) 55%, transparent),
+      0 6px 14px -6px rgba(10, 16, 40, 0.5);
   }
 
-  :is(a, button):hover > .key--accent {
-    filter: brightness(1.08) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22))
-      drop-shadow(0 6px 10px color-mix(in srgb, var(--c-accent) 35%, transparent));
+  :is(a, button):hover > .key .key__cap {
+    filter: brightness(1.1);
+  }
+
+  :is(a, button):hover > .key .key__label {
+    text-shadow:
+      0 0 1px #ffffff,
+      0 0 6px #d0dbff,
+      0 0 16px rgba(77, 108, 250, 1);
   }
 }
 
-@media (hover: none) {
-  :is(a, button):active > .key:not(.key--accent)::after {
-    opacity: 1;
-  }
-}
-
-:is(a, button):active > .key {
-  transform: scale(0.94);
+:is(a, button):active > .key .key__cap {
+  transform: translateY(0.5px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 40, 0.5),
+    0 0.5px 0 #14246f,
+    0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
 /* Azione: il tasto e il suo nome, senza scatola attorno. */
@@ -320,17 +396,15 @@
   color: var(--c-accent-hover);
 }
 
-.action:hover .key svg {
-  transform: translateX(2px);
-}
-
 .action-row {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-3) var(--s-6);
 }
 
-.link-arrow {
+/* Collegamento con il simbolo del suo ambito davanti, sottolineato. */
+.link-sym {
+  --sym-accent: var(--c-accent);
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
@@ -346,20 +420,160 @@
     border-color var(--dur) var(--ease);
 }
 
-.link-arrow:hover {
+.link-sym:hover {
   border-color: var(--c-accent);
   color: var(--c-accent-hover);
 }
 
-.link-arrow svg {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  transition: transform var(--dur) var(--ease);
+.link-sym svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 400ms var(--ease-spring);
 }
 
-.link-arrow:hover svg {
-  transform: translateX(3px);
+.link-sym:hover svg {
+  transform: rotate(-8deg) scale(1.12);
+}
+
+/* --------------------------------------------------------------------------
+   3b. Simboli
+   Il simbolo base (src/symbols.jsx) e i posti in cui compare: ogni
+   elenco, intestazione e fascia ha il suo. Il dettaglio .sym__a prende
+   il blu dove il contenitore lo chiede con --sym-accent.
+   -------------------------------------------------------------------------- */
+
+.sym {
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.sym .sym__a {
+  color: var(--sym-accent, currentColor);
+}
+
+/* Sotto i 24 px il tratto da tavola si assottiglia troppo: lo si rinforza. */
+:is(
+    .section-head__sym,
+    .facts__sym,
+    .index-list__sym,
+    .rail-list__sym,
+    .project__sym,
+    .link-sym svg,
+    .terr__map-hint svg,
+    .map__cta svg,
+    .tb__ext
+  ) {
+  stroke-width: 1.8;
+}
+
+.section-head__sym {
+  --sym-accent: var(--c-accent);
+  width: 18px;
+  height: 18px;
+  color: var(--c-ink);
+}
+
+.contact .section-head__sym {
+  color: var(--c-dark-fg-strong);
+}
+
+.facts__sym {
+  --sym-accent: var(--c-accent);
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 7px;
+  vertical-align: -3px;
+  color: var(--c-ink);
+}
+
+.index-list__sym {
+  --sym-accent: var(--c-accent);
+  width: 24px;
+  height: 24px;
+  color: var(--c-ink);
+}
+
+.rail-list__sym {
+  --sym-accent: var(--c-accent);
+  width: 18px;
+  height: 18px;
+  align-self: center;
+  opacity: 0.8;
+}
+
+.project__sym {
+  --sym-accent: var(--c-accent);
+  width: 14px;
+  height: 14px;
+}
+
+/* --- Segni a margine ---
+   Simboli grandi a tratto sottile, sotto il contenuto. La sezione si
+   isola, così lo strato dei segni (z-index -1) sta sopra il suo fondo e
+   sotto tutto il resto. Il tratto non cresce con il simbolo: resta un
+   filo, come uno schizzo a matita dura. */
+.has-margins {
+  position: relative;
+  isolation: isolate;
+}
+
+.margins {
+  --sym-accent: var(--c-accent);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* clip e non hidden: hidden farebbe dello strato un contenitore di
+     scroll, e view() in motion.css misurerebbe lui invece della pagina. */
+  overflow: clip;
+  pointer-events: none;
+}
+
+.margins__sym {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  rotate: var(--rot);
+  color: var(--c-ink);
+  opacity: calc(0.15 * var(--o, 1));
+}
+
+.margins__sym * {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.25px;
+}
+
+/* A margine anche i pieni diventano contorno: solo linee, come uno schizzo. */
+.margins__sym [fill='currentColor'] {
+  fill: none;
+  stroke: currentColor;
+}
+
+:is(.contact, .footer) .margins__sym {
+  color: #ffffff;
+  opacity: calc(0.2 * var(--o, 1));
+}
+
+/* Progetti fa eccezione: il visualizzatore a schermo intero deve uscire
+   sopra l'header, quindi la sezione non può isolarsi. I segni restano
+   sul fondo e sono i blocchi del contenuto a salire sopra di loro. */
+#progetti.has-margins {
+  isolation: auto;
+}
+
+#progetti > .margins {
+  z-index: 0;
+}
+
+#progetti .section-head,
+#progetti .project-grid,
+#progetti .drawings__head,
+#progetti .viewer:not(.is-full) {
+  position: relative;
+  z-index: 1;
 }
 
 /* --------------------------------------------------------------------------
@@ -462,25 +676,45 @@
    5. Header
    -------------------------------------------------------------------------- */
 
+/* Una lastra d'acciaio, come la targa. Sul metallo i grigi del testo si
+   scuriscono un poco, perché il fondo è meno chiaro della pagina. */
 .header {
+  --c-body: #2f333a;
+  --c-muted: #555b64;
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--c-page) 86%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid transparent;
-  transition:
-    border-color var(--dur) var(--ease),
-    background-color var(--dur) var(--ease);
+  background: var(--metal-bar);
+  box-shadow: var(--metal-bar-edge);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+/* I riflessi: appena si scorre la luce scivola lungo la barra, come su
+   un pezzo di metallo che si sposta sotto la lampada. */
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--metal-bar-glint) 0 0 / 160% 100% no-repeat;
+  transition: background-position 1.6s var(--ease-out);
+  pointer-events: none;
 }
 
 .header--scrolled {
-  background: color-mix(in srgb, var(--c-page) 94%, transparent);
-  border-bottom-color: var(--c-line);
+  box-shadow:
+    var(--metal-bar-edge),
+    0 14px 28px -18px rgba(14, 22, 48, 0.55);
 }
 
+.header--scrolled::before {
+  background-position: 100% 0;
+}
+
+/* L'header è più largo della pagina: il menu ha bisogno di aria quanto
+   il contenuto, e sui lati c'è spazio. */
 .header__inner {
+  max-width: 1440px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -496,7 +730,7 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: var(--s-6);
+  gap: clamp(1.25rem, 2.3vw, 2.5rem);
 }
 
 .nav__link {
@@ -505,7 +739,7 @@
   align-items: baseline;
   gap: 4px;
   padding-block: var(--s-2);
-  font-size: var(--fs-sm);
+  font-size: 0.84rem;
   font-weight: 500;
   white-space: nowrap;
   color: var(--c-body);
@@ -652,17 +886,16 @@
   color: var(--c-ink);
 }
 
-.header__cta .key {
-  --key: 38px;
+.header__cta .key--wide {
+  --key-h: 42px;
 }
 
 /* --- Pulsante menu mobile --- */
-/* Un tasto nero con le due barre serigrafate: diventano una X quando il
-   menu è aperto. */
+/* Il tasto MENU; a menu aperto resta acceso. */
 .menu-toggle {
   display: none;
   place-items: center;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
   margin-right: -2px;
   padding: 0;
@@ -672,39 +905,11 @@
 }
 
 .menu-toggle .key {
-  --key: 40px;
+  --key-h: 42px;
 }
 
-.menu-toggle__bars {
-  position: relative;
-  width: 14px;
-  height: 8px;
-}
-
-.menu-toggle__bars span {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 1.5px;
-  border-radius: 1px;
-  background: currentColor;
-  transition: transform var(--dur) var(--ease);
-}
-
-.menu-toggle__bars span:nth-child(1) {
-  top: 0;
-}
-
-.menu-toggle__bars span:nth-child(2) {
-  bottom: 0;
-}
-
-.menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(1) {
-  transform: translateY(3.25px) rotate(45deg);
-}
-
-.menu-toggle[aria-expanded='true'] .menu-toggle__bars span:nth-child(2) {
-  transform: translateY(-3.25px) rotate(-45deg);
+.menu-toggle[aria-expanded='true'] .key .key__cap {
+  filter: brightness(1.1);
 }
 
 /* --- Pannello mobile --- */
@@ -738,7 +943,7 @@
 .mobile-panel__close {
   display: grid;
   place-items: center;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
   margin-right: -2px;
   padding: 0;
@@ -748,14 +953,7 @@
 }
 
 .mobile-panel__close .key {
-  --key: 40px;
-}
-
-/* La X disegnata su 24 unità occupa metà del riquadro: la si ingrandisce
-   perché abbia lo stesso peso delle barre del menu. */
-.mobile-panel__close .key svg {
-  width: 50%;
-  height: 50%;
+  --key-h: 42px;
 }
 
 .mobile-nav {
@@ -1028,49 +1226,6 @@
   max-width: 40ch;
 }
 
-.intro__focus {
-  width: 100%;
-  max-width: 460px;
-  margin-top: var(--s-2);
-}
-
-/* FOCUS: una riga che cambia ogni pochi secondi. */
-.focus {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--s-4);
-  padding: var(--s-3) 0;
-  border-top: 1px solid var(--c-ink);
-  border-bottom: 1px solid var(--c-line);
-}
-
-.focus__label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-.focus__text {
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--c-ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.focus__count {
-  font-size: var(--fs-label);
-  color: var(--c-muted);
-  font-variant-numeric: tabular-nums;
-}
-
 /* --- Targa --- */
 .intro__plate {
   margin: 0;
@@ -1107,11 +1262,12 @@
   color: var(--c-body);
 }
 
-/* --- Fascia dei dati di albo e delle competenze --- */
+/* --- Fascia dei dati di albo --- */
 .facts-band {
   position: relative;
   z-index: 1;
   border-top: 1px solid var(--c-ink);
+  border-bottom: 1px solid var(--c-line);
 }
 
 .facts {
@@ -1119,7 +1275,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-5) var(--s-6);
   margin: 0;
-  padding-block: var(--s-5);
+  padding-block: var(--s-7);
 }
 
 .facts__item {
@@ -1143,52 +1299,6 @@
   color: var(--c-ink);
 }
 
-.strip {
-  border-block: 1px solid var(--c-line);
-  background: var(--c-surface);
-}
-
-/* Le competenze scorrono in fascia come un nastro: vanno da sole e
-   accelerano con lo scroll della pagina (il moto è in motion.js). Ai bordi
-   il nastro sfuma invece di tagliarsi. */
-.marquee {
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-}
-
-.marquee__track {
-  display: flex;
-  width: max-content;
-  will-change: transform;
-}
-
-/* Un gruppo è un periodo del nastro: lo spazio a destra è uguale allo
-   spazio tra le voci, così l'aggancio tra un gruppo e il successivo non
-   si vede. */
-.marquee__group {
-  display: flex;
-  align-items: center;
-  flex: none;
-  gap: var(--s-6);
-  padding-right: var(--s-6);
-  padding-block: var(--s-4);
-}
-
-.marquee__item {
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--c-ink);
-  white-space: nowrap;
-}
-
-.marquee__sep {
-  width: 10px;
-  height: 10px;
-  flex: none;
-  color: var(--c-ink);
-}
-
 /* --------------------------------------------------------------------------
    8. Servizi
    -------------------------------------------------------------------------- */
@@ -1196,13 +1306,13 @@
 .service-blocks {
   display: flex;
   flex-direction: column;
-  gap: clamp(3.5rem, 8vw, 7rem);
+  gap: clamp(6rem, 13vw, 11rem);
 }
 
 .service-block {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  gap: clamp(2.5rem, 7vw, 7rem);
   align-items: center;
 }
 
@@ -1289,7 +1399,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding-block: var(--s-3);
+  padding-block: var(--s-4);
   border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-sm);
   color: var(--c-ink-2);
@@ -1302,7 +1412,7 @@
 }
 
 .service-index {
-  margin-top: clamp(3.5rem, 7vw, 6rem);
+  margin-top: clamp(6rem, 12vw, 10rem);
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
@@ -1327,15 +1437,15 @@
   list-style: none;
   border-top: 1px solid var(--c-ink);
   columns: 2;
-  column-gap: clamp(2rem, 5vw, 4rem);
+  column-gap: clamp(2.5rem, 7vw, 6rem);
 }
 
 .index-list li {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--s-4);
   break-inside: avoid;
-  padding-block: var(--s-4);
+  padding-block: var(--s-5);
   border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-base);
   color: var(--c-ink);
@@ -1357,7 +1467,7 @@
 .project-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 3vw, 2.5rem);
+  gap: clamp(4.5rem, 9vw, 8rem) clamp(2rem, 5vw, 4.5rem);
 }
 
 .project--lead {
@@ -1365,7 +1475,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 4rem);
+  gap: clamp(2rem, 6vw, 6rem);
 }
 
 .project__figure {
@@ -1418,6 +1528,9 @@
 }
 
 .project__meta .is-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 4px var(--s-2);
   border: 1px solid var(--c-ink);
   color: var(--c-ink);
@@ -1441,7 +1554,7 @@
    Sotto i progetti, a tutta larghezza della colonna: intestazione breve e
    il visualizzatore (src/viewer/viewer.css). */
 .drawings {
-  margin-top: clamp(3.5rem, 7vw, 6rem);
+  margin-top: clamp(6rem, 12vw, 10rem);
   display: flex;
   flex-direction: column;
   gap: var(--s-6);
@@ -1450,7 +1563,7 @@
 .drawings__head {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: var(--s-4) clamp(2rem, 5vw, 4rem);
+  gap: var(--s-5) clamp(2.5rem, 7vw, 6rem);
   align-items: end;
   padding-top: var(--s-4);
   border-top: 1px solid var(--c-ink);
@@ -1522,7 +1635,7 @@
 .studio-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
-  gap: clamp(2rem, 6vw, 6rem);
+  gap: clamp(2.5rem, 8vw, 8rem);
   align-items: start;
 }
 
@@ -1545,9 +1658,9 @@
 .rail-list li {
   position: relative;
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
+  grid-template-columns: 2.25rem minmax(0, 1fr) 1.125rem;
   gap: var(--s-3);
-  padding: var(--s-3) 0 var(--s-3) var(--s-3);
+  padding: var(--s-4) 0 var(--s-4) var(--s-3);
   border-bottom: 1px solid var(--c-line);
   font-size: var(--fs-sm);
   color: var(--c-body);
@@ -1701,7 +1814,7 @@
   position: relative;
 }
 
-/* La fotografia parte a tutto schermo. */
+/* La fotografia sta a tutto schermo, ferma. */
 .terr__photo {
   position: relative;
   margin: 0;
@@ -1717,52 +1830,7 @@
   object-position: center 70%;
 }
 
-/* --- Punti di interesse --- */
-.hotspots {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.hotspot {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  transform: translate(-50%, -50%);
-  pointer-events: auto;
-}
-
-.hotspot__btn {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--c-ink);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--c-ink);
-  transition:
-    background-color var(--dur) var(--ease),
-    color var(--dur) var(--ease),
-    transform var(--dur) var(--ease);
-}
-
-.hotspot__btn .dmark {
-  width: 14px;
-  height: 14px;
-}
-
-/* Un anello che pulsa piano: invita a toccare senza gridare. */
-.hotspot__btn::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border: 1px solid var(--c-ink);
-  border-radius: 50%;
-  opacity: 0;
-  animation: ping 2.6s var(--ease) infinite;
-}
-
+/* Un anello che pulsa piano attorno alla sede, sulla carta e nella nuvola. */
 @keyframes ping {
   0% {
     transform: scale(0.7);
@@ -1775,90 +1843,94 @@
   }
 }
 
-.hotspot:hover .hotspot__btn,
-.hotspot.is-open .hotspot__btn {
-  border-color: var(--c-accent);
-  background: var(--c-accent);
-  color: var(--c-accent-ink);
+/* --- Cartografia ---
+   Una lastra d'acciaio spazzolato con quattro viti, come la targa; dentro,
+   incassato, lo schermo di un radar blu: reticolo, raggi dalla sede, fiume
+   e laghi, comuni, rosa dei venti, tutto tracciato in luce. Dalla sede
+   gira il fascio (RadarSweep in App.jsx) e i comuni si accendono al suo
+   passaggio (motion.css). Su schermo stretto la carta scorre in
+   orizzontale invece di rimpicciolirsi fino all'illeggibile. */
+.terr__map,
+.map {
+  /* Vite a testa tonda, lucidata, come quelle della targa. */
+  --screw: radial-gradient(
+    circle at 42% 38%,
+    #ffffff 0 0.8px,
+    #d8dce1 1.8px,
+    #8c9199 4px,
+    #50555d 5.2px,
+    rgba(0, 0, 0, 0.35) 5.8px,
+    transparent 6.4px
+  );
+  --plate: url('/images/metallo/acciaio.webp') center / cover, linear-gradient(180deg, #eceef1, #b8bdc4);
+  --plate-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
-.hotspot__tip {
+.terr__map {
+  position: relative;
+  margin-top: clamp(3.5rem, 7vw, 6rem);
+  padding: clamp(10px, 1.6vw, 18px) clamp(14px, 2.2vw, 26px) clamp(14px, 2.2vw, 26px);
+  border-radius: 10px;
+  background: var(--plate);
+  box-shadow:
+    var(--plate-edge),
+    0 30px 60px -30px rgba(14, 22, 48, 0.55);
+}
+
+/* Le quattro viti agli angoli della lastra. */
+.terr__map::before,
+.map::before {
+  content: '';
   position: absolute;
-  left: calc(100% + 12px);
-  top: 50%;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: max-content;
-  max-width: 240px;
-  padding: var(--s-3) var(--s-4);
-  border: 1px solid var(--c-ink);
-  background: var(--c-surface);
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-  color: var(--c-body);
-  opacity: 0;
-  transform: translate(-10px, -50%);
-  transition:
-    opacity 320ms var(--ease-out),
-    transform 600ms var(--ease-out);
+  inset: 5px;
+  z-index: 2;
+  background:
+    var(--screw) left top / 13px 13px no-repeat,
+    var(--screw) right top / 13px 13px no-repeat,
+    var(--screw) left bottom / 13px 13px no-repeat,
+    var(--screw) right bottom / 13px 13px no-repeat;
   pointer-events: none;
 }
 
-.hotspot__tip strong {
-  font-weight: 600;
-  color: var(--c-ink);
-}
-
-.hotspot--flip .hotspot__tip {
-  left: auto;
-  right: calc(100% + 12px);
-  transform: translate(10px, -50%);
-}
-
-.hotspot:hover .hotspot__tip,
-.hotspot.is-open .hotspot__tip {
-  opacity: 1;
-  transform: translate(0, -50%);
-  pointer-events: auto;
-}
-
-/* --- Cartografia ---
-   Sotto la fotografia, a tutta larghezza della colonna. Carta tecnica:
-   reticolo, raggi dalla sede, fiume con laghi, parco tratteggiato,
-   cartiglio della sede, scala a blocchi, legenda. Su schermo stretto
-   scorre in orizzontale invece di rimpicciolirsi fino all'illeggibile. */
-.terr__map {
-  margin-top: clamp(2rem, 4vw, 3rem);
-  border: 1px solid var(--c-ink);
-  background: var(--c-surface);
-}
-
+/* L'intestazione è incisa nell'acciaio: scura, con il filo di luce sotto. */
 .terr__map-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: var(--s-2) var(--s-4);
-  padding: var(--s-3) var(--s-4);
-  border-bottom: 1px solid var(--c-ink);
+  padding: var(--s-2) var(--s-3) var(--s-3);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.terr__map-head .label {
+  color: #394049;
 }
 
 .terr__map-title {
   font-family: var(--font-display);
   font-size: var(--fs-md);
   letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  color: #13161c;
 }
 
 .terr__map-note {
   margin-left: auto;
   font-size: var(--fs-label);
-  color: var(--c-muted);
+  color: #474d56;
 }
 
+/* Lo schermo, incassato nella lastra. */
 .terr__map-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  border-radius: 6px;
+  background: #040a1d;
+  box-shadow:
+    0 0 0 1px #000000,
+    0 1px 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .terr__map-hint {
@@ -1866,17 +1938,17 @@
   align-items: center;
   gap: var(--s-2);
   margin: 0;
-  padding: var(--s-2) var(--s-4);
-  border-top: 1px solid var(--c-line);
+  padding: var(--s-3) var(--s-3) 0;
   font-size: var(--fs-label);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--c-muted);
+  color: #394049;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .terr__map-hint svg {
-  width: 12px;
-  height: 12px;
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 900px) {
@@ -1885,58 +1957,70 @@
   }
 }
 
+/* La carta è disegnata in luce blu su vetro scuro. */
 .chart {
+  --r-line: rgba(125, 150, 255, 0.16);
+  --r-ink: #a9bbff;
+  --r-text: #cfd9ff;
+  --r-muted: #7c90cc;
+  --r-glass: #050b1e;
   display: block;
   width: 100%;
   min-width: 860px;
   height: auto;
   font-family: var(--font-body);
+  background: url('/images/metallo/blu.webp') center / cover, #040a1d;
 }
 
 .chart__bg {
-  fill: var(--c-surface);
+  fill: url(#screen);
+}
+
+.chart__scan {
+  fill: url(#scan);
+  pointer-events: none;
 }
 
 .chart__grid line {
-  stroke: rgba(0, 0, 0, 0.07);
+  stroke: var(--r-line);
   stroke-width: 1;
 }
 
 .chart__grid-labels text {
   font-size: 9px;
   letter-spacing: 0.08em;
-  fill: var(--c-muted);
+  fill: var(--r-muted);
 }
 
 .chart__rings circle {
   fill: none;
-  stroke: var(--c-ink);
-  stroke-width: 0.8;
-  stroke-dasharray: 3 5;
-  opacity: 0.28;
+  stroke: #7f98ff;
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+  opacity: 0.65;
 }
 
 .chart__rings text {
   font-size: 9px;
   letter-spacing: 0.08em;
-  fill: var(--c-muted);
+  fill: #9fb2ff;
 }
 
 .chart__hatch {
-  stroke: var(--c-ink);
+  stroke: #6f8cff;
   stroke-width: 0.8;
-  opacity: 0.35;
+  opacity: 0.4;
 }
 
 .chart__water {
-  stroke: var(--c-ink);
+  stroke: #8aa2ff;
   stroke-width: 0.6;
-  opacity: 0.35;
+  opacity: 0.6;
 }
 
 .chart__park {
   fill: none;
-  stroke: var(--c-surface-2);
+  stroke: rgba(77, 108, 250, 0.16);
   stroke-width: 34;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1950,38 +2034,35 @@
   stroke-linejoin: round;
 }
 
-rect.chart__park-hatch {
-  stroke: none;
-}
-
 .chart__lake {
   fill: url(#water);
-  stroke: var(--c-ink);
-  stroke-width: 1;
+  stroke: #9fb4ff;
+  stroke-width: 1.2;
   stroke-linejoin: round;
 }
 
 .chart__river-casing {
   fill: none;
-  stroke: var(--c-surface);
-  stroke-width: 5;
+  stroke: #061032;
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .chart__river {
   fill: none;
-  stroke: var(--c-ink);
-  stroke-width: 1.6;
+  stroke: #c3d0ff;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(110, 140, 255, 0.9));
 }
 
 .chart__toponym {
   font-family: var(--font-display);
   font-style: italic;
   font-size: 13px;
-  fill: var(--c-body);
+  fill: #9db0f5;
 }
 
 .chart__toponym--small {
@@ -1989,72 +2070,73 @@ rect.chart__park-hatch {
 }
 
 .chart__town {
-  fill: var(--c-surface);
-  stroke: var(--c-ink);
+  fill: #0a1433;
+  stroke: var(--r-ink);
   stroke-width: 1.2;
 }
 
-/* Le etichette hanno un bordo del colore della carta: restano leggibili
+/* Le etichette hanno un bordo del colore del vetro: restano leggibili
    dove incrociano reticolo, raggi o fiume. */
 .chart__label,
 .chart__grid-labels text,
 .chart__rings text,
 .chart__toponym {
   paint-order: stroke;
-  stroke: var(--c-surface);
+  stroke: var(--r-glass);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
 
 .chart__label {
   font-size: 11px;
-  fill: var(--c-ink-2);
+  fill: var(--r-text);
 }
 
 .chart__label--capital {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  fill: var(--c-ink);
+  fill: #ffffff;
 }
 
 .chart__capital-ring {
   fill: none;
-  stroke: var(--c-ink);
+  stroke: #c9d4ff;
   stroke-width: 1.2;
 }
 
 .chart__capital-dot {
-  fill: var(--c-ink);
+  fill: #ffffff;
 }
 
-/* La sede è l'unico punto blu della carta, come sulla mappa dei contatti. */
+/* La sede è il centro del radar: il punto più luminoso della carta. */
 .chart__halo {
   fill: none;
-  stroke: var(--c-accent);
+  stroke: #9fb2ff;
   stroke-width: 1;
-  opacity: 0.6;
+  opacity: 0.7;
   transform-box: fill-box;
   transform-origin: center;
   animation: ping 3s var(--ease) infinite;
 }
 
 .chart__d {
-  fill: var(--c-accent);
-  stroke: var(--c-accent);
+  fill: #ffffff;
+  stroke: #ffffff;
   stroke-width: 1.5;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(150, 175, 255, 1)) drop-shadow(0 0 9px rgba(77, 108, 250, 0.9));
 }
 
 .chart__leader {
   fill: none;
-  stroke: var(--c-accent);
+  stroke: #9fb2ff;
   stroke-width: 1;
 }
 
 .chart__callout {
-  fill: var(--c-surface);
-  stroke: var(--c-ink);
+  fill: rgba(5, 12, 34, 0.88);
+  stroke: #7f98ff;
   stroke-width: 1;
 }
 
@@ -2063,47 +2145,84 @@ rect.chart__park-hatch {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  fill: var(--c-muted);
+  fill: #8ea3e6;
 }
 
 .chart__callout-title {
   font-family: var(--font-display);
   font-size: 16px;
-  fill: var(--c-ink);
+  fill: #ffffff;
 }
 
 .chart__callout-coords {
   font-size: 10px;
   letter-spacing: 0.04em;
-  fill: var(--c-body);
+  fill: #b8c6ff;
 }
 
 .chart__scale-block {
-  fill: var(--c-ink);
-  stroke: var(--c-ink);
+  fill: #9fb2ff;
+  stroke: #9fb2ff;
   stroke-width: 1;
 }
 
 .chart__scale-block--alt {
-  fill: var(--c-surface);
+  fill: #071030;
 }
 
 .chart__scale text {
   font-size: 9px;
   letter-spacing: 0.06em;
-  fill: var(--c-body);
+  fill: #b3c2f7;
+}
+
+/* Il radar: la croce sulla sede, il fascio con la sua scia, i comuni che
+   si accendono. Il fascio si somma alla luce della carta (screen). */
+.radar__cross line {
+  stroke: rgba(140, 165, 255, 0.26);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+}
+
+.radar {
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.radar__spin {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.radar__trail {
+  fill: #5877ff;
+  opacity: 0.026;
+}
+
+.radar__beam {
+  stroke: #d6dfff;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px #6f8cff);
+}
+
+.radar__blip {
+  fill: #b7c6ff;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: blur(1px);
+  pointer-events: none;
 }
 
 /* Rosa dei venti */
 .rose__disc {
-  fill: var(--c-surface);
-  fill-opacity: 0.92;
+  fill: rgba(4, 10, 29, 0.85);
   stroke: none;
 }
 
 .rose__ring {
   fill: none;
-  stroke: var(--c-ink);
+  stroke: #9fb2ff;
   stroke-width: 1;
 }
 
@@ -2113,7 +2232,7 @@ rect.chart__park-hatch {
 }
 
 .rose__tick {
-  stroke: var(--c-ink);
+  stroke: #9fb2ff;
   stroke-width: 0.7;
   opacity: 0.7;
 }
@@ -2124,19 +2243,19 @@ rect.chart__park-hatch {
 }
 
 .rose__half {
-  fill: var(--c-surface);
-  stroke: var(--c-ink);
+  fill: #071030;
+  stroke: #9fb2ff;
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
 
 .rose__half--ink {
-  fill: var(--c-ink);
+  fill: #9fb2ff;
 }
 
 .rose__hub {
-  fill: var(--c-surface);
-  stroke: var(--c-ink);
+  fill: #071030;
+  stroke: #cfd9ff;
   stroke-width: 1;
 }
 
@@ -2144,9 +2263,9 @@ rect.chart__park-hatch {
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  fill: var(--c-ink);
+  fill: #d9e1ff;
   paint-order: stroke;
-  stroke: var(--c-surface);
+  stroke: var(--r-glass);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
@@ -2154,59 +2273,361 @@ rect.chart__park-hatch {
 .rose__label--n {
   font-size: 12px;
   font-weight: 700;
+  fill: #ffffff;
 }
 
-.chart__legend-box {
-  fill: var(--c-surface);
-  stroke: var(--c-ink);
-  stroke-width: 1;
+/* --- Area di riferimento ---
+   Il testo a sinistra, la nuvola a destra: un quadrato con la sede al
+   centro. Punti, cerchi e raggi sono in SVG; i nomi sono testo vero messo
+   sopra in percentuale, così restano nitidi e leggibili a ogni larghezza. */
+/* --- Area di riferimento: la nuvola di punti nel vuoto ---
+   Un nastro nero da bordo a bordo, come la fotografia in testa alla
+   sezione. Dentro, la nuvola in tre dimensioni (nuvola.js, WebGL): la sede
+   all'origine, l'asse dei chilometri in linea d'aria, tutti i comuni e le
+   frazioni della provincia come ammassi di punti. Il testo sta in alto,
+   sopra il vuoto; la nuvola prende lo spazio che resta. I nomi e le tacche
+   sono elementi che il motore sposta sulla proiezione dei punti e accende
+   quando ci si avvicina. */
+.reach {
+  position: relative;
+  width: 100vw;
+  height: clamp(580px, 86vh, 880px);
+  margin-top: clamp(4rem, 8vw, 7rem);
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  isolation: isolate;
+  color: var(--c-dark-fg);
+  cursor: crosshair;
+  touch-action: pan-y;
+  user-select: none;
+  /* Il vuoto: nero, con un respiro di blu dove sta la sede. */
+  background:
+    radial-gradient(42% 60% at 18% 66%, rgba(77, 108, 250, 0.16), transparent 70%),
+    radial-gradient(70% 55% at 55% 50%, rgba(10, 14, 30, 0.9), transparent 100%),
+    #000;
 }
 
-.chart__legend text {
-  font-size: 10px;
-  fill: var(--c-body);
+.reach__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
-/* --- Fascia dei comuni --- */
-.places {
-  margin-top: clamp(2.5rem, 5vw, 4rem);
+/* Il testo, sopra la nuvola, allineato al contenitore della pagina. Su
+   schermo largo titolo e testo stanno affiancati, così il blocco è basso e
+   la nuvola prende quasi tutta l'altezza. */
+.reach__copy {
+  position: absolute;
+  top: clamp(2rem, 5vh, 3.5rem);
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+  align-items: end;
+  gap: var(--s-3) var(--s-8);
+  pointer-events: none;
+}
+
+.reach__copy .label {
+  grid-column: 1 / -1;
+}
+
+.reach__copy .label {
+  color: var(--c-dark-fg-muted);
+}
+
+.reach__title {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 400;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  color: var(--c-dark-fg-strong);
+  text-wrap: balance;
+}
+
+.reach__body {
+  margin: 0;
+  max-width: 36rem;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--c-dark-fg);
+}
+
+.reach__labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Ogni nome è un punto senza dimensioni: il motore lo porta sul centro
+   con translate3d; il segno ci sta sopra, il testo accanto. */
+.reach__place {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.reach__mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  translate: -50% -50%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+}
+
+.reach__place--citta .reach__mark {
+  width: 13px;
+  height: 13px;
+  background: radial-gradient(circle, #fff 0 2.4px, rgba(255, 255, 255, 0.1) 3px);
+}
+
+/* Una targhetta scura sotto il nome: i punti bianchi dell'ammasso gli
+   passano dietro senza confonderlo. */
+.reach__text {
+  position: absolute;
+  top: 0;
+  left: 13px;
+  translate: 0 -50%;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--c-ink);
+  gap: 1px;
+  width: max-content;
+  padding: 3px 8px 4px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.62);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  text-shadow:
+    0 0 3px #000,
+    0 0 8px #000;
 }
 
-.places__list {
+.reach__place--left .reach__text {
+  left: auto;
+  right: 13px;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.reach__name {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 0.75rem + 0.3vw, 1.05rem);
+  line-height: 1.15;
+  letter-spacing: var(--ls-tight);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.reach__place--citta .reach__text {
+  left: 18px;
+}
+
+.reach__place--citta.reach__place--left .reach__text {
+  left: auto;
+  right: 18px;
+}
+
+.reach__place--citta .reach__name {
+  font-size: clamp(1rem, 0.85rem + 0.55vw, 1.4rem);
+  font-weight: 500;
+}
+
+.reach__km {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* La sede: sempre accesa, la D blu con l'anello che pulsa. */
+.reach__place--home {
+  opacity: 1;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.reach__place--home .reach__text {
+  left: 20px;
+}
+
+.reach__place--home .reach__name {
+  font-size: clamp(0.95rem, 0.8rem + 0.5vw, 1.25rem);
+  font-weight: 500;
+}
+
+.reach__place--home .reach__km {
+  color: #8da3ff;
+}
+
+.reach__pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: #000;
+  box-shadow:
+    0 0 0 1px var(--c-accent),
+    0 0 22px rgba(77, 108, 250, 0.55);
+  color: #8da3ff;
+}
+
+.reach__pin .dmark {
+  width: 12px;
+  height: 12px;
+}
+
+.reach__pin::after {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border: 1px solid var(--c-accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ping 3s var(--ease) infinite;
+}
+
+/* Le tacche del righello: il numero sotto l'asse. */
+.reach__tick {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% 7px;
+  opacity: 0;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-dark-fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: opacity 700ms var(--ease-out);
+  will-change: transform;
+}
+
+/* Riquadro stretto (telefono): l'asse sale lungo lo schermo e i numeri
+   stanno alla sua sinistra. */
+.reach--verticale .reach__tick {
+  translate: calc(-100% - 8px) -50%;
+}
+
+/* La didascalia, in basso. */
+.reach__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(1rem, 3vh, 2rem);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-block: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  color: var(--c-dark-fg-muted);
+  pointer-events: none;
+}
+
+.reach__hint-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* L'elenco dei comuni: solo per chi legge con uno screen reader (e per
+   chi non ha JavaScript: vedi sotto). */
+.reach__elenco {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   margin: 0;
   padding: 0;
-  list-style: none;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Senza JavaScript la nuvola non c'è: resta il testo e l'elenco. */
+html:not(.js) .reach {
+  height: auto;
+  padding-bottom: var(--s-7);
+}
+
+html:not(.js) .reach__copy {
+  position: static;
+  padding-top: var(--s-7);
+}
+
+html:not(.js) .reach__labels,
+html:not(.js) .reach__hint {
+  display: none;
+}
+
+html:not(.js) .reach__elenco {
+  position: static;
+  width: auto;
+  height: auto;
+  margin-top: var(--s-6);
+  padding-inline: var(--gutter);
+  clip-path: none;
+  white-space: normal;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-3) var(--s-4);
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  gap: var(--s-2) var(--s-5);
+  list-style: none;
+  font-size: var(--fs-sm);
 }
 
-.places__list .is-studio {
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: var(--c-accent);
-  text-underline-offset: 0.22em;
-  text-decoration-thickness: 2px;
+@media (max-width: 900px) {
+  .reach__copy {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
 }
 
-.places__sep {
-  display: inline-flex;
-  color: var(--c-muted);
-}
+@media (max-width: 720px) {
+  .reach {
+    height: clamp(620px, 96svh, 820px);
+  }
 
-.places__sep .dmark {
-  width: 10px;
-  height: 10px;
+  .reach__title {
+    font-size: var(--fs-lg);
+  }
+
+  .reach__body {
+    font-size: var(--fs-sm);
+    line-height: 1.6;
+  }
+
+  .reach__hint {
+    font-size: 0.75rem;
+  }
+
+  /* La D blu dice già che è lo studio: la seconda riga toccherebbe i vicini. */
+  .reach__place--home .reach__km {
+    display: none;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -2219,7 +2640,7 @@ rect.chart__park-hatch {
   list-style: none;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-6);
+  gap: clamp(2rem, 4vw, 4rem);
 }
 
 .method__step {
@@ -2330,7 +2751,7 @@ rect.chart__park-hatch {
 .contact-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2rem, 5vw, 5rem);
+  gap: clamp(3rem, 7vw, 7rem);
   align-items: stretch;
 }
 
@@ -2347,17 +2768,16 @@ rect.chart__park-hatch {
 
 .contact-item__link {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
-  gap: var(--s-4);
-  padding: var(--s-5) 0;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: var(--s-5);
+  padding: var(--s-6) 0;
   color: inherit;
   text-decoration: none;
 }
 
-/* Tasto nero sul nero: la ghiera d'acciaio lo stacca dal fondo, e al
-   passaggio il cappuccio si accende di blu come faceva il cerchio. */
+/* Sul nero il tasto blu si stacca da solo; al passaggio i LED si accendono. */
 .contact-item__icon {
-  --key: 44px;
+  --key-h: 50px;
 }
 
 .contact-item__text {
@@ -2393,16 +2813,32 @@ rect.chart__park-hatch {
   flex-direction: column;
 }
 
+/* La carta di dettaglio: la stessa lastra d'acciaio con le viti della
+   cartografia, e dentro uno schermo radar. La mappa di OpenStreetMap è
+   virata in blu notte con i filtri (negativo, poi tinta); sopra girano
+   gli anelli e il fascio del radar, centrati sulla sede. */
 .map {
   position: relative;
   display: block;
   flex: 1;
   min-height: 360px;
+  border-radius: 10px;
+  background: var(--plate);
+  box-shadow:
+    var(--plate-edge),
+    0 30px 60px -30px rgba(0, 0, 0, 0.9);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.map__screen {
+  position: absolute;
+  inset: 16px;
   overflow: hidden;
-  border: 1px solid var(--c-dark-line);
-  border-radius: var(--radius);
-  background: var(--c-dark-bg-2);
-  transition: border-color var(--dur) var(--ease);
+  border-radius: 6px;
+  background: #040a1d;
+  box-shadow:
+    0 0 0 1px #000000,
+    0 1px 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .map__crop {
@@ -2420,8 +2856,40 @@ rect.chart__park-hatch {
   height: 100%;
   border: 0;
   pointer-events: none;
-  filter: grayscale(1) contrast(1.05) brightness(0.92);
+  filter: grayscale(1) invert(1) contrast(1.3) brightness(0.72) sepia(1) hue-rotate(185deg) saturate(3.2);
   transition: filter var(--dur) var(--ease);
+}
+
+/* Anelli ogni 60 px e croce di riferimento; il fascio è il ::after. */
+.map__radar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 170%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+  background:
+    linear-gradient(rgba(150, 175, 255, 0.3), rgba(150, 175, 255, 0.3)) center / 1px 100% no-repeat,
+    linear-gradient(rgba(150, 175, 255, 0.3), rgba(150, 175, 255, 0.3)) center / 100% 1px no-repeat,
+    repeating-radial-gradient(circle at center, transparent 0 59px, rgba(150, 175, 255, 0.34) 59px 60px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.map__radar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 300deg,
+    rgba(77, 108, 250, 0.06) 300deg,
+    rgba(110, 140, 255, 0.5) 358deg,
+    rgba(225, 233, 255, 0.95) 359.6deg,
+    transparent 360deg
+  );
 }
 
 .map__pin {
@@ -2436,7 +2904,9 @@ rect.chart__park-hatch {
   border-radius: 50%;
   background: var(--c-accent);
   color: var(--c-accent-ink);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 0 2px rgba(225, 233, 255, 0.9),
+    0 0 18px 4px rgba(77, 108, 250, 0.8);
 }
 
 .map__pin .dmark {
@@ -2452,26 +2922,31 @@ rect.chart__park-hatch {
   align-items: center;
   gap: var(--s-2);
   padding: var(--s-2) var(--s-3);
-  border-radius: var(--radius);
-  background: var(--c-dark-fg-strong);
-  color: var(--c-ink);
+  border: 1px solid rgba(150, 175, 255, 0.55);
+  border-radius: 4px;
+  background: rgba(5, 12, 34, 0.85);
+  color: #dfe6ff;
   font-size: var(--fs-label);
   font-weight: 600;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(77, 108, 250, 0.9);
 }
 
 .map__cta svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
 }
 
 .map:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow:
+    var(--plate-edge),
+    0 0 0 1px rgba(150, 175, 255, 0.35),
+    0 30px 60px -30px rgba(0, 0, 0, 0.9);
 }
 
 .map:hover .map__frame {
-  filter: grayscale(1) contrast(1.05) brightness(1);
+  filter: grayscale(1) invert(1) contrast(1.3) brightness(0.85) sepia(1) hue-rotate(185deg) saturate(3.2);
 }
 
 .map:focus-visible {
@@ -2499,10 +2974,112 @@ rect.chart__park-hatch {
    14. Footer — testata di tavola
    -------------------------------------------------------------------------- */
 
+/* Una lastra d'acciaio brunito (--metal-blued) sotto il blocco nero dei
+   contatti: lo spigolo in alto prende un filo di luce azzurra. */
 .footer {
-  background: var(--c-dark-bg);
+  background: var(--metal-blued);
   color: var(--c-dark-fg);
-  padding-block: var(--s-8);
+  box-shadow:
+    inset 0 1px 0 rgba(190, 205, 255, 0.28),
+    inset 0 2px 0 rgba(0, 0, 0, 0.55);
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+/* --- Display a segmenti ---
+   Display alfanumerici dietro un vetro scuro (LedDisplay.jsx). I segmenti
+   spenti restano visibili in blu notte, quelli accesi prendono luce in
+   Electric Sapphire. Due misure con lo stesso vetro:
+     · l'insegna del footer (.led--sign), in una cornice di canna di
+       fucile, dove i segmenti si accendono uno alla volta: ognuno ha il
+       suo numero d'ordine --n, il display quanti ne sono accesi in --lit
+       (senza JavaScript il nome è acceso per intero);
+     · il display piccolo del visualizzatore (.led--readout), dove i
+       segmenti del testo portano la classe is-lit. */
+.led {
+  --lit: 999;
+  position: relative;
+  border-radius: 6px;
+  background:
+    radial-gradient(120% 140% at 50% 0%, #0a1026 0%, #03050c 55%, #000000 100%);
+}
+
+/* Il riflesso del vetro. */
+.led::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(172deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 38%);
+  pointer-events: none;
+}
+
+/* L'insegna: la cornice in canna di fucile e l'alone blu che scende sotto. */
+.led--sign {
+  margin-bottom: clamp(3rem, 6vw, 5rem);
+  padding: clamp(0.9rem, 2.6vw, 2rem) clamp(1rem, 3.2vw, 2.5rem);
+  box-shadow:
+    inset 0 2px 14px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(77, 108, 250, 0.1),
+    0 0 0 5px #17181b,
+    0 0 0 6px rgba(255, 255, 255, 0.1),
+    0 18px 40px -18px rgba(77, 108, 250, 0.35);
+}
+
+.led__glass {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.led__off {
+  fill: #0e1838;
+}
+
+.led__on {
+  fill: #86a0ff;
+  filter: drop-shadow(0 0 1.5px rgba(150, 175, 255, 0.9)) drop-shadow(0 0 7px rgba(77, 108, 250, 0.75));
+}
+
+.led__on :is(polygon, circle) {
+  opacity: clamp(0, calc(var(--lit) - var(--n)), 1);
+  transition: opacity 140ms var(--ease);
+}
+
+/* Il display piccolo: una finestra di vetro incassata nel pannello, con le
+   cifre alte --led-h. I segmenti spenti sono a opacità zero e si accendono
+   in un attimo, come i LED veri. Gli aloni sono in unità del disegno, così
+   restano in proporzione alle cifre. */
+.led--readout {
+  --led-h: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 1px rgba(77, 108, 250, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.14);
+  transition: box-shadow var(--dur) var(--ease);
+}
+
+.led--readout .led__glass {
+  width: auto;
+  height: var(--led-h);
+}
+
+.led--readout .led__on {
+  filter: drop-shadow(0 0 2px rgba(150, 175, 255, 0.9)) drop-shadow(0 0 9px rgba(77, 108, 250, 0.7));
+  transition: fill var(--dur) var(--ease);
+}
+
+.led--readout .led__on :is(polygon, circle) {
+  opacity: 0;
+  transition: opacity 120ms var(--ease);
+}
+
+.led--readout .led__on .is-lit {
+  opacity: 1;
 }
 
 .titleblock {
@@ -2639,8 +3216,11 @@ rect.chart__park-hatch {
 }
 
 .tb__ext {
-  width: 12px;
-  height: 12px;
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 6px;
+  vertical-align: -2px;
 }
 
 .tb__num {
@@ -2689,18 +3269,20 @@ rect.chart__park-hatch {
    16. Breakpoint
    -------------------------------------------------------------------------- */
 
-@media (max-width: 1240px) {
-  .nav {
-    gap: var(--s-4);
-  }
-
+@media (max-width: 1400px) {
   .header__phone {
     display: none;
   }
 }
 
+@media (max-width: 1240px) {
+  .nav {
+    gap: var(--s-4);
+  }
+}
+
 /* Con sei voci di menu il pulsante non ci sta più: resta la voce 06. */
-@media (max-width: 1100px) {
+@media (max-width: 1180px) {
   .header__cta {
     display: none;
   }
@@ -2739,6 +3321,17 @@ rect.chart__park-hatch {
 }
 
 @media (max-width: 900px) {
+  /* Su schermo stretto i segni a margine si diradano e si rimpiccioliscono:
+     restano ai bordi e non si mettono sotto ogni riga di testo. */
+  .margins__sym {
+    width: calc(var(--size) * 0.62);
+    height: calc(var(--size) * 0.62);
+  }
+
+  .margins__sym:nth-child(2n) {
+    display: none;
+  }
+
   .nav,
   .header__phone,
   .header__cta {
@@ -2838,10 +3431,6 @@ rect.chart__park-hatch {
     aspect-ratio: 4 / 3;
   }
 
-  .hotspot__tip {
-    max-width: 200px;
-  }
-
   .map {
     flex: none;
     min-height: 0;
@@ -2860,18 +3449,6 @@ rect.chart__park-hatch {
     columns: 1;
   }
 
-  .focus {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-
-  .focus__count {
-    display: none;
-  }
-
-  .focus__text {
-    white-space: normal;
-  }
-
   .datasheet__row {
     grid-template-columns: 2.5rem minmax(0, 1fr);
   }
@@ -2881,12 +3458,12 @@ rect.chart__park-hatch {
   }
 
   .contact-item__link {
-    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-columns: 56px minmax(0, 1fr);
     gap: var(--s-3);
   }
 
   .contact-item__icon {
-    --key: 40px;
+    --key-h: 41px;
   }
 
   .map {

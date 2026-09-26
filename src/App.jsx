@@ -1,19 +1,10 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import './motion.css'
-import {
-  scrollToTarget,
-  setScrollLocked,
-  useMarquee,
-  useReveal,
-  useScrollProgress,
-  useSmoothScroll,
-} from './motion.js'
+import { scrollToTarget, setScrollLocked, useReveal, useSmoothScroll } from './motion.js'
 import {
   disciplines,
-  heroCompetences,
   heroFacts,
-  hotspots,
   infoline,
   manifesto,
   lakes,
@@ -30,7 +21,12 @@ import {
   sheets,
   studio,
 } from './content.js'
+import { Sym } from './Sym.jsx'
+import { symbols } from './symbols.jsx'
+import { Key } from './Key.jsx'
+import LedDisplay from './LedDisplay.jsx'
 import SheetViewer from './viewer/SheetViewer.jsx'
+import Nuvola from './Nuvola.jsx'
 
 /* ---------------------------------------------------------------------------
    Marchio
@@ -79,22 +75,6 @@ function DMark(props) {
    Icone
    --------------------------------------------------------------------------- */
 
-function IconArrow(props) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path d="M2.5 8h11m0 0L9 3.5M13.5 8 9 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function IconClose(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function IconPhone(props) {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
@@ -104,32 +84,6 @@ function IconPhone(props) {
         strokeWidth="1.3"
         strokeLinejoin="round"
       />
-    </svg>
-  )
-}
-
-function IconMail(props) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <rect x="2" y="3.5" width="12" height="9" rx="1.2" stroke="currentColor" strokeWidth="1.3" />
-      <path d="m2.6 4.6 4.7 3.4c.4.3 1 .3 1.4 0l4.7-3.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function IconPin(props) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path d="M8 14.2s4.5-4 4.5-7.4a4.5 4.5 0 0 0-9 0C3.5 10.2 8 14.2 8 14.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
-      <circle cx="8" cy="6.7" r="1.6" stroke="currentColor" strokeWidth="1.3" />
-    </svg>
-  )
-}
-
-function IconExternal(props) {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" {...props}>
-      <path d="M6.5 3.5h-3v9h9v-3M9.5 3.5h3v3M12.5 3.5 7 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -359,9 +313,7 @@ function Header({ active }) {
           <div className="header__actions">
             <PhoneReveal className="header__phone" />
             <a className="action header__cta" href="#contatti" onClick={(e) => go(e, 'contatti')}>
-              <Key accent>
-                <IconArrow />
-              </Key>
+              <Key wide label="Enter" />
               Parliamo del progetto
             </a>
             <button
@@ -372,12 +324,7 @@ function Header({ active }) {
               aria-label={menuOpen ? 'Chiudi il menu' : 'Apri il menu'}
               onClick={() => setMenuOpen(!menuOpen)}
             >
-              <Key>
-                <span className="menu-toggle__bars">
-                  <span />
-                  <span />
-                </span>
-              </Key>
+              <Key label="Menu" />
             </button>
           </div>
         </div>
@@ -395,9 +342,7 @@ function Header({ active }) {
         <div className="mobile-panel__head">
           <Brand />
           <button type="button" className="mobile-panel__close" aria-label="Chiudi il menu" onClick={() => setMenuOpen(false)}>
-            <Key>
-              <IconClose />
-            </Key>
+            <Key label="Esc" />
           </button>
         </div>
 
@@ -424,9 +369,7 @@ function Header({ active }) {
             {studio.email}
           </a>
           <a className="action" href="#contatti" onClick={(e) => go(e, 'contatti')}>
-            <Key accent>
-              <IconArrow />
-            </Key>
+            <Key wide label="Enter" />
             Parliamo del progetto
           </a>
         </div>
@@ -490,6 +433,7 @@ function SectionHead({ id, title, text }) {
           {section.num}
         </span>
         <span className="label">{section.label}</span>
+        <Sym name={section.sym} className="section-head__sym" />
       </div>
       <div className="section-head__body">
         <h2 className="headline">
@@ -532,18 +476,156 @@ function Emblem({ name, className = '' }) {
   )
 }
 
+/** Numeri pseudo-casuali con seme (mulberry32): le stesse posizioni nel
+    prerender e nel browser, quindi nessuna differenza all'idratazione. */
+function seeded(seed) {
+  let a = seed
+  return () => {
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
 /**
- * Tasto fotografato: ghiera d'acciaio come i distanziali della targa e
- * cappuccio in nero lucido con un filo di blu, oppure tutto in Electric
- * Sapphire per l'azione principale. La foto dà la materia; il simbolo
- * resta vettoriale sopra il cappuccio, nitido a ogni misura e libero di
- * muoversi. Il nome dell'azione lo porta sempre il link che lo contiene.
+ * Altri segni sparsi a griglia su tutta la sezione: una cella per segno e
+ * una posizione a caso dentro la cella, così coprono il fondo senza
+ * ammucchiarsi. Quelli nelle colonne centrali, dietro al testo, sono più
+ * tenui (sesto valore: fattore d'opacità).
  */
-function Key({ accent = false, className = '', children }) {
+function scatter(seed, count, cols = 5) {
+  const rand = seeded(seed)
+  const rows = Math.ceil(count / cols)
+  return Array.from({ length: count }, (_, i) => {
+    const col = i % cols
+    const row = Math.floor(i / cols)
+    const x = -4 + ((col + 0.1 + rand() * 0.8) * 100) / cols
+    const y = ((row + 0.05 + rand() * 0.85) * 97) / rows
+    const name = symbols[Math.floor(rand() * symbols.length)].name
+    const size = Math.round(80 + rand() * 140)
+    const rot = Math.round((rand() - 0.5) * 30)
+    const edge = col === 0 || col === cols - 1
+    return [name, +x.toFixed(2), +y.toFixed(2), size, rot, edge ? 1 : 0.6]
+  })
+}
+
+/**
+ * Dove cadono i segni sullo sfondo, sezione per sezione: [simbolo, x, y,
+ * lato in px, rotazione in gradi], con x e y in percentuale della sezione.
+ * I primi sono messi a mano nelle fasce ai lati del contenuto e sbordano
+ * appena dallo schermo, come un disegno tagliato dal bordo del foglio;
+ * scatter() ne aggiunge il doppio sparsi su tutto il fondo.
+ */
+const MARGINS_HAND = {
+  intro: [
+    ['gru', 74, 1, 250, 0],
+    ['compasso', -3, 20, 210, -12],
+    ['caposaldo', 90, 29, 120, 0],
+    ['squadra', 38, 42, 170, 8],
+    ['stazione-totale', 5, 56, 230, 0],
+    ['quota', 68, 64, 190, -6],
+    ['ponteggio', 89, 79, 210, 0],
+    ['livella', 20, 86, 180, -4],
+  ],
+  servizi: [
+    ['escavatore', -4, 2, 230, 0],
+    ['goniometro', 90, 8, 170, 10],
+    ['ipe', 93, 26, 150, 0],
+    ['mattoni', -3, 37, 170, -6],
+    ['cono', 91, 49, 140, 6],
+    ['riga-t', -2, 60, 190, -8],
+    ['cazzuola', 92, 71, 160, 12],
+    ['scalimetro', -4, 83, 210, 0],
+    ['pericolo', 90, 92, 130, 0],
+    ['bullone', 3, 18, 110, 0],
+    ['metro', 94, 40, 120, -10],
+    ['campitura', 2, 73, 120, 0],
+  ],
+  progetti: [
+    ['porta', 91, 3, 170, 0],
+    ['prospettiva', -4, 17, 210, 0],
+    ['carriola', 90, 33, 190, -4],
+    ['pala', -2, 49, 170, 8],
+    ['tavola', 92, 63, 150, 6],
+    ['finestra', -3, 79, 170, 0],
+    ['betoniera', 90, 91, 180, 0],
+    ['scala', 3, 34, 130, 0],
+    ['martello', 94, 48, 130, 20],
+    ['caposaldo', 2, 93, 110, 0],
+  ],
+  studio: [
+    ['matita', 88, 3, 180, 0],
+    ['pilastro', -3, 29, 150, 6],
+    ['asse', 92, 38, 150, 0],
+    ['piombo', -2, 60, 180, 0],
+    ['sezione', 90, 71, 160, -6],
+    ['isolante', -3, 90, 150, 0],
+    ['compasso', 3, 12, 140, 10],
+    ['ipe', 94, 22, 120, 0],
+    ['livella', 91, 54, 160, -8],
+  ],
+  territorio: [
+    ['palina', 90, 1, 200, 0],
+    ['catasto', -4, 7, 210, -8],
+    ['urbanistica', 92, 71, 170, 0],
+    ['idraulica', -2, 79, 160, 0],
+    ['ponte', 40, 93, 230, 0],
+    ['stazione-totale', 2, 40, 150, 0],
+    ['asse', 94, 30, 120, 0],
+  ],
+  metodo: [
+    ['metro', -3, 8, 180, -10],
+    ['lente', 90, 10, 170, 0],
+    ['chiave', 88, 66, 160, 10],
+    ['martello', 2, 70, 160, -6],
+    ['cono', 45, 2, 120, 0],
+    ['casco', 93, 40, 130, 0],
+    ['piombo', -1, 38, 150, 0],
+  ],
+  contatti: [
+    ['stazione-totale', 90, 5, 230, 0],
+    ['caposaldo', -3, 38, 180, 0],
+    ['transenna', 88, 76, 200, 0],
+    ['casco', 3, 84, 160, -8],
+    ['matita', 94, 44, 130, 0],
+  ],
+  footer: [
+    ['bullone', 92, 8, 130, 0],
+    ['compasso', -2, 26, 150, 10],
+    ['livella', 70, 70, 150, -4],
+  ],
+}
+
+const MARGINS = Object.fromEntries(
+  Object.entries(MARGINS_HAND).map(([set, items], i) => [set, [...items, ...scatter(1495 + i * 97, items.length * 2)]]),
+)
+
+/**
+ * Segni a margine: simboli grandi, a tratto sottile e quasi trasparenti,
+ * sparsi nelle sezioni come gli schizzi ai bordi di una tavola. Stanno
+ * sotto il contenuto e scorrono un poco più lenti o più veloci della
+ * pagina (motion.css). Le posizioni sono in MARGINS.
+ */
+function Margins({ set }) {
   return (
-    <span className={`key${accent ? ' key--accent' : ''} ${className}`} aria-hidden="true">
-      {children}
-    </span>
+    <div className="margins" aria-hidden="true">
+      {MARGINS[set].map(([name, x, y, size, rot, o = 1], i) => (
+        <Sym
+          key={`${name}-${i}`}
+          name={name}
+          className="margins__sym"
+          style={{
+            '--x': `${x}%`,
+            '--y': `${y}%`,
+            '--size': `${size}px`,
+            '--rot': `${rot}deg`,
+            '--o': o,
+            '--k': ((i % 4) - 1.5) / 1.5,
+          }}
+        />
+      ))}
+    </div>
   )
 }
 
@@ -594,38 +676,12 @@ function Plate() {
   )
 }
 
-/** FOCUS: una competenza alla volta, a rotazione. */
-function Focus() {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const timer = window.setInterval(() => setIndex((i) => (i + 1) % serviceIndex.length), 3800)
-    return () => window.clearInterval(timer)
-  }, [])
-
-  return (
-    <div className="focus" aria-live="polite">
-      <span className="focus__label">
-        <DMark />
-        Focus
-      </span>
-      <span className="focus__text" key={index}>
-        {serviceIndex[index]}
-      </span>
-      <span className="focus__count">
-        {String(index + 1).padStart(2, '0')} / {serviceIndex.length}
-      </span>
-      <span className="focus__timer" key={`timer-${index}`} aria-hidden="true" />
-    </div>
-  )
-}
-
 function Intro() {
   const onNav = useAnchorNav()
 
   return (
-    <section className="intro" id="top">
+    <section className="intro has-margins" id="top">
+      <Margins set="intro" />
       <div className="intro__stage">
         <div className="container intro__grid">
           <div className="intro__head">
@@ -659,20 +715,13 @@ function Intro() {
             </p>
             <div className="action-row intro__actions">
               <a className="action" href="#contatti" onClick={onNav}>
-                <Key accent>
-                  <IconArrow />
-                </Key>
+                <Key wide label="Enter" />
                 Parliamo del progetto
               </a>
               <a className="action" href="#servizi" onClick={onNav}>
-                <Key>
-                  <IconArrow />
-                </Key>
+                <Key label="F1" />
                 I servizi
               </a>
-            </div>
-            <div className="intro__focus">
-              <Focus />
             </div>
           </div>
 
@@ -696,48 +745,21 @@ function Intro() {
   )
 }
 
-function FactsStrip() {
+function FactsBand() {
   return (
     <div className="facts-band">
       <div className="container">
         <dl className="facts reveal reveal-stagger">
           {heroFacts.map((fact, i) => (
             <div className="facts__item" key={fact.label} style={{ '--i': i }}>
-              <dt className="label">{fact.label}</dt>
+              <dt className="label">
+                <Sym name={fact.sym} className="facts__sym" />
+                {fact.label}
+              </dt>
               <dd>{fact.value}</dd>
             </div>
           ))}
         </dl>
-      </div>
-      <div className="strip">
-        <Marquee items={heroCompetences} />
-      </div>
-    </div>
-  )
-}
-
-/**
- * Il nastro delle competenze. Quattro copie identiche in fila: la prima è
- * quella che si legge (anche con un lettore di schermo), le altre servono
- * solo a riempire lo schermo mentre il nastro gira.
- */
-function Marquee({ items }) {
-  const track = useRef(null)
-  useMarquee(track)
-
-  return (
-    <div className="marquee">
-      <div className="marquee__track" ref={track}>
-        {[0, 1, 2, 3].map((copy) => (
-          <div className="marquee__group" key={copy} aria-hidden={copy > 0 || undefined}>
-            {items.map((item) => (
-              <Fragment key={item}>
-                <span className="marquee__item">{item}</span>
-                <DMark className="marquee__sep" />
-              </Fragment>
-            ))}
-          </div>
-        ))}
       </div>
     </div>
   )
@@ -751,7 +773,8 @@ function ServicesSection() {
   const onNav = useAnchorNav()
 
   return (
-    <section className="section" id="servizi">
+    <section className="section has-margins" id="servizi">
+      <Margins set="servizi" />
       <div className="container">
         <SectionHead
           id="servizi"
@@ -785,8 +808,9 @@ function ServicesSection() {
                   ))}
                 </ul>
 
-                <a className="link-arrow" href="#contatti" onClick={onNav}>
-                  Parliamo del progetto <IconArrow />
+                <a className="link-sym" href="#contatti" onClick={onNav}>
+                  <Sym name={area.sym} />
+                  Parliamo del progetto
                 </a>
               </div>
             </article>
@@ -800,11 +824,12 @@ function ServicesSection() {
           </div>
           <ol className="index-list reveal reveal-stagger">
             {serviceIndex.map((item, i) => (
-              <li key={item} style={{ '--i': i }}>
+              <li key={item.label} style={{ '--i': i }}>
                 <span className="index-list__num" aria-hidden="true">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                {item}
+                <Sym name={item.sym} className="index-list__sym" />
+                {item.label}
               </li>
             ))}
           </ol>
@@ -828,7 +853,10 @@ function ProjectsSection() {
       </figure>
       <div className="project__body">
         <div className="project__meta">
-          <span className="is-category">{project.category}</span>
+          <span className="is-category">
+            <Sym name={project.sym} className="project__sym" />
+            {project.category}
+          </span>
           <span>
             {project.location} · {project.year}
           </span>
@@ -840,7 +868,8 @@ function ProjectsSection() {
   )
 
   return (
-    <section className="section section--surface" id="progetti">
+    <section className="section section--surface has-margins" id="progetti">
+      <Margins set="progetti" />
       <div className="container">
         <SectionHead
           id="progetti"
@@ -901,7 +930,8 @@ function Signature() {
 
 function StudioSection() {
   return (
-    <section className="section section--grid" id="studio">
+    <section className="section section--grid has-margins" id="studio">
+      <Margins set="studio" />
       <div className="container">
         <SectionHead id="studio" title="Un riferimento tecnico diretto." />
 
@@ -912,9 +942,10 @@ function StudioSection() {
             <span className="label">Discipline</span>
             <ol className="rail-list">
               {disciplines.map((item, i) => (
-                <li key={item} style={{ '--i': i }}>
+                <li key={item.label} style={{ '--i': i }}>
                   <span className="rail-list__num">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="rail-list__text">{item}</span>
+                  <span className="rail-list__text">{item.label}</span>
+                  <Sym name={item.sym} className="rail-list__sym" />
                 </li>
               ))}
             </ol>
@@ -970,65 +1001,8 @@ function StudioSection() {
 }
 
 /* ---------------------------------------------------------------------------
-   04 Territorio — fotografia con punti di interesse e cartografia minima
+   04 Territorio — fotografia della sede, cartografia, area di riferimento
    --------------------------------------------------------------------------- */
-
-/** Il giro dei punti va da sinistra a destra, come si legge la foto. */
-const hotspotTour = hotspots
-  .map((spot, i) => ({ x: spot.x, i }))
-  .sort((a, b) => a.x - b.x)
-  .map((spot) => spot.i)
-
-/**
- * Mentre la fotografia attraversa lo schermo i punti si aprono da soli, uno
- * alla volta, tra il 28% e il 79% del passaggio: chi scorre legge tutto
- * senza cercare. Un clic prende il comando finché la foto non esce.
- */
-function Hotspots() {
-  const ref = useRef(null)
-  const [auto, setAuto] = useState(-1)
-  const [manual, setManual] = useState(null)
-
-  const onProgress = useCallback((p) => {
-    if (p < 0 || p > 1) {
-      setManual(null)
-      setAuto(-1)
-      return
-    }
-    const step = Math.floor((p - 0.28) / 0.17)
-    setAuto(step >= 0 && step < hotspotTour.length ? hotspotTour[step] : -1)
-  }, [])
-  useScrollProgress(ref, onProgress)
-
-  const open = manual ?? auto
-
-  return (
-    <div className="hotspots" ref={ref}>
-      {hotspots.map((spot, i) => (
-        <div
-          key={spot.title}
-          className={`hotspot${open === i ? ' is-open' : ''}${spot.x > 55 ? ' hotspot--flip' : ''}`}
-          style={{ '--x': `${spot.x}%`, '--y': `${spot.y}%` }}
-        >
-          <button
-            type="button"
-            className="hotspot__btn"
-            aria-expanded={open === i}
-            aria-controls={`hotspot-${i}`}
-            aria-label={spot.title}
-            onClick={() => setManual(open === i ? -1 : i)}
-          >
-            <DMark />
-          </button>
-          <span className="hotspot__tip" id={`hotspot-${i}`} role="tooltip">
-            <strong>{spot.title}</strong>
-            {spot.text}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 /* --- Cartografia ---
    Proiezione equirettangolare con il parallelo di riferimento a 45.2°:
@@ -1147,6 +1121,49 @@ function CompassRose({ cx, cy, r }) {
   )
 }
 
+/* --- Radar ---
+   La carta è lo schermo di un radar: dalla sede parte il fascio, gira in
+   senso orario con la sua scia e accende ogni comune quando ci passa sopra.
+   Il giro dura RADAR_TURN secondi; il fascio parte da nord. */
+const RADAR_TURN = 6
+const RADAR_TRAIL = 54 // gradi di scia dietro il fascio
+
+/** Settore di raggio r tra gli angoli a0 e a1, in gradi da nord in senso orario. */
+function sector(r, a0, a1) {
+  const at = (a) => [r * Math.sin((a * Math.PI) / 180), -r * Math.cos((a * Math.PI) / 180)]
+  const [x0, y0] = at(a0)
+  const [x1, y1] = at(a1)
+  return `M0 0L${f(x0)} ${f(y0)}A${r} ${r} 0 0 1 ${f(x1)} ${f(y1)}Z`
+}
+
+/** Dopo quanti secondi il fascio passa sul punto p, partendo da nord. */
+const sweepDelay = (from, p) => {
+  const bearing = ((Math.atan2(p.x - from.x, from.y - p.y) * 180) / Math.PI + 360) % 360
+  return +((bearing / 360) * RADAR_TURN).toFixed(3)
+}
+
+/**
+ * Il fascio: una scia fatta di spicchi sovrapposti che finiscono tutti sul
+ * fascio, ognuno appena trasparente, così la luce cresce senza scalini
+ * fino alla linea piena. Il cerchio vuoto rende il gruppo simmetrico, e il
+ * gruppo ruota esattamente sulla sede (motion.css).
+ */
+function RadarSweep({ at, r }) {
+  const slices = 24
+  const step = RADAR_TRAIL / slices
+  return (
+    <g className="radar" transform={`translate(${f(at.x)} ${f(at.y)})`} aria-hidden="true">
+      <g className="radar__spin">
+        <circle r={r} fill="none" />
+        {Array.from({ length: slices }, (_, i) => (
+          <path key={i} d={sector(r, -RADAR_TRAIL + i * step, 0)} className="radar__trail" />
+        ))}
+        <line x1="0" y1="0" x2="0" y2={-r} className="radar__beam" />
+      </g>
+    </g>
+  )
+}
+
 function MiniMap() {
   const river = mincio.map(([lat, lng]) => project(lat, lng))
   const riverPath = smoothPath(river)
@@ -1170,11 +1187,19 @@ function MiniMap() {
   const scaleY = MAP.h - 44
   // Cartiglio della sede: in alto a destra del punto, dove la carta è libera.
   const callout = project(45.262, 10.722)
+  // I comuni che il radar accende al passaggio del fascio.
+  const blips = places
+    .filter((place) => !place.studio)
+    .map((place) => {
+      const pt = project(place.lat, place.lng)
+      return { name: place.name, ...pt, t: sweepDelay(studioPt, pt) }
+    })
 
   return (
     <svg
       className="chart"
       viewBox={`0 0 ${MAP.w} ${MAP.h}`}
+      style={{ '--radar-turn': `${RADAR_TURN}s` }}
       role="img"
       aria-label="Carta schematica della provincia di Mantova: la sede dello studio a Rivalta sul Mincio, il fiume Mincio con i laghi di Mantova, i comuni attorno e i raggi di 5, 10, 15 e 20 chilometri dalla sede"
     >
@@ -1188,6 +1213,16 @@ function MiniMap() {
         <clipPath id="frame">
           <rect x="0" y="0" width={MAP.w} height={MAP.h} />
         </clipPath>
+        {/* Il vetro dello schermo: più chiaro attorno alla sede, cupo ai
+            bordi, attraversato dalle righe di scansione. */}
+        <radialGradient id="screen" cx={f(studioPt.x / MAP.w)} cy={f(studioPt.y / MAP.h)} r="0.75">
+          <stop offset="0" stopColor="#2447c4" stopOpacity="0.32" />
+          <stop offset="0.55" stopColor="#040a1d" stopOpacity="0.2" />
+          <stop offset="1" stopColor="#000000" stopOpacity="0.72" />
+        </radialGradient>
+        <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+          <rect width="4" height="1" fill="#8aa2ff" fillOpacity="0.06" />
+        </pattern>
       </defs>
 
       <rect x="0" y="0" width={MAP.w} height={MAP.h} className="chart__bg" />
@@ -1265,6 +1300,19 @@ function MiniMap() {
           )
         })}
 
+        {/* Il radar: croce di riferimento sulla sede, fascio che gira, comuni
+            che si accendono quando il fascio ci passa sopra. */}
+        <g className="radar__cross" aria-hidden="true">
+          <line x1="0" y1={f(studioPt.y)} x2={MAP.w} y2={f(studioPt.y)} />
+          <line x1={f(studioPt.x)} y1="0" x2={f(studioPt.x)} y2={MAP.h} />
+        </g>
+        <RadarSweep at={studioPt} r={780} />
+        <g className="radar__blips" aria-hidden="true">
+          {blips.map((blip) => (
+            <circle key={blip.name} cx={f(blip.x)} cy={f(blip.y)} r="11" className="radar__blip" style={{ '--t': `${blip.t}s` }} />
+          ))}
+        </g>
+
         {/* Sede dello studio: marcatore a D, linea di richiamo, cartiglio */}
         <g className="chart__studio">
           <circle cx={f(studioPt.x)} cy={f(studioPt.y)} r="16" className="chart__halo" />
@@ -1335,27 +1383,8 @@ function MiniMap() {
 
       <CompassRose cx={MAP.w - 84} cy={188} r={50} />
 
-      {/* Legenda */}
-      <g className="chart__legend" transform="translate(24 462)">
-        <rect x="0" y="0" width="212" height="94" className="chart__legend-box" />
-        <path d="M14 14h5a5 5 0 0 1 0 10h-5z" className="chart__d" />
-        <text x="32" y="23">
-          Sede dello studio
-        </text>
-        <circle cx="16.5" cy="41" r="5" className="chart__capital-ring" />
-        <circle cx="16.5" cy="41" r="2.4" className="chart__capital-dot" />
-        <text x="32" y="45">
-          Capoluogo di provincia
-        </text>
-        <rect x="14" y="58" width="5" height="5" className="chart__town" />
-        <text x="32" y="64">
-          Comune
-        </text>
-        <rect x="12" y="74" width="10" height="8" className="chart__park-hatch" />
-        <text x="32" y="82">
-          Parco del Mincio · raggi dalla sede
-        </text>
-      </g>
+      <rect x="0" y="0" width={MAP.w} height={MAP.h} className="chart__scan" />
+
     </svg>
   )
 }
@@ -1372,17 +1401,18 @@ function TerritorySection() {
   }, [])
 
   return (
-    <section className="section section--surface" id="territorio">
+    <section className="section section--surface has-margins" id="territorio">
+      <Margins set="territorio" />
       <div className="container">
         <SectionHead
           id="territorio"
           title="Sede a Rivalta sul Mincio, attività in tutta la provincia."
-          text="Lo studio ha sede alle porte del Parco del Mincio e opera nel territorio mantovano e nei comuni limitrofi. Sulla fotografia, i punti raccontano l'ingresso."
+          text="Lo studio ha sede alle porte del Parco del Mincio e opera nel territorio mantovano e nei comuni limitrofi."
         />
       </div>
 
-      {/* Fotografia a tutto schermo che viene ritagliata alla griglia mentre
-          si scorre; la cartografia le si sovrappone nell'angolo. */}
+      {/* Fotografia a tutto schermo, ferma: non si ritaglia né si muove
+          mentre si scorre. */}
       <div className="terr">
         <figure className="terr__photo">
           <Photo
@@ -1391,7 +1421,6 @@ function TerritorySection() {
             width="1536"
             height="1024"
           />
-          <Hotspots />
         </figure>
       </div>
 
@@ -1407,27 +1436,12 @@ function TerritorySection() {
             <MiniMap />
           </div>
           <p className="terr__map-hint" aria-hidden="true">
-            Scorri la carta in orizzontale <IconArrow />
+            <Sym name="quota" />
+            Scorri la carta in orizzontale
           </p>
         </div>
 
-        <div className="places reveal">
-          <span className="label">Area di riferimento</span>
-          <ul className="places__list reveal reveal-stagger">
-            {places.filter((place) => place.near).map((place, i) => (
-              <Fragment key={place.name}>
-                {i > 0 && (
-                  <li className="places__sep" aria-hidden="true" style={{ '--i': i }}>
-                    <DMark />
-                  </li>
-                )}
-                <li className={place.studio ? 'is-studio' : undefined} style={{ '--i': i }}>
-                  {place.name}
-                </li>
-              </Fragment>
-            ))}
-          </ul>
-        </div>
+        <Nuvola />
       </div>
     </section>
   )
@@ -1439,7 +1453,8 @@ function TerritorySection() {
 
 function MethodSection() {
   return (
-    <section className="section" id="metodo">
+    <section className="section has-margins" id="metodo">
+      <Margins set="metodo" />
       <div className="container">
         <SectionHead
           id="metodo"
@@ -1471,7 +1486,8 @@ function MethodSection() {
 
 function ContactSection() {
   return (
-    <section className="section contact" id="contatti">
+    <section className="section contact has-margins" id="contatti">
+      <Margins set="contatti" />
       <div className="container">
         <SectionHead
           id="contatti"
@@ -1483,9 +1499,7 @@ function ContactSection() {
           <ul className="contact-list reveal reveal-stagger">
             <li className="contact-item" style={{ '--i': 0 }}>
               <a className="contact-item__link" href={studio.phoneHref}>
-                <Key className="contact-item__icon">
-                  <IconPhone />
-                </Key>
+                <Key label="Tel" className="contact-item__icon" />
                 <span className="contact-item__text">
                   <span className="label">Telefono</span>
                   <span className="contact-item__value">{studio.phoneDisplay}</span>
@@ -1495,9 +1509,7 @@ function ContactSection() {
             </li>
             <li className="contact-item" style={{ '--i': 1 }}>
               <a className="contact-item__link" href={studio.emailHref}>
-                <Key className="contact-item__icon">
-                  <IconMail />
-                </Key>
+                <Key label="Mail" className="contact-item__icon" />
                 <span className="contact-item__text">
                   <span className="label">Email</span>
                   <span className="contact-item__value">{studio.email}</span>
@@ -1507,9 +1519,7 @@ function ContactSection() {
             </li>
             <li className="contact-item" style={{ '--i': 2 }}>
               <a className="contact-item__link" href={studio.mapsHref} target="_blank" rel="noreferrer">
-                <Key className="contact-item__icon">
-                  <IconPin />
-                </Key>
+                <Key label="Sede" className="contact-item__icon" />
                 <span className="contact-item__text">
                   <span className="label">Studio</span>
                   <span className="contact-item__value">
@@ -1530,21 +1540,27 @@ function ContactSection() {
               rel="noreferrer"
               aria-label={`Apri su Google Maps la posizione dello studio: ${studio.address}`}
             >
-              <span className="map__crop" aria-hidden="true">
-                <iframe
-                  className="map__frame"
-                  src={mapEmbedSrc}
-                  title="Mappa della posizione dello studio a Rivalta sul Mincio"
-                  loading="lazy"
-                  tabIndex={-1}
-                />
-              </span>
-              <span className="map__pin" aria-hidden="true">
-                <DMark />
-              </span>
-              <span className="map__cta" aria-hidden="true">
-                Itinerario su Google Maps
-                <IconExternal />
+              {/* Lo schermo sta dentro una cornice d'acciaio: la carta di
+                  dettaglio virata in blu notte, sopra gli anelli e il fascio
+                  del radar che gira sulla sede. */}
+              <span className="map__screen" aria-hidden="true">
+                <span className="map__crop">
+                  <iframe
+                    className="map__frame"
+                    src={mapEmbedSrc}
+                    title="Mappa della posizione dello studio a Rivalta sul Mincio"
+                    loading="lazy"
+                    tabIndex={-1}
+                  />
+                </span>
+                <span className="map__radar" />
+                <span className="map__pin">
+                  <DMark />
+                </span>
+                <span className="map__cta">
+                  <Sym name="caposaldo" />
+                  Itinerario su Google Maps
+                </span>
               </span>
             </a>
             <p className="map__note">
@@ -1571,8 +1587,12 @@ function Footer() {
   const updated = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(new Date())
 
   return (
-    <footer className="footer">
+    <footer className="footer has-margins">
+      <Margins set="footer" />
       <div className="container">
+        {/* Il nome si compone segmento per segmento mentre si arriva in
+            fondo alla pagina, e si cancella risalendo. */}
+        <LedDisplay text={studio.name} />
         <div className="titleblock">
           {/* Marchio e indirizzo composti come sulla targa. In fondo alla
               pagina il marchio si ridisegna, come nell'header all'apertura. */}
@@ -1602,7 +1622,8 @@ function Footer() {
               </li>
               <li>
                 <a href={studio.mapsHref} target="_blank" rel="noreferrer">
-                  Itinerario <IconExternal className="tb__ext" />
+                  <Sym name="caposaldo" className="tb__ext" />
+                  Itinerario
                 </a>
               </li>
             </ul>
@@ -1643,7 +1664,7 @@ function Footer() {
             <div>
               <span className="tb__label">Sito</span>
               <span className="tb__value">
-                <a href="https://albertopecchini.it/" target="_blank" rel="noreferrer">
+                <a href="https://www.albertopecchini.it" target="_blank" rel="noreferrer">
                   Alberto Pecchini
                 </a>
               </span>
@@ -1704,7 +1725,7 @@ function Layout() {
 
       <main className="site-main" id="contenuto">
         <Intro />
-        <FactsStrip />
+        <FactsBand />
         <ServicesSection />
         <ProjectsSection />
         <StudioSection />

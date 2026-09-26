@@ -134,22 +134,6 @@ html.lenis body {
   transform: translateY(-100%);
 }
 
-/* FOCUS: il filo sotto la riga si riempie fino al cambio successivo. */
-.focus {
-  position: relative;
-}
-
-.focus__timer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 1px;
-  background: var(--c-ink);
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
 /* Il perno della mappa nei contatti: un anello che si allarga piano. */
 .map__pin::after {
   content: '';
@@ -277,23 +261,6 @@ html.lenis body {
   }
 }
 
-@keyframes focus-in {
-  from {
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(0.7em);
-  }
-  to {
-    clip-path: inset(0 0 -20% 0);
-    transform: none;
-  }
-}
-
-@keyframes focus-timer {
-  to {
-    transform: scaleX(1);
-  }
-}
-
 @keyframes roll-up {
   from {
     transform: translateY(100%);
@@ -406,15 +373,6 @@ html.lenis body {
   }
 }
 
-@keyframes photo-crop {
-  from {
-    clip-path: inset(0);
-  }
-  to {
-    clip-path: inset(0 calc((100vw - min(100vw, var(--container))) / 2 + var(--gutter)) 0);
-  }
-}
-
 @keyframes stroke-draw {
   from {
     stroke-dashoffset: 1;
@@ -472,6 +430,45 @@ html.lenis body {
   }
 }
 
+/* Il fascio del radar gira in senso orario; ogni comune si accende quando
+   ci passa sopra e si spegne piano, come una traccia sullo schermo. */
+@keyframes radar-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes radar-blip {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.35);
+  }
+
+  22% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/* I segni a margine: salgono o scendono rispetto alla pagina, secondo
+   --k (da -1 a 1), e ruotano appena, come fogli spostati sul tavolo. */
+@keyframes margin-drift {
+  from {
+    translate: 0 calc(var(--k, 0) * 110px);
+    rotate: calc(var(--rot, 0deg) - 7deg);
+  }
+
+  to {
+    translate: 0 calc(var(--k, 0) * -110px);
+    rotate: calc(var(--rot, 0deg) + 7deg);
+  }
+}
+
 /* --------------------------------------------------------------------------
    5. Apertura: l'intro si compone da sola
    Anche senza JavaScript: sono animazioni CSS che finiscono nello stato
@@ -489,7 +486,6 @@ html.lenis body {
   .infoline,
   .intro__lead,
   .intro__actions,
-  .intro__focus,
   .intro__caption {
     animation: rise 1000ms var(--ease-out) both;
   }
@@ -516,10 +512,6 @@ html.lenis body {
     animation-delay: 1100ms;
   }
 
-  .intro__focus {
-    animation-delay: 1200ms;
-  }
-
   .intro__plate .plate {
     animation: plate-rise 1500ms 300ms var(--ease-out) both;
   }
@@ -540,14 +532,6 @@ html.lenis body {
 
   .intro__hint-line::after {
     animation: hint-run 2200ms var(--ease-in-out) infinite;
-  }
-
-  .focus__text {
-    animation: focus-in 800ms var(--ease-out) both;
-  }
-
-  .focus__timer {
-    animation: focus-timer 3800ms linear both;
   }
 
   .corner__roll--up {
@@ -831,14 +815,14 @@ html.lenis body {
 
   /* --- Contatti: la mappa si apre, il perno cade sulla sede --- */
   .js .contact__map-col .map {
-    clip-path: inset(100% 0 0 0 round var(--radius));
+    clip-path: inset(calc(100% + 60px) -60px -60px -60px);
     transition:
       clip-path 1400ms var(--ease-out) 150ms,
       border-color var(--dur) var(--ease);
   }
 
   .js .contact__map-col.is-visible .map {
-    clip-path: inset(0 round var(--radius));
+    clip-path: inset(-60px);
   }
 
   .js .contact__map-col .map__pin {
@@ -852,6 +836,22 @@ html.lenis body {
   .js .contact__map-col.is-visible .map__pin {
     opacity: 1;
     transform: translate(-50%, -100%);
+  }
+
+  /* --- Area di riferimento: la nuvola (nuvola.js) accende da sé i punti
+     dalla sede verso fuori e porta i nomi sui centri; qui non serve nulla. --- */
+}
+
+/* --- Radar: il fascio gira da solo, la carta resta ferma --- */
+@media (prefers-reduced-motion: no-preference) {
+  .radar__spin,
+  .map__radar::after {
+    animation: radar-turn var(--radar-turn, 6s) linear infinite;
+  }
+
+  .radar__blip {
+    animation: radar-blip var(--radar-turn, 6s) linear infinite;
+    animation-delay: var(--t, 0s);
   }
 }
 
@@ -868,11 +868,17 @@ html.lenis body {
       animation-timeline: scroll(root);
     }
 
+    /* I segni a margine scorrono a velocità diverse dalla pagina. */
+    .margins__sym {
+      animation: margin-drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
     /* Con overflow: hidden il ritaglio diventerebbe un contenitore di
        scroll e view() misurerebbe lui invece della pagina. */
     .service-block__media,
-    .project__figure,
-    .terr__photo {
+    .project__figure {
       overflow: clip;
     }
 
@@ -914,13 +920,6 @@ html.lenis body {
       animation: rail-bar linear both;
       animation-timeline: --studio;
       animation-range: cover calc(12% + var(--i, 0) * 76% / 9) cover calc(12% + (var(--i, 0) + 1) * 76% / 9);
-    }
-
-    /* Il territorio: la fotografia viene ritagliata alla griglia. */
-    .terr__photo {
-      animation: photo-crop linear both;
-      animation-timeline: view();
-      animation-range: entry 10% cover 55%;
     }
 
     /* --- La carta si disegna mentre entra ---
@@ -1058,7 +1057,6 @@ html.lenis body {
     .manifesto__in,
     .intro__lead,
     .intro__actions,
-    .intro__focus,
     .intro__plate .plate,
     .intro__caption,
     .plate__picture::after {
@@ -1101,11 +1099,6 @@ html.lenis body {
       animation-range: contain 68% contain 80%;
     }
 
-    .intro__focus {
-      animation-name: stage-in;
-      animation-range: contain 72% contain 84%;
-    }
-
     .intro__plate .plate {
       animation-name: plate-in;
       animation-range: contain 22% contain 56%;
@@ -1127,7 +1120,7 @@ html.lenis body {
 /* --------------------------------------------------------------------------
    8. Movimento ridotto
    Nessuna rivelazione (gli stati nascosti sopra non si applicano),
-   nessun nastro, nessun anello che pulsa. Il sito è fermo e completo.
+   nessun anello che pulsa. Il sito è fermo e completo.
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1136,7 +1129,7 @@ html.lenis body {
     animation: none;
   }
 
-  .hotspot__btn::after,
+  .reach__pin::after,
   .chart__halo,
   .map__pin::after {
     animation: none;
@@ -1145,31 +1138,5 @@ html.lenis body {
   .plate__picture {
     transform: none;
     transition: none;
-  }
-
-  .focus__timer {
-    display: none;
-  }
-
-  .marquee {
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-
-  .marquee__track {
-    width: auto;
-  }
-
-  .marquee__group {
-    flex: 1;
-    flex-wrap: wrap;
-    max-width: var(--container);
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-    gap: var(--s-2) var(--s-5);
-  }
-
-  .marquee__group[aria-hidden] {
-    display: none;
   }
 }
