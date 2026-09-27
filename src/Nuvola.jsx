@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react'
-import { avviaNuvola, luoghi, tacche } from './nuvola.js'
+import { anelli, avviaNuvola, luoghi } from './nuvola.js'
 import { places } from './content.js'
 
 /* ---------------------------------------------------------------------------
    Area di riferimento — la nuvola di punti nel vuoto
-   Un nastro nero da bordo a bordo. Dentro, la nuvola in tre dimensioni
-   (nuvola.js, WebGL): la sede all'origine, l'asse dei chilometri in linea
-   d'aria, tutti i comuni e le frazioni della provincia come ammassi di
-   punti. I nomi qui sotto sono elementi veri: il motore li porta sui
-   centri e li accende quando ci si avvicina. Solo i paesi grandi e le
-   città ne hanno uno; i paesini restano luce senza nome.
+   Un nastro nero da bordo a bordo. Dentro, l'esplosione in tre dimensioni
+   (nuvola.js, WebGL): la sede al centro e tutti i comuni e le frazioni
+   della provincia che se ne allontanano, ognuno alla sua distanza in linea
+   d'aria, come ammassi di punti. I nomi qui sotto sono elementi veri: il
+   motore li porta sui centri e li accende quando ci si avvicina. Solo i
+   paesi grandi e le città ne hanno uno; i paesini restano luce senza nome.
    --------------------------------------------------------------------------- */
 
 const home = places.find((place) => place.studio)
@@ -37,18 +37,21 @@ export default function Nuvola() {
       <canvas className="reach__canvas" aria-hidden="true" />
 
       <div className="container reach__copy reveal">
-        <span className="label">Area di riferimento</span>
-        <h3 className="reach__title">Rivalta sul Mincio all&rsquo;origine, la provincia in linea d&rsquo;aria.</h3>
-        <p className="reach__body">
-          Ogni comune e frazione del Mantovano &egrave; un ammasso di punti, pi&ugrave; fitto dove il centro
-          &egrave; pi&ugrave; grande. L&rsquo;asse misura la distanza dalla sede; avvicinandosi, i paesi grandi
-          e le citt&agrave; si accendono con il nome.
-        </p>
+        <div className="reach__col">
+          <span className="label">Area di riferimento</span>
+          <h3 className="reach__title">Rivalta sul Mincio al centro, la provincia tutt&rsquo;intorno.</h3>
+          <p className="reach__body">
+            Ogni comune e frazione del Mantovano &egrave; un ammasso di punti che si allontana dalla sede
+            nella sua direzione e alla sua distanza in linea d&rsquo;aria, come in un&rsquo;esplosione. Gli
+            anelli segnano i chilometri; avvicinandosi, i paesi grandi e le citt&agrave; si accendono con il
+            nome.
+          </p>
+        </div>
       </div>
 
-      {/* I nomi e le tacche: il motore li sposta sulla proiezione dei punti. */}
+      {/* I nomi e i numeri degli anelli: il motore li sposta sulla proiezione dei punti. */}
       <div className="reach__labels" aria-hidden="true">
-        {tacche.map((km) => (
+        {anelli.map((km) => (
           <span key={km} className="reach__tick" data-km={km}>
             {km} km
           </span>
@@ -75,8 +78,10 @@ export default function Nuvola() {
 
       <p className="container reach__hint">
         <span className="reach__hint-dot" aria-hidden="true" />
-        Avvicina il puntatore o il dito: i paesi grandi e le citt&agrave; si accendono con nome e distanza.
-        Trascina per ruotare.
+        <span className="reach__hint-text">
+          Avvicina il puntatore o il dito: i paesi grandi e le citt&agrave; si accendono con nome e
+          distanza. Trascina per ruotare.
+        </span>
       </p>
 
       {/* L'elenco per chi legge senza vedere la nuvola. */}

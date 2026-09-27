@@ -2282,12 +2282,12 @@
    sopra in percentuale, così restano nitidi e leggibili a ogni larghezza. */
 /* --- Area di riferimento: la nuvola di punti nel vuoto ---
    Un nastro nero da bordo a bordo, come la fotografia in testa alla
-   sezione. Dentro, la nuvola in tre dimensioni (nuvola.js, WebGL): la sede
-   all'origine, l'asse dei chilometri in linea d'aria, tutti i comuni e le
-   frazioni della provincia come ammassi di punti. Il testo sta in alto,
-   sopra il vuoto; la nuvola prende lo spazio che resta. I nomi e le tacche
-   sono elementi che il motore sposta sulla proiezione dei punti e accende
-   quando ci si avvicina. */
+   sezione. Dentro, l'esplosione in tre dimensioni (nuvola.js, WebGL): la
+   sede al centro, tutti i comuni e le frazioni della provincia che se ne
+   allontanano come ammassi di punti, gli anelli dei chilometri sul piano.
+   Il testo sta in alto, sopra il vuoto; la nuvola prende lo spazio che
+   resta. I nomi e i numeri degli anelli sono elementi che il motore sposta
+   sulla proiezione dei punti e accende quando ci si avvicina. */
 .reach {
   position: relative;
   width: 100vw;
@@ -2315,23 +2315,34 @@
   height: 100%;
 }
 
-/* Il testo, sopra la nuvola, allineato al contenitore della pagina. Su
-   schermo largo titolo e testo stanno affiancati, così il blocco è basso e
-   la nuvola prende quasi tutta l'altezza. */
+/* Il testo, allineato al contenitore della pagina. Su schermo largo sta
+   in colonna a sinistra, a mezza altezza, e l'esplosione prende tutta
+   l'altezza alla sua destra (il limite di 900px è lo stesso di nuvola.js);
+   su quello stretto sta in alto e la nuvola sotto. */
 .reach__copy {
   position: absolute;
   top: clamp(2rem, 5vh, 3.5rem);
   left: 0;
   right: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
-  align-items: end;
-  gap: var(--s-3) var(--s-8);
   pointer-events: none;
 }
 
-.reach__copy .label {
-  grid-column: 1 / -1;
+.reach__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-width: 24rem;
+}
+
+@media (min-width: 901px) {
+  .reach__copy {
+    top: 50%;
+    translate: 0 -50%;
+  }
+
+  .reach__hint-text {
+    max-width: 24rem;
+  }
 }
 
 .reach__copy .label {
@@ -2461,8 +2472,14 @@
   transition: opacity 600ms var(--ease-out);
 }
 
+/* Il nome della sede sta sotto la D, centrato: a destra ci sono i vicini. */
 .reach__place--home .reach__text {
-  left: 20px;
+  left: 0;
+  top: 20px;
+  translate: -50% 0;
+  align-items: center;
+  text-align: center;
+  transition: opacity 300ms var(--ease);
 }
 
 .reach__place--home .reach__name {
@@ -2506,14 +2523,15 @@
   animation: ping 3s var(--ease) infinite;
 }
 
-/* Le tacche del righello: il numero sotto l'asse. */
+/* I numeri degli anelli: in fila sul piano, a destra del centro, come una
+   scala grafica. */
 .reach__tick {
   position: absolute;
   left: 0;
   top: 0;
-  translate: -50% 7px;
+  translate: 6px -50%;
   opacity: 0;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
@@ -2522,12 +2540,6 @@
   white-space: nowrap;
   transition: opacity 700ms var(--ease-out);
   will-change: transform;
-}
-
-/* Riquadro stretto (telefono): l'asse sale lungo lo schermo e i numeri
-   stanno alla sua sinistra. */
-.reach--verticale .reach__tick {
-  translate: calc(-100% - 8px) -50%;
 }
 
 /* La didascalia, in basso. */
@@ -2597,13 +2609,6 @@ html:not(.js) .reach__elenco {
   gap: var(--s-2) var(--s-5);
   list-style: none;
   font-size: var(--fs-sm);
-}
-
-@media (max-width: 900px) {
-  .reach__copy {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-  }
 }
 
 @media (max-width: 720px) {
