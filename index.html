@@ -21,7 +21,9 @@
     <meta name="theme-color" content="#faf9f6" />
     <meta name="author" content="Ing. Dario Donelli" />
 
-    <!-- Anteprima nelle condivisioni -->
+    <!-- Anteprima nelle condivisioni. Gli URL devono essere assoluti:
+         gli scraper di WhatsApp e simili ignorano i percorsi relativi.
+         Quando arriverà il dominio definitivo, aggiornare qui. -->
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="it_IT" />
     <meta property="og:title" content="Ing. Dario Donelli | Studio tecnico" />
@@ -29,18 +31,14 @@
       property="og:description"
       content="Progettazione, strutture, sicurezza sismica e direzione lavori a Rivalta sul Mincio e in provincia di Mantova."
     />
-    <meta property="og:image" content="/images/hero-targa-og.jpg" />
+    <meta property="og:url" content="https://dariodonelli.vercel.app/" />
+    <meta property="og:image" content="https://dariodonelli.vercel.app/images/hero-targa-og.jpg" />
 
-    <!-- I font si caricano da qui e non da un @import nel CSS: il browser
-         li scopre subito, senza aspettare che il foglio di stile sia letto. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Font variabili: Fraunces copre l'intervallo di pesi usato dai
-         titoli (340–400), Inter quello del testo (400–600). -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..600&family=Inter:wght@400..600&display=swap"
-    />
+    <!-- Font variabili auto-ospitati (vedi i @font-face in src/index.css):
+         nessuna richiesta a Google Fonts. Il preload copre i due
+         sottoinsiemi latin, quelli usati in pratica da tutta la pagina. -->
+    <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

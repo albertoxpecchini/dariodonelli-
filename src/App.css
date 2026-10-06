@@ -29,6 +29,10 @@ html.js .reveal.is-visible {
     transform: none;
     transition: none;
   }
+
+  .mobile-panel {
+    transition: none;
+  }
 }
 
 /* --- Tipografia ricorrente ------------------------------------------------ */
@@ -72,6 +76,8 @@ html.js .reveal.is-visible {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 40;
+  /* Il primo valore è il fallback per i browser senza color-mix(). */
+  background: rgb(250 249 246 / 0.86);
   background: color-mix(in srgb, var(--paper) 86%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -195,19 +201,30 @@ html.js .reveal.is-visible {
   inset: 0 0 auto auto;
   z-index: 50;
   width: min(84vw, 22rem);
+  height: 100vh; /* fallback per i browser senza dvh */
   height: 100dvh;
   padding: calc(var(--header-h) + 1.5rem) 2rem 2.5rem;
   display: flex;
   flex-direction: column;
+  /* In orizzontale su telefono il pannello è più alto dello schermo:
+     scorre al suo interno (Lenis lo lascia fare: data-lenis-prevent). */
+  overflow-y: auto;
   background: var(--paper);
   border-left: 1px solid var(--line);
   transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  /* La visibility cambia solo a scorrimento finito, così anche la
+     chiusura si vede; da aperto il ritardo si azzera. */
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.35s;
   visibility: hidden;
 }
 
 .mobile-panel.is-open {
   transform: none;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
   visibility: visible;
 }
 
@@ -310,6 +327,7 @@ html.js .reveal.is-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem 0.75rem;
+  align-items: baseline;
   margin-top: clamp(1.25rem, 3vw, 2rem);
   padding-top: 1rem;
   border-top: 1px solid var(--line);
@@ -318,6 +336,13 @@ html.js .reveal.is-visible {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* Il separatore vive con la voce che lo precede: andando a capo non resta
+   mai un "·" da solo a inizio o fine riga. */
+.infoline__item:not(:last-child)::after {
+  content: '·';
+  margin-left: 0.75rem;
 }
 
 .intro__grid {
@@ -487,7 +512,7 @@ html.js .reveal.is-visible {
 .service-block__num {
   font-family: var(--font-serif);
   font-size: clamp(1.75rem, 3vw, 2.25rem);
-  color: var(--line-strong);
+  color: var(--muted);
   line-height: 1;
 }
 
@@ -899,6 +924,11 @@ a.contact-item__value:hover {
   background: var(--ink);
   color: #efede8;
   padding-block: clamp(3.5rem, 8vw, 6rem) 2.5rem;
+}
+
+/* Sul fondo scuro l'anello di focus color inchiostro sparirebbe. */
+.footer :focus-visible {
+  outline-color: #efede8;
 }
 
 .footer .label {

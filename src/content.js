@@ -10,9 +10,7 @@
 export const studio = {
   name: 'Ing. Dario Donelli',
   role: 'Ingegnere',
-  place: 'Rivalta sul Mincio · Mantova',
   address: 'Via Filippo Turati, 1, 46040 Rivalta sul Mincio MN',
-  phone: '+39 338 4007913',
   phoneHref: 'tel:+393384007913',
   phoneDisplay: '+39 338 400 7913',
   email: 'ing.dario.donelli@hotmail.it',
@@ -107,12 +105,16 @@ export const heroFacts = [
 /**
  * Tre macro-aree. Ognuna spiega cosa comprende, a chi serve e che problema
  * risolve, con un elenco delle prestazioni effettivamente offerte.
+ * width/height sono le misure reali dei file: il browser riserva il
+ * riquadro giusto e la pagina non salta quando le foto arrivano.
  */
 export const serviceAreas = [
   {
     id: 'progettazione',
     num: '01',
     image: '/images/servizio-progettazione',
+    width: 900,
+    height: 506,
     imageAlt: 'Un tecnico disegna a mano un prospetto su carta da lucido',
     title: 'Progettazione e pratiche edilizie',
     text: 'Dalla prima verifica di fattibilità fino al progetto esecutivo e alle autorizzazioni. Utile a chi deve costruire, ampliare o ristrutturare e ha bisogno di capire in anticipo cosa è possibile fare, con quali costi e con quali tempi.',
@@ -128,6 +130,8 @@ export const serviceAreas = [
     id: 'strutture',
     num: '02',
     image: '/images/servizio-strutture',
+    width: 900,
+    height: 596,
     imageAlt: 'Armature di ferro predisposte su un solaio prima del getto',
     title: 'Strutture e sicurezza sismica',
     text: 'Verifica e adeguamento di edifici esistenti, progettazione strutturale di nuove opere. Risponde a chi possiede un immobile datato e vuole sapere come si comporta in caso di sisma, o deve intervenire su un edificio vincolato.',
@@ -142,6 +146,8 @@ export const serviceAreas = [
     id: 'cantiere',
     num: '03',
     image: '/images/servizio-cantiere',
+    width: 900,
+    height: 600,
     imageAlt: 'Squadra di tecnici in cantiere sul solaio di un edificio in costruzione',
     title: 'Direzione lavori e consulenza',
     text: 'Presidio del cantiere e verifica di quanto viene realizzato rispetto al progetto. Serve a chi vuole un riferimento tecnico unico che segua l’intervento, controlli le lavorazioni e gestisca il rapporto con le imprese.',
@@ -197,6 +203,8 @@ export const projects = [
     location: 'Rivalta sul Mincio (MN)',
     year: '2025',
     image: '/images/progetto-residenze',
+    width: 1600,
+    height: 1067,
     imageAlt: 'Villa unifamiliare con ampie vetrate, vista dal giardino al tramonto',
     text: 'Supporto completo a privati per trasformazioni, ristrutturazioni e nuove realizzazioni, con attenzione alla funzionalità degli spazi, alla qualità dei materiali e alla corretta definizione delle opere in fase di cantiere.',
   },
@@ -207,6 +215,8 @@ export const projects = [
     location: 'Provincia di Mantova',
     year: '2024',
     image: '/images/progetto-pubblici',
+    width: 1600,
+    height: 1067,
     imageAlt: 'Squadra di tecnici sul solaio di un edificio in costruzione',
     text: 'Coordinamento tecnico e progettuale per opere civili e pubbliche: verifiche di fattibilità, sicurezza, contenimento dei costi e gestione delle diverse fasi di realizzazione.',
   },
@@ -217,6 +227,8 @@ export const projects = [
     location: 'Mantova e territorio',
     year: '2023',
     image: '/images/progetto-riqualificazione',
+    width: 1600,
+    height: 1600,
     imageAlt: 'Facciata intonacata di bianco di un edificio ristrutturato',
     text: 'Interventi di recupero, miglioramento sismico e restauro di edifici esistenti, per valorizzare il patrimonio costruito e migliorarne prestazioni, comfort e sicurezza.',
   },

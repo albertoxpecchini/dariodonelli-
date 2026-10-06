@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { scrollToTarget, setScrollLocked, useReveal, useSmoothScroll } from './motion.js'
 import {
@@ -20,23 +20,22 @@ import {
 
 /* ---------------------------------------------------------------------------
    Marchio
-   Il logo della targa ridisegnato in vettoriale: una "D" a doppio profilo,
-   in nero, sovrapposta alla sua immagine speculare in grigio.
+   Il marchio della targa, lo stesso di favicon e icona iOS: la "D" a
+   doppio profilo in nero sopra la sua costruzione geometrica in grigio,
+   il quadrato e il cerchio da cui la lettera nasce. Le misure sono state
+   rilevate dall'icona originale.
    --------------------------------------------------------------------------- */
-
-const LOGO_OUTER = 'M64 64H520A456 456 0 0 1 520 976H64Z'
-const LOGO_INNER = 'M164 164H520A356 356 0 0 1 520 876H164Z'
 
 function Logo({ className = '', ...props }) {
   return (
     <svg viewBox="0 0 1040 1040" fill="none" aria-hidden="true" className={`logo ${className}`} {...props}>
-      <g className="logo__ghost" stroke="#b9b5ae" strokeWidth="48" transform="matrix(-1 0 0 1 1040 0)">
-        <path d={LOGO_OUTER} />
-        <path d={LOGO_INNER} />
+      <g className="logo__ghost" stroke="#9a968e" strokeWidth="40">
+        <rect x="185" y="150" width="715" height="710" />
+        <circle cx="430" cy="512" r="360" />
       </g>
-      <g stroke="currentColor" strokeWidth="48">
-        <path d={LOGO_OUTER} />
-        <path d={LOGO_INNER} />
+      <g stroke="currentColor" strokeWidth="40">
+        <path d="M137 124H537A388 388 0 0 1 537 900H137Z" />
+        <path d="M221 215H546A300 300 0 0 1 546 816H221Z" />
       </g>
     </svg>
   )
@@ -131,13 +130,32 @@ function Brand() {
 function Header({ active }) {
   const scrolled = useScrolled()
   const [menuOpen, setMenuOpen] = useState(false)
+  const panelRef = useRef(null)
+  const toggleRef = useRef(null)
+  const wasOpen = useRef(false)
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
     setScrollLocked(menuOpen)
+    // A menu aperto il resto della pagina si spegne: lo scrim ferma il
+    // puntatore, inert ferma il Tab e i lettori di schermo. Il focus entra
+    // nel pannello all'apertura e torna sul bottone alla chiusura.
+    const others = document.querySelectorAll('.header, .site-main, .footer')
+    others.forEach((el) => {
+      el.inert = menuOpen
+    })
+    if (menuOpen) {
+      panelRef.current?.querySelector('.mobile-panel__close')?.focus()
+    } else if (wasOpen.current) {
+      toggleRef.current?.focus()
+    }
+    wasOpen.current = menuOpen
     return () => {
       document.body.style.overflow = ''
       setScrollLocked(false)
+      others.forEach((el) => {
+        el.inert = false
+      })
     }
   }, [menuOpen])
 
@@ -197,6 +215,7 @@ function Header({ active }) {
             <button
               type="button"
               className="menu-toggle"
+              ref={toggleRef}
               aria-expanded={menuOpen}
               aria-controls="mobile-panel"
               onClick={() => setMenuOpen(!menuOpen)}
@@ -211,6 +230,7 @@ function Header({ active }) {
 
       <aside
         id="mobile-panel"
+        ref={panelRef}
         className={menuOpen ? 'mobile-panel is-open' : 'mobile-panel'}
         aria-hidden={!menuOpen}
         inert={!menuOpen}
@@ -309,11 +329,12 @@ function Intro() {
         </h1>
 
         <p className="infoline">
-          {infoline.map((item, i) => (
-            <Fragment key={item}>
-              {i > 0 && <span aria-hidden="true">·</span>}
-              <span>{item}</span>
-            </Fragment>
+          {/* Il separatore sta nel CSS, legato alla voce: così il "·" non
+              resta mai orfano quando la riga va a capo. */}
+          {infoline.map((item) => (
+            <span className="infoline__item" key={item}>
+              {item}
+            </span>
           ))}
         </p>
 
@@ -382,7 +403,7 @@ function ServicesSection() {
       <div className="container">
         <SectionHead
           id="servizi"
-          title="Tre ambiti di intervento, un unico interlocutore."
+          title="Tre aree di competenza, un unico interlocutore."
           text="Lo studio copre il percorso completo di un intervento edilizio. In base alle esigenze si può attivare una singola prestazione oppure affidare l'intera gestione tecnica."
         />
 
@@ -390,15 +411,19 @@ function ServicesSection() {
           {serviceAreas.map((area, i) => (
             <article key={area.id} className={`service-block reveal${i % 2 === 1 ? ' service-block--flip' : ''}`}>
               <figure className="service-block__media">
-                <Photo base={area.image} ext="png" alt={area.imageAlt} width="900" height="600" />
+                <Photo base={area.image} ext="png" alt={area.imageAlt} width={area.width} height={area.height} />
               </figure>
 
               <div className="service-block__copy">
-                <span className="service-block__num">{area.num}</span>
+                <span className="service-block__num" aria-hidden="true">
+                  {area.num}
+                </span>
                 <h3 className="service-block__title">{area.title}</h3>
                 <p className="body-text">{area.text}</p>
 
-                <ul className="service-block__list">
+                {/* role="list": il reset list-style:none toglie ad alcuni
+                    lettori di schermo la semantica di elenco; così resta. */}
+                <ul className="service-block__list" role="list">
                   {area.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -417,7 +442,7 @@ function ServicesSection() {
             <span className="label">Tutte le prestazioni</span>
             <span className="service-index__count">{serviceIndex.length} voci</span>
           </div>
-          <ol className="index-list">
+          <ol className="index-list" role="list">
             {serviceIndex.map((item, i) => (
               <li key={item}>
                 <span className="index-list__num">{String(i + 1).padStart(2, '0')}</span>
@@ -445,7 +470,7 @@ function AmbitiSection() {
           text="Dalla nuova costruzione al restauro: gli interventi vengono seguiti dalla prima valutazione alla consegna, sul territorio mantovano e nei comuni limitrofi."
         />
 
-        <ol className="ambiti-list reveal">
+        <ol className="ambiti-list reveal" role="list">
           {ambiti.map((item, i) => (
             <li key={item}>
               <span className="ambiti-list__num">{String(i + 1).padStart(2, '0')}</span>
@@ -458,7 +483,7 @@ function AmbitiSection() {
           {projects.map((project, i) => (
             <article key={project.id} className={i === 0 ? 'project project--lead reveal' : 'project reveal'}>
               <figure className="project__figure">
-                <Photo base={project.image} alt={project.imageAlt} width="1600" height={i === 0 ? '1067' : '1200'} />
+                <Photo base={project.image} alt={project.imageAlt} width={project.width} height={project.height} />
               </figure>
               <div className="project__body">
                 <p className="project__meta">
@@ -490,8 +515,8 @@ function StudioSection() {
 
         <div className="studio-layout">
           <aside className="studio__rail">
-            <span className="label">Discipline</span>
-            <ol className="rail-list">
+            <h3 className="label">Discipline</h3>
+            <ol className="rail-list" role="list">
               {disciplines.map((item, i) => (
                 <li key={item}>
                   <span className="rail-list__num">{String(i + 1).padStart(2, '0')}</span>
@@ -538,8 +563,8 @@ function StudioSection() {
           <Photo
             base="/images/studio-esterno"
             alt="L'edificio d'angolo che ospita lo studio, con la vetrina e l'ingresso su strada"
-            width="1536"
-            height="1024"
+            width="1600"
+            height="1067"
           />
           <figcaption className="studio-photo__caption">
             <span className="label">La sede</span>
@@ -567,10 +592,12 @@ function MethodSection() {
           title="Come si sviluppa un incarico."
           text="Quattro fasi, con un punto di verifica alla fine di ciascuna: si procede alla successiva solo quando il quadro è chiaro."
         />
-        <ol className="method reveal">
+        <ol className="method reveal" role="list">
           {method.map((step) => (
             <li key={step.num} className="method__step">
-              <span className="method__num">{step.num}</span>
+              <span className="method__num" aria-hidden="true">
+                {step.num}
+              </span>
               <h3 className="method__title">{step.title}</h3>
               <p className="method__text">{step.text}</p>
             </li>
@@ -596,7 +623,7 @@ function ContactSection() {
         />
 
         <div className="contact-grid">
-          <ul className="contact-list reveal">
+          <ul className="contact-list reveal" role="list">
             <li className="contact-item">
               <span className="label">Telefono</span>
               <a className="contact-item__value" href={studio.phoneHref}>
@@ -672,8 +699,8 @@ function Footer() {
           </div>
 
           <div className="footer__col">
-            <span className="label">Recapiti</span>
-            <ul>
+            <h2 className="label">Recapiti</h2>
+            <ul role="list">
               <li>
                 <a href={studio.phoneHref}>{studio.phoneDisplay}</a>
               </li>
@@ -691,8 +718,8 @@ function Footer() {
           </div>
 
           <div className="footer__col">
-            <span className="label">Iscrizione</span>
-            <ul>
+            <h2 className="label">Iscrizione</h2>
+            <ul role="list">
               <li>Ordine degli Ingegneri della Provincia di Mantova</li>
               <li>n. 1495 · dal 24 maggio 2010</li>
               <li>Settore a) civile e ambientale</li>
@@ -700,8 +727,8 @@ function Footer() {
           </div>
 
           <div className="footer__col">
-            <span className="label">Sezioni</span>
-            <ul>
+            <h2 className="label">Sezioni</h2>
+            <ul role="list">
               {sections.map((item) => (
                 <li key={item.id}>
                   <a href={`#${item.id}`} onClick={onNav}>
