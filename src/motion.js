@@ -4,7 +4,8 @@ import { useEffect } from 'react'
 /* ---------------------------------------------------------------------------
    Movimento
    Lo scorrimento morbido della pagina e gli aiuti che fanno muovere il sito
-   mentre si scorre. Il resto (come si muove) è in motion.css.
+   mentre si scorre. Il resto (come si muove) è negli stili di .reveal
+   in App.css.
    --------------------------------------------------------------------------- */
 
 /** Un'unica istanza per la pagina; resta null con il movimento ridotto. */
@@ -91,6 +92,18 @@ export function useReveal() {
     )
     nodes.forEach((node) => observer.observe(node))
 
+    // Tabulando, il focus può posarsi su un collegamento dentro un blocco
+    // non ancora rivelato (il browser lo porta appena dentro la finestra,
+    // sotto la linea di attivazione): il blocco si mostra subito.
+    const onFocus = (event) => {
+      const host = event.target.closest?.('.reveal:not(.is-visible)')
+      if (host) {
+        show(host)
+        observer.unobserve(host)
+      }
+    }
+    document.addEventListener('focusin', onFocus)
+
     let frame = 0
     const atBottom = () => {
       frame = 0
@@ -112,6 +125,7 @@ export function useReveal() {
       observer.disconnect()
       if (frame) window.cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('focusin', onFocus)
     }
   }, [])
 }
