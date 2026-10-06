@@ -1,3496 +1,997 @@
-/* ==========================================================================
-   Ing. Dario Donelli — Studio Tecnico
-   Foglio di stile principale. Colori, tipografia e spazio arrivano dai token
-   definiti in index.css: qui non si dichiarano valori grezzi.
+/* ---------------------------------------------------------------------------
+   Componenti
+   Un solo linguaggio per tutto il sito: titoli in Fraunces, testo in Inter,
+   filetti sottili come unico segno grafico, fotografie in bianco e nero.
+   Niente icone, niente pulsanti: le azioni sono collegamenti testuali.
+   --------------------------------------------------------------------------- */
 
-   Il riferimento visivo è la targa dello studio: incisione nera su metallo
-   chiaro, filetti sottili, maiuscoletto spaziato. Le fotografie sono tutte
-   in bianco e nero. Un solo dettaglio ricorre ovunque: la "D" geometrica
-   del logo, che fa da punto, separatore, marcatore e cursore.
+/* --- Rivelazione allo scroll ---------------------------------------------
+   Con JavaScript attivo gli elementi .reveal partono appena più in basso e
+   trasparenti, e si posano quando entrano nello schermo (motion.js). Senza
+   JavaScript, o con il movimento ridotto, restano semplicemente visibili. */
 
-   Il blu (--c-accent) compare poco e sempre per lo stesso motivo: la
-   sezione in lettura, la sede dello studio, l'azione da compiere.
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   1. Primitive di layout
-   -------------------------------------------------------------------------- */
-
-.container {
-  width: 100%;
-  max-width: var(--container);
-  margin-inline: auto;
-  padding-inline: var(--gutter);
-}
-
-.section {
-  --bg: var(--c-page);
-  position: relative;
-  padding-block: var(--section-y);
-}
-
-.section--surface {
-  --bg: var(--c-surface);
-  background: var(--c-surface);
-}
-
-.site-main {
-  flex: 1;
-}
-
-/* Link "salta al contenuto" per la navigazione da tastiera */
-.skip-link {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 100;
-  padding: var(--s-3) var(--s-4);
-  background: var(--c-ink);
-  color: #fff;
-  font-size: var(--fs-sm);
-}
-
-.skip-link:focus {
-  left: var(--s-4);
-  top: var(--s-4);
-}
-
-/* Tutte le fotografie del sito sono in bianco e nero. */
-.photo {
-  display: block;
-}
-
-.photo img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: grayscale(1) contrast(1.04);
-}
-
-/* Icone a oggetto (servizi e metodo). Sono l'unica immagine a colori oltre
-   alla tinta di sistema, e il colore è proprio quello: nero lucido, acciaio,
-   un dettaglio in Electric Sapphire. Un'ombra di contatto le appoggia sulla
-   carta; al passaggio del mouse l'oggetto si solleva e l'ombra prende il blu. */
-.emblem {
-  display: block;
-  flex: none;
-}
-
-.emblem img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.14));
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
   transition:
-    transform 500ms var(--ease),
-    filter 500ms var(--ease);
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (hover: hover) {
-  .service-block:hover .emblem img,
-  .method__step:hover .emblem img {
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1))
-      drop-shadow(0 16px 18px color-mix(in srgb, var(--c-accent) 30%, transparent));
+html.js .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
-/* La D minima */
-.dmark {
-  width: 0.7em;
-  height: 0.7em;
-  flex: none;
-  vertical-align: -0.05em;
-}
-
-/* Cursore a forma di D sugli elementi "da toccare". */
-.plate,
-.terr__map {
-  cursor:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M6 4h9a10 10 0 0 1 0 20H6z' fill='white' stroke='black' stroke-width='2'/></svg>")
-      14 14,
-    pointer;
-}
-
-/* --------------------------------------------------------------------------
-   2. Tipografia
-   -------------------------------------------------------------------------- */
+/* --- Tipografia ricorrente ------------------------------------------------ */
 
 .headline {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--fs-2xl);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-display);
-  color: var(--c-ink);
-  font-variation-settings: 'opsz' 96;
-  text-wrap: balance;
-}
-
-.label {
-  display: block;
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-muted);
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  font-weight: 360;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
 }
 
 .lead {
-  margin: 0;
-  font-size: var(--fs-md);
-  line-height: var(--lh-body);
-  color: var(--c-body);
+  font-size: clamp(1.0625rem, 1.6vw, 1.1875rem);
+  line-height: 1.7;
+  color: var(--ink-soft);
+  max-width: 38rem;
 }
 
 .body-text {
-  margin: 0;
-  font-size: var(--fs-base);
-  line-height: var(--lh-body);
-  color: var(--c-body);
+  color: var(--ink-soft);
+  max-width: 38rem;
 }
 
-.body-text + .body-text {
-  margin-top: var(--s-5);
-}
-
-/* --- Intestazione di sezione ---
-   Il filetto va da bordo a bordo dello schermo: è il filo che attraversa
-   tutta la pagina. Il numero siede sul filo, dentro un riquadro con il
-   fondo della sezione, come una quota su una linea di misura. */
-.section-head {
-  position: relative;
-  display: grid;
-  gap: var(--s-5);
-  padding-top: var(--s-6);
-  margin-bottom: clamp(4rem, 8vw, 7rem);
-}
-
-.section-head::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 100vw;
-  height: 1px;
-  transform: translateX(-50%);
-  background: var(--c-ink);
-}
-
-.section-head__meta {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-}
-
-.section-head__index {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translateY(-50%);
-  padding: 3px 10px;
-  border: 1px solid var(--c-ink);
-  background: var(--bg, var(--c-page));
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-  color: var(--c-ink);
-}
-
-.section-head__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: var(--s-5) clamp(2.5rem, 7vw, 6rem);
-  align-items: end;
-}
-
-.section-head .lead {
-  max-width: 46ch;
-}
-
-/* --------------------------------------------------------------------------
-   3. Azioni
-   -------------------------------------------------------------------------- */
-
-/* --- Tasti ---
-   Cappucci in alluminio anodizzato Electric Sapphire, tutti in CSS
-   (Key.jsx): rettangolari come i tasti di una tastiera, tondi come i
-   pulsanti di un computer. La sede (.key) è un pozzetto di metallo scuro;
-   il cappuccio (.key__cap) mostra il fianco tutt'intorno, più alto in
-   basso come su un tasto visto dall'alto, e sopra la faccia spazzolata
-   (::before) con lo smusso cromato. La scritta è retroilluminata: bianca
-   con l'alone blu dei LED. Al passaggio i LED si accendono e la luce
-   esce da sotto il cappuccio; premuto, il cappuccio affonda. */
-.key {
-  --key-h: 46px;
-  --key-w: calc(var(--key-h) * 1.36);
-  --key-r: 9px;
-  position: relative;
-  display: grid;
-  flex: none;
-  width: var(--key-w);
-  height: var(--key-h);
-  padding: 3px 3px 4px;
-  border-radius: calc(var(--key-r) + 3px);
-  background: linear-gradient(180deg, #30333b 0%, #121317 55%, #22252b 100%);
-  box-shadow:
-    inset 0 1px 1px rgba(0, 0, 0, 0.9),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.6),
-    0 1px 0 rgba(255, 255, 255, 0.5),
-    0 6px 14px -6px rgba(10, 16, 40, 0.5);
-  transition: box-shadow var(--dur) var(--ease);
-}
-
-/* Il fianco: blu più cupo, con la luce dall'alto e lo spessore sotto. */
-.key__cap {
-  position: relative;
-  display: grid;
-  place-items: center;
-  border-radius: var(--key-r);
-  background: linear-gradient(180deg, #8499ff 0%, #4a66f3 28%, #2d47cb 68%, #1c309c 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(0, 0, 40, 0.5),
-    0 2px 0 #14246f,
-    0 3px 3px rgba(0, 0, 0, 0.45);
-  transform: translateY(-1.5px);
-  transition:
-    transform 100ms var(--ease),
-    box-shadow 100ms var(--ease),
-    filter var(--dur) var(--ease);
-}
-
-/* La faccia: rientra dal fianco più in basso che in alto, è spazzolata in
-   orizzontale e ha lo smusso cromato tutt'intorno. */
-.key__cap::before {
-  content: '';
-  position: absolute;
-  inset: 2px 4px 6px;
-  border-radius: calc(var(--key-r) - 3px);
-  background:
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(0deg, rgba(0, 0, 40, 0.07) 0 1px, transparent 1px 5px),
-    linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.42) 34%, transparent 48%, rgba(255, 255, 255, 0.16) 66%, transparent 80%),
-    radial-gradient(130% 95% at 50% 0%, #a6b7ff 0%, #6c86fc 45%, #4d6cfa 72%, #405ff0 100%);
-  box-shadow:
-    0 0 0 1px rgba(236, 241, 255, 0.95),
-    0 0 0 2px rgba(40, 52, 110, 0.6),
-    inset 0 1px 2px rgba(255, 255, 255, 0.55),
-    inset 0 -2px 4px rgba(0, 0, 60, 0.25);
-}
-
-/* La scritta: grande, bianca, con l'alone dei LED che passano attraverso
-   il metallo. Sta al centro della faccia, un filo sopra il centro del
-   cappuccio. */
-.key__label {
-  position: relative;
-  display: grid;
-  place-items: center;
-  transform: translateY(-2px);
-  font-family: var(--font-body);
-  font-size: calc(var(--key-h) * 0.29);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.07em;
-  padding-left: 0.07em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: #f5f8ff;
-  text-shadow:
-    0 0 1px #ffffff,
-    0 0 5px rgba(175, 195, 255, 0.95),
-    0 0 12px rgba(77, 108, 250, 0.9);
-  transition: text-shadow var(--dur) var(--ease);
-}
-
-.key__label svg {
-  width: calc(var(--key-h) * 0.36);
-  height: calc(var(--key-h) * 0.36);
-  filter: drop-shadow(0 0 2px rgba(175, 195, 255, 0.95)) drop-shadow(0 0 6px rgba(77, 108, 250, 0.9));
-}
-
-/* Tondo, come il pulsante di accensione di un computer. */
-.key--round {
-  --key-w: var(--key-h);
-  border-radius: 50%;
-  padding: 3px 3px 4px;
-}
-
-.key--round .key__cap,
-.key--round .key__cap::before {
-  border-radius: 50%;
-}
-
-.key--round .key__cap::before {
-  inset: 3px 3px 5px;
-}
-
-.key--round .key__label {
-  font-size: calc(var(--key-h) * 0.44);
-  font-weight: 600;
-  letter-spacing: 0;
-  padding-left: 0;
-}
-
-/* L'Invio: largo il doppio, come la barra dell'Invio sulla tastiera. */
-.key--wide {
-  --key-h: 50px;
-  --key-w: calc(var(--key-h) * 2.05);
-}
-
-.key--wide .key__label {
-  font-size: calc(var(--key-h) * 0.3);
-  letter-spacing: 0.12em;
-  padding-left: 0.12em;
-}
-
-@media (hover: hover) {
-  :is(a, button):hover > .key {
-    box-shadow:
-      inset 0 1px 1px rgba(0, 0, 0, 0.9),
-      inset 0 0 0 1px rgba(0, 0, 0, 0.6),
-      0 1px 0 rgba(255, 255, 255, 0.5),
-      0 0 16px 2px color-mix(in srgb, var(--c-accent) 55%, transparent),
-      0 6px 14px -6px rgba(10, 16, 40, 0.5);
-  }
-
-  :is(a, button):hover > .key .key__cap {
-    filter: brightness(1.1);
-  }
-
-  :is(a, button):hover > .key .key__label {
-    text-shadow:
-      0 0 1px #ffffff,
-      0 0 6px #d0dbff,
-      0 0 16px rgba(77, 108, 250, 1);
-  }
-}
-
-:is(a, button):active > .key .key__cap {
-  transform: translateY(0.5px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(0, 0, 40, 0.5),
-    0 0.5px 0 #14246f,
-    0 1px 1px rgba(0, 0, 0, 0.4);
-}
-
-/* Azione: il tasto e il suo nome, senza scatola attorno. */
-.action {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 44px;
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--c-ink);
-  transition: color var(--dur) var(--ease);
-}
-
-.action:hover {
-  color: var(--c-accent-hover);
-}
-
-.action-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-3) var(--s-6);
-}
-
-/* Collegamento con il simbolo del suo ambito davanti, sottolineato. */
-.link-sym {
-  --sym-accent: var(--c-accent);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--c-ink);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--c-ink);
-  transition:
-    color var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-
-.link-sym:hover {
-  border-color: var(--c-accent);
-  color: var(--c-accent-hover);
-}
-
-.link-sym svg {
-  width: 18px;
-  height: 18px;
-  transition: transform 400ms var(--ease-spring);
-}
-
-.link-sym:hover svg {
-  transform: rotate(-8deg) scale(1.12);
-}
-
-/* --------------------------------------------------------------------------
-   3b. Simboli
-   Il simbolo base (src/symbols.jsx) e i posti in cui compare: ogni
-   elenco, intestazione e fascia ha il suo. Il dettaglio .sym__a prende
-   il blu dove il contenitore lo chiede con --sym-accent.
-   -------------------------------------------------------------------------- */
-
-.sym {
-  display: block;
-  flex: none;
-  overflow: visible;
-}
-
-.sym .sym__a {
-  color: var(--sym-accent, currentColor);
-}
-
-/* Sotto i 24 px il tratto da tavola si assottiglia troppo: lo si rinforza. */
-:is(
-    .section-head__sym,
-    .facts__sym,
-    .index-list__sym,
-    .rail-list__sym,
-    .project__sym,
-    .link-sym svg,
-    .terr__map-hint svg,
-    .map__cta svg,
-    .tb__ext
-  ) {
-  stroke-width: 1.8;
-}
-
-.section-head__sym {
-  --sym-accent: var(--c-accent);
-  width: 18px;
-  height: 18px;
-  color: var(--c-ink);
-}
-
-.contact .section-head__sym {
-  color: var(--c-dark-fg-strong);
-}
-
-.facts__sym {
-  --sym-accent: var(--c-accent);
+.text-link {
   display: inline-block;
-  width: 15px;
-  height: 15px;
-  margin-right: 7px;
-  vertical-align: -3px;
-  color: var(--c-ink);
+  padding-bottom: 2px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--line-strong);
+  transition: border-color 0.2s ease;
 }
 
-.index-list__sym {
-  --sym-accent: var(--c-accent);
-  width: 24px;
-  height: 24px;
-  color: var(--c-ink);
+.text-link:hover {
+  border-color: var(--ink);
 }
 
-.rail-list__sym {
-  --sym-accent: var(--c-accent);
-  width: 18px;
-  height: 18px;
-  align-self: center;
-  opacity: 0.8;
+/* --- Header ---------------------------------------------------------------- */
+
+.header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 86%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
 }
 
-.project__sym {
-  --sym-accent: var(--c-accent);
-  width: 14px;
-  height: 14px;
+.header--scrolled {
+  border-bottom-color: var(--line);
 }
 
-/* --- Segni a margine ---
-   Simboli grandi a tratto sottile, sotto il contenuto. La sezione si
-   isola, così lo strato dei segni (z-index -1) sta sopra il suo fondo e
-   sotto tutto il resto. Il tratto non cresce con il simbolo: resta un
-   filo, come uno schizzo a matita dura. */
-.has-margins {
-  position: relative;
-  isolation: isolate;
-}
-
-.margins {
-  --sym-accent: var(--c-accent);
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  /* clip e non hidden: hidden farebbe dello strato un contenitore di
-     scroll, e view() in motion.css misurerebbe lui invece della pagina. */
-  overflow: clip;
-  pointer-events: none;
-}
-
-.margins__sym {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
-  width: var(--size);
-  height: var(--size);
-  rotate: var(--rot);
-  color: var(--c-ink);
-  opacity: calc(0.15 * var(--o, 1));
-}
-
-.margins__sym * {
-  vector-effect: non-scaling-stroke;
-  stroke-width: 1.25px;
-}
-
-/* A margine anche i pieni diventano contorno: solo linee, come uno schizzo. */
-.margins__sym [fill='currentColor'] {
-  fill: none;
-  stroke: currentColor;
-}
-
-:is(.contact, .footer) .margins__sym {
-  color: #ffffff;
-  opacity: calc(0.2 * var(--o, 1));
-}
-
-/* Progetti fa eccezione: il visualizzatore a schermo intero deve uscire
-   sopra l'header, quindi la sezione non può isolarsi. I segni restano
-   sul fondo e sono i blocchi del contenuto a salire sopra di loro. */
-#progetti.has-margins {
-  isolation: auto;
-}
-
-#progetti > .margins {
-  z-index: 0;
-}
-
-#progetti .section-head,
-#progetti .project-grid,
-#progetti .drawings__head,
-#progetti .viewer:not(.is-full) {
-  position: relative;
-  z-index: 1;
-}
-
-/* --------------------------------------------------------------------------
-   4. Marchio e logo che si disegna
-   -------------------------------------------------------------------------- */
-
-.logo {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* All'apertura il marchio si costruisce: prima il profilo grigio, poi
-   quello nero, tracciati come con un tiralinee. */
-.logo--draw path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw 1100ms var(--ease) both;
-}
-
-.logo--draw .logo__ghost path:nth-child(1) {
-  animation-delay: 80ms;
-}
-
-.logo--draw .logo__ghost path:nth-child(2) {
-  animation-delay: 260ms;
-}
-
-.logo--draw .logo__ink path:nth-child(1) {
-  animation-delay: 520ms;
-}
-
-.logo--draw .logo__ink path:nth-child(2) {
-  animation-delay: 720ms;
-}
-
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-.brand {
-  display: inline-flex;
-  flex: none;
+.header__inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: var(--header-h);
 }
 
 .brand__inner {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: 0.75rem;
 }
 
-.brand__mark {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
+.logo {
+  width: 30px;
+  height: 30px;
   flex: none;
-  color: var(--c-ink);
-  transition:
-    width var(--dur) var(--ease),
-    height var(--dur) var(--ease);
-}
-
-.header--scrolled .brand__mark {
-  width: 34px;
-  height: 34px;
 }
 
 .brand__copy {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-  line-height: 1.1;
+  line-height: 1.25;
 }
 
 .brand__name {
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-ink);
-  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .brand__role {
-  align-self: stretch;
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--c-muted);
-  padding-top: 3px;
-  border-top: 1px solid var(--c-ink);
-}
-
-/* --------------------------------------------------------------------------
-   5. Header
-   -------------------------------------------------------------------------- */
-
-/* Una lastra d'acciaio, come la targa. Sul metallo i grigi del testo si
-   scuriscono un poco, perché il fondo è meno chiaro della pagina. */
-.header {
-  --c-body: #2f333a;
-  --c-muted: #555b64;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: var(--metal-bar);
-  box-shadow: var(--metal-bar-edge);
-  transition: box-shadow var(--dur) var(--ease);
-}
-
-/* I riflessi: appena si scorre la luce scivola lungo la barra, come su
-   un pezzo di metallo che si sposta sotto la lampada. */
-.header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--metal-bar-glint) 0 0 / 160% 100% no-repeat;
-  transition: background-position 1.6s var(--ease-out);
-  pointer-events: none;
-}
-
-.header--scrolled {
-  box-shadow:
-    var(--metal-bar-edge),
-    0 14px 28px -18px rgba(14, 22, 48, 0.55);
-}
-
-.header--scrolled::before {
-  background-position: 100% 0;
-}
-
-/* L'header è più largo della pagina: il menu ha bisogno di aria quanto
-   il contenuto, e sui lati c'è spazio. */
-.header__inner {
-  max-width: 1440px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-5);
-  height: var(--header-h);
-  transition: height var(--dur) var(--ease);
-}
-
-.header--scrolled .header__inner {
-  height: 66px;
+  color: var(--muted);
 }
 
 .nav {
   display: flex;
-  align-items: center;
-  gap: clamp(1.25rem, 2.3vw, 2.5rem);
+  gap: clamp(1rem, 2.5vw, 2rem);
+  margin-left: auto;
 }
 
 .nav__link {
   position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  padding-block: var(--s-2);
-  font-size: 0.84rem;
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--c-body);
-  transition: color var(--dur) var(--ease);
-}
-
-.nav__num {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--c-muted);
-  font-variant-numeric: tabular-nums;
-  transition: color var(--dur) var(--ease);
-}
-
-/* Il passaggio del mouse sottolinea in nero; la voce in lettura ha un solo
-   segno blu, che scivola da una voce all'altra (.nav::after, posizionato
-   dall'header in App.jsx). */
-.nav {
-  position: relative;
-}
-
-.nav::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 1px;
-  height: 2px;
-  background: var(--c-accent);
-  transform: translateX(var(--ind-x, 0px)) scaleX(var(--ind-w, 0));
-  transform-origin: left;
-  opacity: 0;
-  transition:
-    transform 700ms var(--ease-out),
-    opacity 300ms var(--ease);
-  pointer-events: none;
-}
-
-.nav[data-indicator='on']::after {
-  opacity: 1;
+  padding: 0.4rem 0;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  transition: color 0.2s ease;
 }
 
 .nav__link::after {
   content: '';
   position: absolute;
   left: 0;
-  right: 0;
+  right: 100%;
   bottom: 0;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 360ms var(--ease-out);
+  border-bottom: 1px solid var(--ink);
+  transition: right 0.3s ease;
 }
 
 .nav__link:hover,
 .nav__link.is-active {
-  color: var(--c-ink);
+  color: var(--ink);
 }
 
-.nav__link:hover::after {
-  transform: scaleX(1);
-}
-
-.nav__link.is-active {
-  font-weight: 600;
-}
-
-.nav__link.is-active .nav__num {
-  color: var(--c-accent-hover);
+.nav__link.is-active::after {
+  right: 0;
 }
 
 .header__actions {
   display: flex;
   align-items: center;
-  gap: var(--s-5);
-  flex: none;
+  gap: 1.5rem;
 }
 
-/* --- Telefono che rivela il numero ---
-   Il numero è sempre in flusso ma invisibile, così l'ingombro non cambia;
-   l'etichetta "Telefono" gli sta sopra e al passaggio i due si scambiano.
-   Appena si scorre il numero resta in vista da solo: non va cercato. */
-.phone {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  color: var(--c-ink);
-  white-space: nowrap;
-}
-
-.phone svg {
-  width: 14px;
-  height: 14px;
-  color: var(--c-muted);
-  transition: color var(--dur) var(--ease);
-}
-
-.phone__text {
-  position: relative;
-  display: inline-grid;
-}
-
-.phone__text > * {
-  grid-area: 1 / 1;
-  transition:
-    opacity 360ms var(--ease-out),
-    transform 520ms var(--ease-out);
-}
-
-.phone__label {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-muted);
-  align-self: center;
-}
-
-.phone__num {
+.header__phone {
+  font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
-  opacity: 0;
-  transform: translateY(6px);
+  color: var(--ink-soft);
+  transition: color 0.2s ease;
 }
 
-.phone:hover .phone__label,
-.phone:focus-visible .phone__label,
-.header--scrolled .phone__label {
-  opacity: 0;
-  transform: translateY(-6px);
+.header__phone:hover {
+  color: var(--ink);
 }
 
-.phone:hover .phone__num,
-.phone:focus-visible .phone__num,
-.header--scrolled .phone__num {
-  opacity: 1;
-  transform: none;
-}
-
-.phone:hover svg {
-  color: var(--c-ink);
-}
-
-.header__cta .key--wide {
-  --key-h: 42px;
-}
-
-/* --- Pulsante menu mobile --- */
-/* Il tasto MENU; a menu aperto resta acceso. */
 .menu-toggle {
   display: none;
-  place-items: center;
-  min-width: 44px;
-  height: 44px;
-  margin-right: -2px;
-  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.5rem 0;
+}
+
+/* --- Menu mobile ------------------------------------------------------------ */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgb(27 26 23 / 0.35);
   border: 0;
-  background: transparent;
-  cursor: pointer;
 }
 
-.menu-toggle .key {
-  --key-h: 42px;
-}
-
-.menu-toggle[aria-expanded='true'] .key .key__cap {
-  filter: brightness(1.1);
-}
-
-/* --- Pannello mobile --- */
 .mobile-panel {
   position: fixed;
-  inset: 0 0 0 auto;
-  z-index: 60;
-  width: min(380px, 88vw);
+  inset: 0 0 auto auto;
+  z-index: 50;
+  width: min(84vw, 22rem);
+  height: 100dvh;
+  padding: calc(var(--header-h) + 1.5rem) 2rem 2.5rem;
   display: flex;
   flex-direction: column;
-  padding: var(--s-5) var(--s-5) var(--s-7);
-  background: var(--c-surface);
-  border-left: 1px solid var(--c-line);
+  background: var(--paper);
+  border-left: 1px solid var(--line);
   transform: translateX(100%);
-  transition: transform 280ms var(--ease);
-  overflow-y: auto;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  visibility: hidden;
 }
 
 .mobile-panel.is-open {
-  transform: translateX(0);
+  transform: none;
+  visibility: visible;
 }
 
-.mobile-panel__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  margin-bottom: var(--s-7);
-}
-
+/* Il tasto dell'header resta sotto il pannello: la chiusura sta qui. */
 .mobile-panel__close {
-  display: grid;
-  place-items: center;
-  min-width: 44px;
-  height: 44px;
-  margin-right: -2px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-
-.mobile-panel__close .key {
-  --key-h: 42px;
+  position: absolute;
+  top: 0;
+  right: 2rem;
+  height: var(--header-h);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .mobile-nav {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--c-ink);
 }
 
 .mobile-nav__link {
   display: flex;
   align-items: baseline;
-  gap: var(--s-4);
-  padding-block: var(--s-4);
-  border-bottom: 1px solid var(--c-line);
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  gap: 1rem;
+  padding: 0.9rem 0;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-nav__link.is-active {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
 }
 
 .mobile-nav__num {
-  font-family: var(--font-body);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.mobile-nav__link.is-active .mobile-nav__num {
-  color: var(--c-accent-hover);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  color: var(--muted);
 }
 
 .mobile-panel__foot {
   margin-top: auto;
-  padding-top: var(--s-7);
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-}
-
-.mobile-panel__phone {
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  color: var(--c-ink);
-}
-
-.mobile-panel__mail {
-  margin-bottom: var(--s-3);
-  font-size: var(--fs-sm);
-  color: var(--c-body);
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
   overflow-wrap: anywhere;
 }
 
-.scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 55;
-  background: rgba(0, 0, 0, 0.45);
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-  animation: fade-in 180ms var(--ease);
-}
+@media (max-width: 860px) {
+  .nav,
+  .header__phone {
+    display: none;
+  }
 
-/* --------------------------------------------------------------------------
-   6. Binario laterale e indicatore d'angolo (solo desktop largo)
-   -------------------------------------------------------------------------- */
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+  }
 
-.rail {
-  position: fixed;
-  right: 0;
-  top: 50%;
-  z-index: 40;
-  display: none;
-  align-items: center;
-  gap: var(--s-3);
-  padding: var(--s-4) var(--s-2);
-  transform: translateY(-50%) rotate(180deg);
-  writing-mode: vertical-rl;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-muted);
-  border-right: 1px solid var(--c-line);
-  transition: color var(--dur) var(--ease);
-}
-
-.rail:hover {
-  color: var(--c-ink);
-}
-
-.rail .dmark {
-  transform: rotate(90deg);
-}
-
-.corner {
-  position: fixed;
-  left: var(--s-5);
-  bottom: var(--s-5);
-  z-index: 40;
-  display: none;
-  align-items: center;
-  gap: var(--s-2);
-  padding: 6px 10px;
-  border: 1px solid var(--c-ink);
-  background: var(--c-page);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-/* Il numero cambia rotolando, come un contatore: sale se si scende nella
-   pagina, scende se si torna su (motion.css). */
-.corner__num {
-  display: inline-flex;
-  overflow: hidden;
-  font-family: var(--font-display);
-  font-size: var(--fs-base);
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.corner__roll {
-  display: block;
-}
-
-@media (min-width: 1200px) {
-  .rail,
-  .corner {
-    display: inline-flex;
+  .header__actions {
+    margin-left: auto;
   }
 }
 
-/* --------------------------------------------------------------------------
-   7. Intro
-   -------------------------------------------------------------------------- */
+/* --- Intro ------------------------------------------------------------------ */
 
 .intro {
-  position: relative;
+  padding-top: calc(var(--header-h) + clamp(3.5rem, 9vw, 7rem));
+  padding-bottom: clamp(3rem, 7vw, 5.5rem);
 }
 
-/* Il foglio millimetrato, sotto tutto. La sua visibilità varia con lo
-   scroll nel palcoscenico fisso. */
-.intro::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-image:
-    linear-gradient(var(--c-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  background-position: center top;
-  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 60%, transparent 100%);
-  pointer-events: none;
+.masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.intro__stage {
-  position: relative;
-  z-index: 1;
-  padding-top: clamp(2.5rem, 5vw, 4rem);
-  padding-bottom: clamp(3rem, 6vw, 5rem);
+.masthead__pre {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.masthead__name {
+  font-family: var(--font-serif);
+  font-size: clamp(3.25rem, 10.5vw, 8rem);
+  font-weight: 340;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+
+.infoline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.75rem;
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .intro__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  grid-template-rows: auto 1fr;
-  gap: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 6vw, 5.5rem);
-  align-items: center;
-}
-
-.intro__head {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-}
-
-/* --- Testata --- */
-.masthead {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s-2);
-  line-height: 0.92;
-  color: var(--c-ink);
-}
-
-.masthead__pre {
-  font-family: var(--font-body);
-  font-size: var(--fs-md);
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--c-muted);
-}
-
-/* Come inciso sulla targa: grottesco pesante, maiuscolo, stretto. */
-.masthead__name {
-  display: block;
-  font-family: var(--font-body);
-  font-size: clamp(2.75rem, 5.4vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transform-origin: left top;
-}
-
-/* --- Riga informativa --- */
-.infoline {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-3);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-.infoline .dmark {
-  color: var(--c-muted);
-}
-
-/* --- Manifesto --- */
-.intro__body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s-5);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  margin-top: clamp(3rem, 7vw, 5.5rem);
 }
 
 .manifesto {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  font-family: var(--font-display);
-  font-weight: 300;
-  font-size: var(--fs-3xl);
-  line-height: 1.02;
-  letter-spacing: var(--ls-display);
-  color: var(--c-ink);
-  font-variation-settings: 'opsz' 144;
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 4.6vw, 3.75rem);
+  font-weight: 340;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
 }
 
-/* Ogni riga è un ritaglio da cui il testo sale; il margine negativo
-   restituisce lo spazio aggiunto per le discendenti. */
 .manifesto__line {
   display: block;
-  overflow: hidden;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
 }
 
-.manifesto__in {
-  display: block;
-}
-
-.intro__lead {
-  max-width: 40ch;
-}
-
-/* --- Targa --- */
-.intro__plate {
-  margin: 0;
-  align-self: center;
-}
-
-.plate {
-  perspective: 1400px;
-}
-
-.plate__picture {
-  display: block;
-  transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
-  transform-style: preserve-3d;
-  transition: transform 500ms var(--ease);
-  will-change: transform;
-}
-
-.plate__picture img {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.12));
-}
-
-.intro__caption {
+.intro__aside {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: var(--s-4);
-  padding-left: var(--s-4);
-  border-left: 1px solid var(--c-ink);
-  font-size: var(--fs-sm);
-  color: var(--c-body);
+  gap: 1.5rem;
+  max-width: 26rem;
 }
 
-/* --- Fascia dei dati di albo --- */
+.intro__plate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.intro__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 860px) {
+  .intro__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Banda dei dati --------------------------------------------------------- */
+
 .facts-band {
-  position: relative;
-  z-index: 1;
-  border-top: 1px solid var(--c-ink);
-  border-bottom: 1px solid var(--c-line);
+  border-block: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-5) var(--s-6);
-  margin: 0;
-  padding-block: var(--s-7);
+  gap: 1.5rem;
 }
 
 .facts__item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-  min-width: 0;
-}
-
-.facts__item:not(:first-child) {
-  padding-left: var(--s-6);
-  border-left: 1px solid var(--c-line);
+  padding: 1.4rem 0;
 }
 
 .facts__item dd {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  margin-top: 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;
 }
 
-/* --------------------------------------------------------------------------
-   8. Servizi
-   -------------------------------------------------------------------------- */
+@media (max-width: 720px) {
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .facts__item {
+    padding: 1rem 0;
+  }
+
+  .facts__item + .facts__item {
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* --- Sezioni ----------------------------------------------------------------- */
+
+.section {
+  padding-block: var(--space-section);
+}
+
+.section--surface {
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+}
+
+.section-head {
+  margin-bottom: clamp(3rem, 6vw, 4.5rem);
+}
+
+.section-head__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+  border-bottom: 1px solid var(--line);
+}
+
+.section-head__index {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.section-head__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.5rem 4rem;
+  justify-content: space-between;
+}
+
+.section-head .headline {
+  max-width: 24ch;
+}
+
+.section-head .lead {
+  max-width: 30rem;
+}
+
+/* --- Servizi ----------------------------------------------------------------- */
 
 .service-blocks {
   display: flex;
   flex-direction: column;
-  gap: clamp(6rem, 13vw, 11rem);
+  gap: clamp(3.5rem, 8vw, 6.5rem);
 }
 
 .service-block {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 7vw, 7rem);
-  align-items: center;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
 }
 
 .service-block--flip .service-block__media {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.service-block__media {
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius);
-  background: var(--c-surface-2);
+  order: 2;
 }
 
 .service-block__media img {
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-  transition: transform 700ms var(--ease);
-}
-
-.service-block:hover .service-block__media img {
-  transform: scale(1.03);
+  width: 100%;
+  filter: grayscale(1);
 }
 
 .service-block__copy {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--s-4);
-}
-
-/* Numero a sinistra, icona a destra: la testata si legge come l'intestazione
-   di una scheda tecnica. */
-.service-block__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-4);
-  width: 100%;
-}
-
-.service-block__emblem {
-  width: clamp(4.5rem, 7vw, 6rem);
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .service-block:hover .service-block__emblem img {
-    transform: translateY(-4px) rotate(-2deg);
-  }
+  gap: 1.1rem;
 }
 
 .service-block__num {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  font-weight: 300;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  color: var(--line-strong);
   line-height: 1;
-  letter-spacing: var(--ls-display);
-  color: rgba(0, 0, 0, 0.32);
-  font-variant-numeric: tabular-nums;
 }
 
 .service-block__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
   font-weight: 400;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  line-height: 1.2;
+  letter-spacing: -0.005em;
 }
 
 .service-block__list {
-  margin: var(--s-2) 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  width: 100%;
-  border-top: 1px solid var(--c-line);
+  display: flex;
+  flex-direction: column;
+  margin-block: 0.5rem;
 }
 
 .service-block__list li {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  padding-block: var(--s-4);
-  border-bottom: 1px solid var(--c-line);
-  font-size: var(--fs-sm);
-  color: var(--c-ink-2);
+  padding: 0.65rem 0;
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line);
 }
 
-.service-block__list .dmark {
-  width: 10px;
-  height: 10px;
-  color: var(--c-muted);
+.service-block__list li:first-child {
+  border-top: 1px solid var(--line);
 }
+
+@media (max-width: 860px) {
+  .service-block {
+    grid-template-columns: 1fr;
+  }
+
+  .service-block--flip .service-block__media {
+    order: 0;
+  }
+}
+
+/* Elenco completo delle prestazioni */
 
 .service-index {
-  margin-top: clamp(6rem, 12vw, 10rem);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
+  margin-top: clamp(4rem, 9vw, 7rem);
 }
 
 .service-index__head {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
-  gap: var(--s-4);
+  align-items: baseline;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .service-index__count {
-  font-size: var(--fs-sm);
-  color: var(--c-muted);
-  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .index-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--c-ink);
   columns: 2;
-  column-gap: clamp(2.5rem, 7vw, 6rem);
+  column-gap: clamp(2rem, 6vw, 5rem);
 }
 
 .index-list li {
   display: flex;
-  align-items: center;
-  gap: var(--s-4);
+  gap: 1.1rem;
+  align-items: baseline;
   break-inside: avoid;
-  padding-block: var(--s-5);
-  border-bottom: 1px solid var(--c-line);
-  font-size: var(--fs-base);
-  color: var(--c-ink);
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
 }
 
 .index-list__num {
-  flex: none;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
-/* --------------------------------------------------------------------------
-   9. Progetti
-   -------------------------------------------------------------------------- */
+@media (max-width: 720px) {
+  .index-list {
+    columns: 1;
+  }
+}
+
+/* --- Ambiti di intervento ----------------------------------------------------- */
+
+.ambiti-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: clamp(4rem, 9vw, 7rem);
+  border-top: 1px solid var(--line-strong);
+}
+
+.ambiti-list li {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1.25rem, 4vw, 3rem);
+  padding: clamp(0.9rem, 2vw, 1.3rem) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ambiti-list__num {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ambiti-list__label {
+  font-family: var(--font-serif);
+  font-size: clamp(1.375rem, 3.2vw, 2.25rem);
+  font-weight: 360;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+
+/* Esempi fotografici */
 
 .project-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(4.5rem, 9vw, 8rem) clamp(2rem, 5vw, 4.5rem);
+  gap: clamp(2.5rem, 6vw, 4.5rem) clamp(2rem, 5vw, 4rem);
 }
 
 .project--lead {
   grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(2rem, 6vw, 6rem);
-}
-
-.project__figure {
-  position: relative;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--c-line-strong);
-  border-radius: var(--radius);
-  background: var(--c-surface-2);
 }
 
 .project__figure img {
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  transition: transform 700ms var(--ease);
-}
-
-.project--lead .project__figure img {
-  aspect-ratio: 3 / 2;
-}
-
-.project:hover .project__figure img {
-  transform: scale(1.025);
+  width: 100%;
+  filter: grayscale(1);
 }
 
 .project__body {
+  margin-top: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  padding-top: var(--s-5);
-}
-
-.project--lead .project__body {
-  padding-top: 0;
+  gap: 0.6rem;
 }
 
 .project__meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-3);
-}
-
-.project__meta span {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
+  justify-content: space-between;
+  gap: 0.4rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--c-muted);
-}
-
-.project__meta .is-category {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px var(--s-2);
-  border: 1px solid var(--c-ink);
-  color: var(--c-ink);
+  color: var(--muted);
 }
 
 .project__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
+  font-family: var(--font-serif);
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
   font-weight: 400;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
+  line-height: 1.22;
 }
 
-.project--lead .project__title {
-  font-size: var(--fs-xl);
-}
-
-/* --- Elaborati consultabili ---
-   Sotto i progetti, a tutta larghezza della colonna: intestazione breve e
-   il visualizzatore (src/viewer/viewer.css). */
-.drawings {
-  margin-top: clamp(6rem, 12vw, 10rem);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-6);
-}
-
-.drawings__head {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: var(--s-5) clamp(2.5rem, 7vw, 6rem);
-  align-items: end;
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--c-ink);
-}
-
-.drawings__meta {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-}
-
-/* Il cartellino che dice che i file sono di prova. */
-.drawings__tag {
-  padding: 3px var(--s-2);
-  border: 1px solid var(--c-accent);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-accent-hover);
-}
-
-.drawings__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 400;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-  text-wrap: balance;
-}
-
-.drawings__lead {
-  max-width: 46ch;
-}
-
-@media (max-width: 900px) {
-  .drawings__head {
+@media (max-width: 720px) {
+  .project-grid {
     grid-template-columns: 1fr;
   }
 }
 
-/* --------------------------------------------------------------------------
-   10. Lo Studio
-   -------------------------------------------------------------------------- */
-
-/* La griglia riaffiora leggermente in questo passaggio. */
-.section--grid::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  opacity: 0;
-  background-image:
-    linear-gradient(var(--c-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--c-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  background-position: center top;
-  pointer-events: none;
-}
-
-.section--grid > .container {
-  position: relative;
-  z-index: 1;
-}
+/* --- Lo Studio ----------------------------------------------------------------- */
 
 .studio-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
-  gap: clamp(2.5rem, 8vw, 8rem);
-  align-items: start;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: clamp(2.5rem, 6vw, 5.5rem);
 }
 
-/* Colonna verticale delle discipline: fissa mentre il testo scorre. */
 .studio__rail {
+  align-self: start;
   position: sticky;
-  top: 110px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
+  top: calc(var(--header-h) + 2rem);
 }
 
 .rail-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--c-ink);
+  margin-top: 1.1rem;
+  border-top: 1px solid var(--line);
 }
 
 .rail-list li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr) 1.125rem;
-  gap: var(--s-3);
-  padding: var(--s-4) 0 var(--s-4) var(--s-3);
-  border-bottom: 1px solid var(--c-line);
-  font-size: var(--fs-sm);
-  color: var(--c-body);
-}
-
-/* Il segno che si accende: una barra blu a sinistra della voce. */
-.rail-list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: -1px;
-  width: 2px;
-  background: var(--c-accent);
-  transform: scaleY(0);
-  transform-origin: top;
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
 }
 
 .rail-list__num {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
-  padding-top: 2px;
 }
 
 .studio__main {
   display: flex;
   flex-direction: column;
-  gap: var(--s-7);
+  gap: 2rem;
 }
 
 .studio__intro {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-  text-wrap: balance;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 2.8vw, 2.125rem);
+  font-weight: 360;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  max-width: 28ch;
 }
 
 .studio__bio {
-  max-width: 64ch;
-}
-
-/* --- Scheda tecnica --- */
-.datasheet {
-  border: 1px solid var(--c-ink);
-  background: var(--c-surface);
-}
-
-.datasheet__head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  border-bottom: 1px solid var(--c-ink);
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
-.datasheet__ref {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-ink);
-}
-
-.datasheet__rows {
-  margin: 0;
+.datasheet {
+  border-top: 1px solid var(--line-strong);
 }
 
 .datasheet__row {
   display: grid;
-  grid-template-columns: 3rem minmax(0, 0.8fr) minmax(0, 1.2fr);
-  align-items: baseline;
-  gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  border-bottom: 1px solid var(--c-line);
-}
-
-.datasheet__row:last-child {
-  border-bottom: 0;
-}
-
-.datasheet__num {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-muted);
-  font-variant-numeric: tabular-nums;
+  grid-template-columns: minmax(7rem, 10rem) 1fr;
+  gap: 1.5rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .datasheet__row dt {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-muted);
+  align-self: baseline;
 }
 
 .datasheet__row dd {
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--c-ink);
+  font-size: 0.9375rem;
 }
 
-/* --- Firma --- */
-.signature {
-  display: flex;
-  align-items: center;
-  gap: var(--s-4);
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--c-ink);
+.studio-photo {
+  margin-top: clamp(3.5rem, 8vw, 6rem);
 }
 
-.signature__logo {
-  width: 56px;
-  height: 56px;
-  flex: none;
-  color: var(--c-ink);
+.studio-photo img {
+  width: 100%;
+  filter: grayscale(1);
 }
 
-.signature__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.signature__name {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 300;
-  font-size: var(--fs-xl);
-  line-height: 1.1;
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-/* --------------------------------------------------------------------------
-   11. Territorio
-   -------------------------------------------------------------------------- */
-
-.terr {
-  position: relative;
-}
-
-/* La fotografia sta a tutto schermo, ferma. */
-.terr__photo {
-  position: relative;
-  margin: 0;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  overflow: hidden;
-  background: var(--c-surface-2);
-}
-
-.terr__photo img {
-  aspect-ratio: 21 / 9;
-  object-fit: cover;
-  object-position: center 70%;
-}
-
-/* Un anello che pulsa piano attorno alla sede, sulla carta e nella nuvola. */
-@keyframes ping {
-  0% {
-    transform: scale(0.7);
-    opacity: 0.6;
-  }
-  70%,
-  100% {
-    transform: scale(1.3);
-    opacity: 0;
-  }
-}
-
-/* --- Cartografia ---
-   Una lastra d'acciaio spazzolato con quattro viti, come la targa; dentro,
-   incassato, lo schermo di un radar blu: reticolo, raggi dalla sede, fiume
-   e laghi, comuni, rosa dei venti, tutto tracciato in luce. Dalla sede
-   gira il fascio (RadarSweep in App.jsx) e i comuni si accendono al suo
-   passaggio (motion.css). Su schermo stretto la carta scorre in
-   orizzontale invece di rimpicciolirsi fino all'illeggibile. */
-.terr__map,
-.map {
-  /* Vite a testa tonda, lucidata, come quelle della targa. */
-  --screw: radial-gradient(
-    circle at 42% 38%,
-    #ffffff 0 0.8px,
-    #d8dce1 1.8px,
-    #8c9199 4px,
-    #50555d 5.2px,
-    rgba(0, 0, 0, 0.35) 5.8px,
-    transparent 6.4px
-  );
-  --plate: url('/images/metallo/acciaio.webp') center / cover, linear-gradient(180deg, #eceef1, #b8bdc4);
-  --plate-edge:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(0, 0, 0, 0.35);
-}
-
-.terr__map {
-  position: relative;
-  margin-top: clamp(3.5rem, 7vw, 6rem);
-  padding: clamp(10px, 1.6vw, 18px) clamp(14px, 2.2vw, 26px) clamp(14px, 2.2vw, 26px);
-  border-radius: 10px;
-  background: var(--plate);
-  box-shadow:
-    var(--plate-edge),
-    0 30px 60px -30px rgba(14, 22, 48, 0.55);
-}
-
-/* Le quattro viti agli angoli della lastra. */
-.terr__map::before,
-.map::before {
-  content: '';
-  position: absolute;
-  inset: 5px;
-  z-index: 2;
-  background:
-    var(--screw) left top / 13px 13px no-repeat,
-    var(--screw) right top / 13px 13px no-repeat,
-    var(--screw) left bottom / 13px 13px no-repeat,
-    var(--screw) right bottom / 13px 13px no-repeat;
-  pointer-events: none;
-}
-
-/* L'intestazione è incisa nell'acciaio: scura, con il filo di luce sotto. */
-.terr__map-head {
+.studio-photo__caption {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.5rem 2.5rem;
   align-items: baseline;
-  gap: var(--s-2) var(--s-4);
-  padding: var(--s-2) var(--s-3) var(--s-3);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.terr__map-head .label {
-  color: #394049;
-}
-
-.terr__map-title {
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  letter-spacing: var(--ls-tight);
-  color: #13161c;
-}
-
-.terr__map-note {
-  margin-left: auto;
-  font-size: var(--fs-label);
-  color: #474d56;
-}
-
-/* Lo schermo, incassato nella lastra. */
-.terr__map-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-radius: 6px;
-  background: #040a1d;
-  box-shadow:
-    0 0 0 1px #000000,
-    0 1px 0 1px rgba(255, 255, 255, 0.7);
-}
-
-.terr__map-hint {
-  display: none;
-  align-items: center;
-  gap: var(--s-2);
-  margin: 0;
-  padding: var(--s-3) var(--s-3) 0;
-  font-size: var(--fs-label);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: #394049;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.terr__map-hint svg {
-  width: 18px;
-  height: 18px;
-}
-
-@media (max-width: 900px) {
-  .terr__map-hint {
-    display: flex;
-  }
-}
-
-/* La carta è disegnata in luce blu su vetro scuro. */
-.chart {
-  --r-line: rgba(125, 150, 255, 0.16);
-  --r-ink: #a9bbff;
-  --r-text: #cfd9ff;
-  --r-muted: #7c90cc;
-  --r-glass: #050b1e;
-  display: block;
-  width: 100%;
-  min-width: 860px;
-  height: auto;
-  font-family: var(--font-body);
-  background: url('/images/metallo/blu.webp') center / cover, #040a1d;
-}
-
-.chart__bg {
-  fill: url(#screen);
-}
-
-.chart__scan {
-  fill: url(#scan);
-  pointer-events: none;
-}
-
-.chart__grid line {
-  stroke: var(--r-line);
-  stroke-width: 1;
-}
-
-.chart__grid-labels text {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  fill: var(--r-muted);
-}
-
-.chart__rings circle {
-  fill: none;
-  stroke: #7f98ff;
-  stroke-width: 1;
-  stroke-dasharray: 4 5;
-  opacity: 0.65;
-}
-
-.chart__rings text {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  fill: #9fb2ff;
-}
-
-.chart__hatch {
-  stroke: #6f8cff;
-  stroke-width: 0.8;
-  opacity: 0.4;
-}
-
-.chart__water {
-  stroke: #8aa2ff;
-  stroke-width: 0.6;
-  opacity: 0.6;
-}
-
-.chart__park {
-  fill: none;
-  stroke: rgba(77, 108, 250, 0.16);
-  stroke-width: 34;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.chart__park-hatch {
-  fill: url(#hatch);
-  stroke: url(#hatch);
-  stroke-width: 34;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.chart__lake {
-  fill: url(#water);
-  stroke: #9fb4ff;
-  stroke-width: 1.2;
-  stroke-linejoin: round;
-}
-
-.chart__river-casing {
-  fill: none;
-  stroke: #061032;
-  stroke-width: 6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.chart__river {
-  fill: none;
-  stroke: #c3d0ff;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(110, 140, 255, 0.9));
-}
-
-.chart__toponym {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 13px;
-  fill: #9db0f5;
-}
-
-.chart__toponym--small {
-  font-size: 11px;
-}
-
-.chart__town {
-  fill: #0a1433;
-  stroke: var(--r-ink);
-  stroke-width: 1.2;
-}
-
-/* Le etichette hanno un bordo del colore del vetro: restano leggibili
-   dove incrociano reticolo, raggi o fiume. */
-.chart__label,
-.chart__grid-labels text,
-.chart__rings text,
-.chart__toponym {
-  paint-order: stroke;
-  stroke: var(--r-glass);
-  stroke-width: 3px;
-  stroke-linejoin: round;
-}
-
-.chart__label {
-  font-size: 11px;
-  fill: var(--r-text);
-}
-
-.chart__label--capital {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  fill: #ffffff;
-}
-
-.chart__capital-ring {
-  fill: none;
-  stroke: #c9d4ff;
-  stroke-width: 1.2;
-}
-
-.chart__capital-dot {
-  fill: #ffffff;
-}
-
-/* La sede è il centro del radar: il punto più luminoso della carta. */
-.chart__halo {
-  fill: none;
-  stroke: #9fb2ff;
-  stroke-width: 1;
-  opacity: 0.7;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: ping 3s var(--ease) infinite;
-}
-
-.chart__d {
-  fill: #ffffff;
-  stroke: #ffffff;
-  stroke-width: 1.5;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(150, 175, 255, 1)) drop-shadow(0 0 9px rgba(77, 108, 250, 0.9));
-}
-
-.chart__leader {
-  fill: none;
-  stroke: #9fb2ff;
-  stroke-width: 1;
-}
-
-.chart__callout {
-  fill: rgba(5, 12, 34, 0.88);
-  stroke: #7f98ff;
-  stroke-width: 1;
-}
-
-.chart__callout-label {
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  fill: #8ea3e6;
-}
-
-.chart__callout-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  fill: #ffffff;
-}
-
-.chart__callout-coords {
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  fill: #b8c6ff;
-}
-
-.chart__scale-block {
-  fill: #9fb2ff;
-  stroke: #9fb2ff;
-  stroke-width: 1;
-}
-
-.chart__scale-block--alt {
-  fill: #071030;
-}
-
-.chart__scale text {
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  fill: #b3c2f7;
-}
-
-/* Il radar: la croce sulla sede, il fascio con la sua scia, i comuni che
-   si accendono. Il fascio si somma alla luce della carta (screen). */
-.radar__cross line {
-  stroke: rgba(140, 165, 255, 0.26);
-  stroke-width: 1;
-  stroke-dasharray: 2 6;
-}
-
-.radar {
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.radar__spin {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.radar__trail {
-  fill: #5877ff;
-  opacity: 0.026;
-}
-
-.radar__beam {
-  stroke: #d6dfff;
-  stroke-width: 1.5;
-  filter: drop-shadow(0 0 4px #6f8cff);
-}
-
-.radar__blip {
-  fill: #b7c6ff;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  filter: blur(1px);
-  pointer-events: none;
-}
-
-/* Rosa dei venti */
-.rose__disc {
-  fill: rgba(4, 10, 29, 0.85);
-  stroke: none;
-}
-
-.rose__ring {
-  fill: none;
-  stroke: #9fb2ff;
-  stroke-width: 1;
-}
-
-.rose__ring--inner {
-  stroke-width: 0.6;
-  opacity: 0.7;
-}
-
-.rose__tick {
-  stroke: #9fb2ff;
-  stroke-width: 0.7;
-  opacity: 0.7;
-}
-
-.rose__tick--major {
-  stroke-width: 1.2;
-  opacity: 1;
-}
-
-.rose__half {
-  fill: #071030;
-  stroke: #9fb2ff;
-  stroke-width: 0.8;
-  stroke-linejoin: round;
-}
-
-.rose__half--ink {
-  fill: #9fb2ff;
-}
-
-.rose__hub {
-  fill: #071030;
-  stroke: #cfd9ff;
-  stroke-width: 1;
-}
-
-.rose__label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  fill: #d9e1ff;
-  paint-order: stroke;
-  stroke: var(--r-glass);
-  stroke-width: 3px;
-  stroke-linejoin: round;
-}
-
-.rose__label--n {
-  font-size: 12px;
-  font-weight: 700;
-  fill: #ffffff;
-}
-
-/* --- Area di riferimento ---
-   Il testo a sinistra, la nuvola a destra: un quadrato con la sede al
-   centro. Punti, cerchi e raggi sono in SVG; i nomi sono testo vero messo
-   sopra in percentuale, così restano nitidi e leggibili a ogni larghezza. */
-/* --- Area di riferimento: la nuvola di punti nel vuoto ---
-   Un nastro nero da bordo a bordo, come la fotografia in testa alla
-   sezione. Dentro, l'esplosione in tre dimensioni (nuvola.js, WebGL): la
-   sede al centro, tutti i comuni e le frazioni della provincia che se ne
-   allontanano come ammassi di punti, gli anelli dei chilometri sul piano.
-   Il testo sta in alto, sopra il vuoto; la nuvola prende lo spazio che
-   resta. I nomi e i numeri degli anelli sono elementi che il motore sposta
-   sulla proiezione dei punti e accende quando ci si avvicina. */
-.reach {
-  position: relative;
-  width: 100vw;
-  height: clamp(580px, 86vh, 880px);
-  margin-top: clamp(4rem, 8vw, 7rem);
-  margin-left: calc(50% - 50vw);
-  overflow: hidden;
-  isolation: isolate;
-  color: var(--c-dark-fg);
-  cursor: crosshair;
-  touch-action: pan-y;
-  user-select: none;
-  /* Il vuoto: nero, con un respiro di blu dove sta la sede. */
-  background:
-    radial-gradient(42% 60% at 18% 66%, rgba(77, 108, 250, 0.16), transparent 70%),
-    radial-gradient(70% 55% at 55% 50%, rgba(10, 14, 30, 0.9), transparent 100%),
-    #000;
-}
-
-.reach__canvas {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* Il testo, allineato al contenitore della pagina. Su schermo largo sta
-   in colonna a sinistra, a mezza altezza, e l'esplosione prende tutta
-   l'altezza alla sua destra (il limite di 900px è lo stesso di nuvola.js);
-   su quello stretto sta in alto e la nuvola sotto. */
-.reach__copy {
-  position: absolute;
-  top: clamp(2rem, 5vh, 3.5rem);
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-
-.reach__col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  max-width: 24rem;
-}
-
-@media (min-width: 901px) {
-  .reach__copy {
-    top: 50%;
-    translate: 0 -50%;
-  }
-
-  .reach__hint-text {
-    max-width: 24rem;
-  }
-}
-
-.reach__copy .label {
-  color: var(--c-dark-fg-muted);
-}
-
-.reach__title {
-  margin: 0;
-  max-width: 22ch;
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 400;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-dark-fg-strong);
-  text-wrap: balance;
-}
-
-.reach__body {
-  margin: 0;
-  max-width: 36rem;
-  font-size: var(--fs-base);
-  line-height: var(--lh-body);
-  color: var(--c-dark-fg);
-}
-
-.reach__labels {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-/* Ogni nome è un punto senza dimensioni: il motore lo porta sul centro
-   con translate3d; il segno ci sta sopra, il testo accanto. */
-.reach__place {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.reach__mark {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 9px;
-  height: 9px;
-  translate: -50% -50%;
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
-}
-
-.reach__place--citta .reach__mark {
-  width: 13px;
-  height: 13px;
-  background: radial-gradient(circle, #fff 0 2.4px, rgba(255, 255, 255, 0.1) 3px);
-}
-
-/* Una targhetta scura sotto il nome: i punti bianchi dell'ammasso gli
-   passano dietro senza confonderlo. */
-.reach__text {
-  position: absolute;
-  top: 0;
-  left: 13px;
-  translate: 0 -50%;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  width: max-content;
-  padding: 3px 8px 4px;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.62);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
-  text-shadow:
-    0 0 3px #000,
-    0 0 8px #000;
-}
-
-.reach__place--left .reach__text {
-  left: auto;
-  right: 13px;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.reach__name {
-  font-family: var(--font-display);
-  font-size: clamp(0.85rem, 0.75rem + 0.3vw, 1.05rem);
-  line-height: 1.15;
-  letter-spacing: var(--ls-tight);
-  color: #fff;
-  white-space: nowrap;
-}
-
-.reach__place--citta .reach__text {
-  left: 18px;
-}
-
-.reach__place--citta.reach__place--left .reach__text {
-  left: auto;
-  right: 18px;
-}
-
-.reach__place--citta .reach__name {
-  font-size: clamp(1rem, 0.85rem + 0.55vw, 1.4rem);
-  font-weight: 500;
-}
-
-.reach__km {
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-dark-fg-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* La sede: sempre accesa, la D blu con l'anello che pulsa. */
-.reach__place--home {
-  opacity: 1;
-  transition: opacity 600ms var(--ease-out);
-}
-
-/* Il nome della sede sta sotto la D, centrato: a destra ci sono i vicini. */
-.reach__place--home .reach__text {
-  left: 0;
-  top: 20px;
-  translate: -50% 0;
-  align-items: center;
-  text-align: center;
-  transition: opacity 300ms var(--ease);
-}
-
-.reach__place--home .reach__name {
-  font-size: clamp(0.95rem, 0.8rem + 0.5vw, 1.25rem);
-  font-weight: 500;
-}
-
-.reach__place--home .reach__km {
-  color: #8da3ff;
-}
-
-.reach__pin {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  translate: -50% -50%;
-  border-radius: 50%;
-  background: #000;
-  box-shadow:
-    0 0 0 1px var(--c-accent),
-    0 0 22px rgba(77, 108, 250, 0.55);
-  color: #8da3ff;
-}
-
-.reach__pin .dmark {
-  width: 12px;
-  height: 12px;
-}
-
-.reach__pin::after {
-  content: '';
-  position: absolute;
-  inset: -7px;
-  border: 1px solid var(--c-accent);
-  border-radius: 50%;
-  opacity: 0;
-  animation: ping 3s var(--ease) infinite;
-}
-
-/* I numeri degli anelli: in fila sul piano, a destra del centro, come una
-   scala grafica. */
-.reach__tick {
-  position: absolute;
-  left: 0;
-  top: 0;
-  translate: 6px -50%;
-  opacity: 0;
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-dark-fg-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  transition: opacity 700ms var(--ease-out);
-  will-change: transform;
-}
-
-/* La didascalia, in basso. */
-.reach__hint {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: clamp(1rem, 3vh, 2rem);
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  margin-block: 0;
-  font-size: var(--fs-sm);
-  line-height: 1.4;
-  color: var(--c-dark-fg-muted);
-  pointer-events: none;
-}
-
-.reach__hint-dot {
-  flex: none;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-}
-
-/* L'elenco dei comuni: solo per chi legge con uno screen reader (e per
-   chi non ha JavaScript: vedi sotto). */
-.reach__elenco {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-/* Senza JavaScript la nuvola non c'è: resta il testo e l'elenco. */
-html:not(.js) .reach {
-  height: auto;
-  padding-bottom: var(--s-7);
-}
-
-html:not(.js) .reach__copy {
-  position: static;
-  padding-top: var(--s-7);
-}
-
-html:not(.js) .reach__labels,
-html:not(.js) .reach__hint {
-  display: none;
-}
-
-html:not(.js) .reach__elenco {
-  position: static;
-  width: auto;
-  height: auto;
-  margin-top: var(--s-6);
-  padding-inline: var(--gutter);
-  clip-path: none;
-  white-space: normal;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-5);
-  list-style: none;
-  font-size: var(--fs-sm);
-}
-
-@media (max-width: 720px) {
-  .reach {
-    height: clamp(620px, 96svh, 820px);
-  }
-
-  .reach__title {
-    font-size: var(--fs-lg);
-  }
-
-  .reach__body {
-    font-size: var(--fs-sm);
-    line-height: 1.6;
-  }
-
-  .reach__hint {
-    font-size: 0.75rem;
-  }
-
-  /* La D blu dice già che è lo studio: la seconda riga toccherebbe i vicini. */
-  .reach__place--home .reach__km {
-    display: none;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   12. Metodo
-   -------------------------------------------------------------------------- */
-
-.method {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(2rem, 4vw, 4rem);
-}
-
-.method__step {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  padding-top: var(--s-5);
-}
-
-.method__step::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--c-ink);
-  transform-origin: left;
-}
-
-/* Il punto d'inizio di ogni fase; filo e punto si tracciano in sequenza
-   quando l'elenco entra in vista (motion.css). */
-.method__step::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  left: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--c-ink);
-}
-
-.method__head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--s-3);
-}
-
-.method__emblem {
-  width: 4.5rem;
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .method__step:hover .method__emblem img {
-    transform: translateY(-4px) rotate(-2deg);
-  }
-}
-
-.method__num {
-  font-family: var(--font-display);
-  font-size: var(--fs-xl);
-  font-weight: 300;
-  line-height: 1;
-  color: var(--c-ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.method__title {
-  margin: 0;
-  font-size: var(--fs-md);
-  font-weight: 600;
-  letter-spacing: var(--ls-tight);
-  color: var(--c-ink);
-}
-
-.method__text {
-  margin: 0;
-  font-size: var(--fs-sm);
-  line-height: var(--lh-body);
-  color: var(--c-body);
-}
-
-/* --------------------------------------------------------------------------
-   13. Contatti — il blocco nero
-   -------------------------------------------------------------------------- */
-
-.contact {
-  --bg: var(--c-dark-bg);
-  background: var(--c-dark-bg);
-  color: var(--c-dark-fg);
-}
-
-.contact .headline {
-  color: var(--c-dark-fg-strong);
-}
-
-.contact .lead,
-.contact .body-text {
-  color: var(--c-dark-fg);
-}
-
-.contact .section-head::before {
-  background: var(--c-dark-fg-strong);
-}
-
-.contact .section-head__index {
-  border-color: var(--c-dark-fg-strong);
-  color: var(--c-dark-fg-strong);
-}
-
-.contact .label {
-  color: var(--c-dark-fg-muted);
-}
-
-.contact-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: clamp(3rem, 7vw, 7rem);
-  align-items: stretch;
-}
-
-.contact-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-top: 1px solid var(--c-dark-line);
-}
-
-.contact-item {
-  border-bottom: 1px solid var(--c-dark-line);
-}
-
-.contact-item__link {
-  display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
-  gap: var(--s-5);
-  padding: var(--s-6) 0;
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Sul nero il tasto blu si stacca da solo; al passaggio i LED si accendono. */
-.contact-item__icon {
-  --key-h: 50px;
-}
-
-.contact-item__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-  min-width: 0;
-}
-
-.contact-item__value {
-  font-family: var(--font-display);
-  font-size: var(--fs-lg);
-  font-weight: 400;
-  line-height: var(--lh-snug);
-  letter-spacing: var(--ls-tight);
-  color: var(--c-dark-fg-strong);
-  overflow-wrap: anywhere;
-}
-
-.contact-item__note {
-  font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
-  color: var(--c-dark-fg-muted);
-}
-
-.contact-item__link:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 4px;
-}
-
-.contact__map-col {
-  display: flex;
-  flex-direction: column;
-}
-
-/* La carta di dettaglio: la stessa lastra d'acciaio con le viti della
-   cartografia, e dentro uno schermo radar. La mappa di OpenStreetMap è
-   virata in blu notte con i filtri (negativo, poi tinta); sopra girano
-   gli anelli e il fascio del radar, centrati sulla sede. */
-.map {
-  position: relative;
-  display: block;
-  flex: 1;
-  min-height: 360px;
-  border-radius: 10px;
-  background: var(--plate);
-  box-shadow:
-    var(--plate-edge),
-    0 30px 60px -30px rgba(0, 0, 0, 0.9);
-  transition: box-shadow var(--dur) var(--ease);
-}
-
-.map__screen {
-  position: absolute;
-  inset: 16px;
-  overflow: hidden;
-  border-radius: 6px;
-  background: #040a1d;
-  box-shadow:
-    0 0 0 1px #000000,
-    0 1px 0 1px rgba(255, 255, 255, 0.7);
-}
-
-.map__crop {
-  position: absolute;
-  top: -44px;
-  right: -52px;
-  bottom: -56px;
-  left: -52px;
-  display: block;
-  overflow: hidden;
-}
-
-.map__frame {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  pointer-events: none;
-  filter: grayscale(1) invert(1) contrast(1.3) brightness(0.72) sepia(1) hue-rotate(185deg) saturate(3.2);
-  transition: filter var(--dur) var(--ease);
-}
-
-/* Anelli ogni 60 px e croce di riferimento; il fascio è il ::after. */
-.map__radar {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 170%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  translate: -50% -50%;
-  background:
-    linear-gradient(rgba(150, 175, 255, 0.3), rgba(150, 175, 255, 0.3)) center / 1px 100% no-repeat,
-    linear-gradient(rgba(150, 175, 255, 0.3), rgba(150, 175, 255, 0.3)) center / 100% 1px no-repeat,
-    repeating-radial-gradient(circle at center, transparent 0 59px, rgba(150, 175, 255, 0.34) 59px 60px);
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-.map__radar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg 300deg,
-    rgba(77, 108, 250, 0.06) 300deg,
-    rgba(110, 140, 255, 0.5) 358deg,
-    rgba(225, 233, 255, 0.95) 359.6deg,
-    transparent 360deg
-  );
-}
-
-.map__pin {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  transform: translate(-50%, -100%);
-  border-radius: 50%;
-  background: var(--c-accent);
-  color: var(--c-accent-ink);
-  box-shadow:
-    0 0 0 2px rgba(225, 233, 255, 0.9),
-    0 0 18px 4px rgba(77, 108, 250, 0.8);
-}
-
-.map__pin .dmark {
-  width: 16px;
-  height: 16px;
-}
-
-.map__cta {
-  position: absolute;
-  left: var(--s-4);
-  bottom: var(--s-4);
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-2) var(--s-3);
-  border: 1px solid rgba(150, 175, 255, 0.55);
-  border-radius: 4px;
-  background: rgba(5, 12, 34, 0.85);
-  color: #dfe6ff;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  text-shadow: 0 0 6px rgba(77, 108, 250, 0.9);
-}
-
-.map__cta svg {
-  width: 15px;
-  height: 15px;
-}
-
-.map:hover {
-  box-shadow:
-    var(--plate-edge),
-    0 0 0 1px rgba(150, 175, 255, 0.35),
-    0 30px 60px -30px rgba(0, 0, 0, 0.9);
-}
-
-.map:hover .map__frame {
-  filter: grayscale(1) invert(1) contrast(1.3) brightness(0.85) sepia(1) hue-rotate(185deg) saturate(3.2);
-}
-
-.map:focus-visible {
-  outline: 2px solid var(--c-accent);
-  outline-offset: 3px;
-}
-
-.map__note {
-  margin: var(--s-3) 0 0;
-  font-size: var(--fs-label);
-  line-height: 1.6;
-  color: var(--c-dark-fg-muted);
-}
-
-.map__note a {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.map__note a:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-/* --------------------------------------------------------------------------
-   14. Footer — testata di tavola
-   -------------------------------------------------------------------------- */
-
-/* Una lastra d'acciaio brunito (--metal-blued) sotto il blocco nero dei
-   contatti: lo spigolo in alto prende un filo di luce azzurra. */
-.footer {
-  background: var(--metal-blued);
-  color: var(--c-dark-fg);
-  box-shadow:
-    inset 0 1px 0 rgba(190, 205, 255, 0.28),
-    inset 0 2px 0 rgba(0, 0, 0, 0.55);
-  padding-block: clamp(4rem, 8vw, 7rem);
-}
-
-/* --- Display a segmenti ---
-   Display alfanumerici dietro un vetro scuro (LedDisplay.jsx). I segmenti
-   spenti restano visibili in blu notte, quelli accesi prendono luce in
-   Electric Sapphire. Due misure con lo stesso vetro:
-     · l'insegna del footer (.led--sign), in una cornice di canna di
-       fucile, dove i segmenti si accendono uno alla volta: ognuno ha il
-       suo numero d'ordine --n, il display quanti ne sono accesi in --lit
-       (senza JavaScript il nome è acceso per intero);
-     · il display piccolo del visualizzatore (.led--readout), dove i
-       segmenti del testo portano la classe is-lit. */
-.led {
-  --lit: 999;
-  position: relative;
-  border-radius: 6px;
-  background:
-    radial-gradient(120% 140% at 50% 0%, #0a1026 0%, #03050c 55%, #000000 100%);
-}
-
-/* Il riflesso del vetro. */
-.led::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(172deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 38%);
-  pointer-events: none;
-}
-
-/* L'insegna: la cornice in canna di fucile e l'alone blu che scende sotto. */
-.led--sign {
-  margin-bottom: clamp(3rem, 6vw, 5rem);
-  padding: clamp(0.9rem, 2.6vw, 2rem) clamp(1rem, 3.2vw, 2.5rem);
-  box-shadow:
-    inset 0 2px 14px rgba(0, 0, 0, 0.95),
-    inset 0 0 0 1px rgba(77, 108, 250, 0.1),
-    0 0 0 5px #17181b,
-    0 0 0 6px rgba(255, 255, 255, 0.1),
-    0 18px 40px -18px rgba(77, 108, 250, 0.35);
-}
-
-.led__glass {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-.led__off {
-  fill: #0e1838;
-}
-
-.led__on {
-  fill: #86a0ff;
-  filter: drop-shadow(0 0 1.5px rgba(150, 175, 255, 0.9)) drop-shadow(0 0 7px rgba(77, 108, 250, 0.75));
-}
-
-.led__on :is(polygon, circle) {
-  opacity: clamp(0, calc(var(--lit) - var(--n)), 1);
-  transition: opacity 140ms var(--ease);
-}
-
-/* Il display piccolo: una finestra di vetro incassata nel pannello, con le
-   cifre alte --led-h. I segmenti spenti sono a opacità zero e si accendono
-   in un attimo, come i LED veri. Gli aloni sono in unità del disegno, così
-   restano in proporzione alle cifre. */
-.led--readout {
-  --led-h: 24px;
-  display: grid;
-  place-items: center;
-  padding: 0 8px;
-  border-radius: 4px;
-  box-shadow:
-    inset 0 1px 4px rgba(0, 0, 0, 0.95),
-    inset 0 0 0 1px rgba(77, 108, 250, 0.14),
-    0 1px 0 rgba(255, 255, 255, 0.14);
-  transition: box-shadow var(--dur) var(--ease);
-}
-
-.led--readout .led__glass {
-  width: auto;
-  height: var(--led-h);
-}
-
-.led--readout .led__on {
-  filter: drop-shadow(0 0 2px rgba(150, 175, 255, 0.9)) drop-shadow(0 0 9px rgba(77, 108, 250, 0.7));
-  transition: fill var(--dur) var(--ease);
-}
-
-.led--readout .led__on :is(polygon, circle) {
-  opacity: 0;
-  transition: opacity 120ms var(--ease);
-}
-
-.led--readout .led__on .is-lit {
-  opacity: 1;
-}
-
-.titleblock {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 0.8fr;
-  border: 1px solid var(--c-dark-line);
-}
-
-.tb {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  min-width: 0;
-  padding: var(--s-5);
-  border-right: 1px solid var(--c-dark-line);
-  border-bottom: 1px solid var(--c-dark-line);
-  font-size: var(--fs-sm);
-  line-height: 1.55;
-}
-
-.tb:nth-child(4n) {
-  border-right: 0;
-}
-
-.tb--brand {
-  gap: var(--s-5);
-}
-
-.tb--meta {
-  grid-column: span 4;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--s-4);
-  border-bottom: 0;
-  border-right: 0;
-}
-
-.tb--meta > div {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-1);
-  min-width: 0;
-}
-
-.tb__label {
-  display: block;
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-dark-fg-muted);
-}
-
-.tb__value {
-  color: var(--c-dark-fg);
-}
-
-.tb__logo {
-  width: 64px;
-  height: 64px;
-  color: var(--c-dark-fg-strong);
-}
-
-.tb__brand-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tb__name {
-  font-size: var(--fs-md);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-dark-fg-strong);
-}
-
-.tb__role {
-  font-size: var(--fs-label);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--c-dark-fg-muted);
-}
-
-/* L'indirizzo composto come parte del marchio: righe maiuscole spaziate,
-   separate da filetti, come l'incisione sulla targa. */
-.address-mark {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  max-width: 260px;
-  border-top: 1px solid var(--c-dark-fg-strong);
-  border-bottom: 1px solid var(--c-dark-fg-strong);
-}
-
-.address-mark span {
-  padding: var(--s-2) 0;
-  border-bottom: 1px solid var(--c-dark-line);
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--c-dark-fg-strong);
-}
-
-.address-mark span:last-child {
-  border-bottom: 0;
-  color: var(--c-dark-fg-muted);
-}
-
-.tb__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: var(--s-2);
-}
-
-.tb__list a {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  color: var(--c-dark-fg);
-  transition: color var(--dur) var(--ease);
-}
-
-.tb__list a:hover,
-.tb__value a:hover {
-  color: var(--c-dark-fg-strong);
-}
-
-.tb__break {
-  overflow-wrap: anywhere;
-}
-
-.tb__ext {
-  display: inline-block;
-  width: 13px;
-  height: 13px;
-  margin-right: 6px;
-  vertical-align: -2px;
-}
-
-.tb__num {
-  font-size: var(--fs-label);
-  font-weight: 600;
-  letter-spacing: var(--ls-label);
-  color: var(--c-dark-fg-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.tb__value a {
-  color: var(--c-dark-fg-strong);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  text-decoration-color: var(--c-dark-line);
-}
-
-/* --------------------------------------------------------------------------
-   15. Filo di avanzamento della lettura
-   Il movimento del sito (ingressi, rivelazioni, effetti legati allo
-   scroll) sta tutto in motion.css. Qui restano i componenti fermi.
-   -------------------------------------------------------------------------- */
-
-.progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 70;
-  height: 2px;
-  background: var(--c-accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .emblem img,
-  .rail-list li::before {
-    transform: none;
-    transition: none;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   16. Breakpoint
-   -------------------------------------------------------------------------- */
-
-@media (max-width: 1400px) {
-  .header__phone {
-    display: none;
-  }
-}
-
-@media (max-width: 1240px) {
-  .nav {
-    gap: var(--s-4);
-  }
-}
-
-/* Con sei voci di menu il pulsante non ci sta più: resta la voce 06. */
-@media (max-width: 1180px) {
-  .header__cta {
-    display: none;
-  }
-}
-
-@media (max-width: 1024px) {
-  .method {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-6) var(--s-5);
-  }
-
-  .titleblock {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .tb:nth-child(4n) {
-    border-right: 1px solid var(--c-dark-line);
-  }
-
-  .tb:nth-child(2n) {
-    border-right: 0;
-  }
-
-  .tb--brand {
-    grid-column: span 2;
-    border-right: 0;
-  }
-
-  .tb--meta {
-    grid-column: span 2;
-  }
-
-  .tb--meta {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px) {
-  /* Su schermo stretto i segni a margine si diradano e si rimpiccioliscono:
-     restano ai bordi e non si mettono sotto ogni riga di testo. */
-  .margins__sym {
-    width: calc(var(--size) * 0.62);
-    height: calc(var(--size) * 0.62);
-  }
-
-  .margins__sym:nth-child(2n) {
-    display: none;
-  }
-
-  .nav,
-  .header__phone,
-  .header__cta {
-    display: none;
-  }
-
-  .menu-toggle {
-    display: grid;
-  }
-
-  .header__inner,
-  .header--scrolled .header__inner {
-    height: 68px;
-  }
-
-  .brand__mark,
-  .header--scrolled .brand__mark {
-    width: 36px;
-    height: 36px;
-  }
-
-  .section-head__body {
-    grid-template-columns: 1fr;
-  }
-
-  .section-head .lead {
-    max-width: 60ch;
-  }
-
-  .intro__grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    gap: var(--s-7);
-  }
-
-  .masthead__name {
-    font-size: clamp(2.5rem, 11.5vw, 4rem);
-    white-space: normal;
-    line-height: 0.95;
-  }
-
-  .manifesto {
-    font-size: clamp(2.25rem, 9vw, 3.25rem);
-  }
-
-  .intro__plate {
-    max-width: 560px;
-  }
-
-  .facts {
-    grid-template-columns: 1fr;
-    gap: 0;
-    padding-block: 0;
-  }
-
-  .facts__item {
-    padding-block: var(--s-4);
-    border-bottom: 1px solid var(--c-line);
-  }
-
-  .facts__item:not(:first-child) {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .service-block,
-  .service-block--flip {
-    grid-template-columns: 1fr;
-    gap: var(--s-5);
-  }
-
-  .service-block--flip .service-block__media {
-    grid-column: 1;
-  }
-
-  .project--lead,
-  .contact-grid {
-    grid-template-columns: 1fr;
-  }
-
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  max-width: 44rem;
+}
+
+@media (max-width: 860px) {
   .studio-layout {
     grid-template-columns: 1fr;
-    gap: var(--s-6);
   }
 
   .studio__rail {
     position: static;
   }
+}
 
-  .rail-list {
-    display: grid;
+/* --- Metodo ---------------------------------------------------------------------- */
+
+.method {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.75rem, 4vw, 3rem);
+  border-top: 1px solid var(--line-strong);
+  padding-top: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.method__num {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.method__title {
+  margin-top: 0.8rem;
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  font-weight: 400;
+}
+
+.method__text {
+  margin-top: 0.6rem;
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 860px) {
+  .method {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 var(--s-5);
-  }
-
-  .terr__photo img {
-    aspect-ratio: 4 / 3;
-  }
-
-  .map {
-    flex: none;
-    min-height: 0;
-    aspect-ratio: 16 / 10;
   }
 }
 
-@media (max-width: 640px) {
-  .project-grid,
-  .method,
-  .rail-list {
+@media (max-width: 560px) {
+  .method {
     grid-template-columns: 1fr;
   }
+}
 
-  .index-list {
-    columns: 1;
-  }
+/* --- Contatti --------------------------------------------------------------------- */
 
-  .datasheet__row {
-    grid-template-columns: 2.5rem minmax(0, 1fr);
-  }
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: start;
+}
 
-  .datasheet__row dd {
-    grid-column: 2;
-  }
+.contact-list {
+  display: flex;
+  flex-direction: column;
+}
 
-  .contact-item__link {
-    grid-template-columns: 56px minmax(0, 1fr);
-    gap: var(--s-3);
-  }
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--line);
+}
 
-  .contact-item__icon {
-    --key-h: 41px;
-  }
+.contact-item:first-child {
+  border-top: 1px solid var(--line-strong);
+}
 
-  .map {
-    aspect-ratio: 4 / 3;
-  }
+.contact-item__value {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+  line-height: 1.3;
+}
 
-  .titleblock {
+a.contact-item__value {
+  transition: opacity 0.2s ease;
+}
+
+a.contact-item__value:hover {
+  opacity: 0.65;
+}
+
+.contact-item__value--break {
+  overflow-wrap: anywhere;
+}
+
+.contact-item__note {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.map {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.map__frame {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 0;
+  /* La carta vira in bianco e nero: resta leggibile e non introduce
+     colori estranei alla pagina. */
+  filter: grayscale(1) contrast(1.04);
+}
+
+.map__links {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.map__credit {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.map__credit:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 860px) {
+  .contact-grid {
     grid-template-columns: 1fr;
   }
+}
 
-  .tb,
-  .tb:nth-child(4n),
-  .tb:nth-child(2n) {
-    border-right: 0;
+/* --- Footer ------------------------------------------------------------------------ */
+
+.footer {
+  background: var(--ink);
+  color: #efede8;
+  padding-block: clamp(3.5rem, 8vw, 6rem) 2.5rem;
+}
+
+.footer .label {
+  color: #908c83;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 3fr));
+  gap: clamp(2rem, 5vw, 4rem);
+  padding-bottom: clamp(2.5rem, 6vw, 4rem);
+  border-bottom: 1px solid #3a3833;
+}
+
+.footer__logo {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1.25rem;
+}
+
+.footer__logo .logo__ghost {
+  stroke: #57544d;
+}
+
+.footer__name {
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+}
+
+.footer__role {
+  margin-top: 0.3rem;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: #908c83;
+}
+
+.footer__address {
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #b9b5ad;
+}
+
+.footer__col ul {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  color: #b9b5ad;
+}
+
+.footer__col a {
+  transition: color 0.2s ease;
+}
+
+.footer__col a:hover {
+  color: #ffffff;
+}
+
+.footer__break {
+  overflow-wrap: anywhere;
+}
+
+.footer__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2.5rem;
+  padding-top: 1.75rem;
+  font-size: 0.8125rem;
+  color: #908c83;
+}
+
+.footer__meta a {
+  color: #d6d3cc;
+  border-bottom: 1px solid #57544d;
+  padding-bottom: 1px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.footer__meta a:hover {
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+@media (max-width: 860px) {
+  .footer__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .tb--brand,
-  .tb--meta {
-    grid-column: auto;
-  }
-
-  .tb--meta {
+@media (max-width: 560px) {
+  .footer__grid {
     grid-template-columns: 1fr;
   }
 }

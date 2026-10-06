@@ -2,14 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot, hydrateRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-// Lo sfondo va per ultimo: ridefinisce i fondi di App.css e motion.css.
-import './sfondo.css'
-import { avviaSfondo } from './sfondo.js'
 
 const container = document.getElementById('root')
-
-// La lastra dello sfondo segue lo scroll anche dove manca lo scroll-timeline.
-avviaSfondo()
 
 const app = (
   <StrictMode>
