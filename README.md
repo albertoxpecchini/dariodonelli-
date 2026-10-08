@@ -21,6 +21,8 @@ npm run lint      # oxlint
 - `src/content.js` — tutti i testi e i dati (recapiti, servizi, ambiti, albo)
 - `src/App.jsx` — componenti della pagina
 - `src/motion.js` — scorrimento morbido (Lenis) e rivelazioni allo scroll
+- `src/viewer/` — visualizzatore di DWG e PDF (solo consultazione: niente
+  barra degli strumenti, niente scaricamento); i file stanno in `public/tavole/`
 - `src/index.css` — token di design (colori, tipografia, spazio), font e base
 - `src/App.css` — stili dei componenti
 - `public/images/` — fotografie (jpg/png + webp)

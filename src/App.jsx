@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './App.css'
-import { scrollToTarget, setScrollLocked, useReveal, useSmoothScroll } from './motion.js'
+import { scrollToTarget, useReveal, useSmoothScroll } from './motion.js'
+import SheetViewer from './viewer/SheetViewer.jsx'
 import {
   ambiti,
   disciplines,
@@ -9,33 +10,34 @@ import {
   manifesto,
   mapEmbedSrc,
   method,
-  navItems,
   profile,
   projects,
   sections,
   serviceAreas,
   serviceIndex,
+  sheets,
   studio,
 } from './content.js'
 
 /* ---------------------------------------------------------------------------
    Marchio
-   Il marchio della targa, lo stesso di favicon e icona iOS: la "D" a
-   doppio profilo in nero sopra la sua costruzione geometrica in grigio,
-   il quadrato e il cerchio da cui la lettera nasce. Le misure sono state
-   rilevate dall'icona originale.
+   Il logo della targa ridisegnato in vettoriale: una "D" a doppio profilo,
+   in nero, sovrapposta alla sua immagine speculare in grigio.
    --------------------------------------------------------------------------- */
+
+const LOGO_OUTER = 'M64 64H520A456 456 0 0 1 520 976H64Z'
+const LOGO_INNER = 'M164 164H520A356 356 0 0 1 520 876H164Z'
 
 function Logo({ className = '', ...props }) {
   return (
     <svg viewBox="0 0 1040 1040" fill="none" aria-hidden="true" className={`logo ${className}`} {...props}>
-      <g className="logo__ghost" stroke="#9a968e" strokeWidth="40">
-        <rect x="185" y="150" width="715" height="710" />
-        <circle cx="430" cy="512" r="360" />
+      <g className="logo__ghost" stroke="#b9b5ae" strokeWidth="48" transform="matrix(-1 0 0 1 1040 0)">
+        <path d={LOGO_OUTER} />
+        <path d={LOGO_INNER} />
       </g>
-      <g stroke="currentColor" strokeWidth="40">
-        <path d="M137 124H537A388 388 0 0 1 537 900H137Z" />
-        <path d="M221 215H546A300 300 0 0 1 546 816H221Z" />
+      <g stroke="currentColor" strokeWidth="48">
+        <path d={LOGO_OUTER} />
+        <path d={LOGO_INNER} />
       </g>
     </svg>
   )
@@ -56,45 +58,6 @@ function useScrolled(threshold = 24) {
   return scrolled
 }
 
-/**
- * Scroll-spy: l'id della sezione che attraversa la linea di lettura, posta
- * poco sotto l'header. Alimenta la sottolineatura della navigazione.
- */
-function useScrollSpy(ids) {
-  const [active, setActive] = useState('')
-  useEffect(() => {
-    let frame = 0
-    const compute = () => {
-      frame = 0
-      const line = window.scrollY + 160
-      let current = ''
-      for (const id of ids) {
-        const el = document.getElementById(id)
-        if (!el) continue
-        if (el.getBoundingClientRect().top + window.scrollY <= line) current = id
-      }
-      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 2
-      if (atBottom) {
-        const last = ids.filter((id) => document.getElementById(id)).pop()
-        if (last) current = last
-      }
-      setActive(current)
-    }
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(compute)
-    }
-    compute()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll)
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-    }
-  }, [ids])
-  return active
-}
-
 function scrollToSection(id) {
   if (!document.getElementById(id)) return
   scrollToTarget(id)
@@ -113,8 +76,6 @@ function useAnchorNav() {
    Header
    --------------------------------------------------------------------------- */
 
-const sectionIds = sections.map((section) => section.id)
-
 function Brand() {
   return (
     <span className="brand__inner">
@@ -127,139 +88,28 @@ function Brand() {
   )
 }
 
-function Header({ active }) {
+/* Solo il marchio: niente voci né tasti, la pagina si legge scorrendo e
+   le sezioni sono comunque elencate nel footer. */
+function Header() {
   const scrolled = useScrolled()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const panelRef = useRef(null)
-  const toggleRef = useRef(null)
-  const wasOpen = useRef(false)
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
-    setScrollLocked(menuOpen)
-    // A menu aperto il resto della pagina si spegne: lo scrim ferma il
-    // puntatore, inert ferma il Tab e i lettori di schermo. Il focus entra
-    // nel pannello all'apertura e torna sul bottone alla chiusura.
-    const others = document.querySelectorAll('.header, .site-main, .footer')
-    others.forEach((el) => {
-      el.inert = menuOpen
-    })
-    if (menuOpen) {
-      panelRef.current?.querySelector('.mobile-panel__close')?.focus()
-    } else if (wasOpen.current) {
-      toggleRef.current?.focus()
-    }
-    wasOpen.current = menuOpen
-    return () => {
-      document.body.style.overflow = ''
-      setScrollLocked(false)
-      others.forEach((el) => {
-        el.inert = false
-      })
-    }
-  }, [menuOpen])
-
-  useEffect(() => {
-    if (!menuOpen) return
-    const onKey = (event) => {
-      if (event.key === 'Escape') setMenuOpen(false)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [menuOpen])
-
-  const go = useCallback((event, id) => {
-    event.preventDefault()
-    setMenuOpen(false)
-    // Si sblocca subito: riprendere lo scorrimento dopo, nell'effetto,
-    // interromperebbe il viaggio verso la sezione appena partito.
-    setScrollLocked(false)
-    scrollToSection(id)
-  }, [])
 
   return (
-    <>
-      <header className={scrolled ? 'header header--scrolled' : 'header'}>
-        <div className="container header__inner">
-          <a
-            href="#top"
-            className="brand"
-            aria-label={`${studio.name}, torna all'inizio`}
-            onClick={(e) => {
-              e.preventDefault()
-              scrollToTarget(0)
-              window.history.replaceState(null, '', ' ')
-            }}
-          >
-            <Brand />
-          </a>
-
-          <nav className="nav" aria-label="Navigazione principale">
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={active === item.id ? 'nav__link is-active' : 'nav__link'}
-                aria-current={active === item.id ? 'true' : undefined}
-                onClick={(e) => go(e, item.id)}
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="header__actions">
-            <a className="header__phone" href={studio.phoneHref}>
-              {studio.phoneDisplay}
-            </a>
-            <button
-              type="button"
-              className="menu-toggle"
-              ref={toggleRef}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-panel"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              {menuOpen ? 'Chiudi' : 'Menu'}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {menuOpen && <button type="button" className="scrim" aria-label="Chiudi il menu" onClick={() => setMenuOpen(false)} />}
-
-      <aside
-        id="mobile-panel"
-        ref={panelRef}
-        className={menuOpen ? 'mobile-panel is-open' : 'mobile-panel'}
-        aria-hidden={!menuOpen}
-        inert={!menuOpen}
-        data-lenis-prevent
-      >
-        <button type="button" className="mobile-panel__close" onClick={() => setMenuOpen(false)}>
-          Chiudi
-        </button>
-        <nav className="mobile-nav" aria-label="Navigazione mobile">
-          {navItems.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              className={active === item.id ? 'mobile-nav__link is-active' : 'mobile-nav__link'}
-              aria-current={active === item.id ? 'true' : undefined}
-              onClick={(e) => go(e, item.id)}
-            >
-              <span className="mobile-nav__num">{item.num}</span>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-
-        <div className="mobile-panel__foot">
-          <a href={studio.phoneHref}>{studio.phoneDisplay}</a>
-          <a href={studio.emailHref}>{studio.email}</a>
-        </div>
-      </aside>
-    </>
+    <header className={scrolled ? 'header header--scrolled' : 'header'}>
+      <div className="container header__inner">
+        <a
+          href="#top"
+          className="brand"
+          aria-label={`${studio.name}, torna all'inizio`}
+          onClick={(e) => {
+            e.preventDefault()
+            scrollToTarget(0)
+            window.history.replaceState(null, '', ' ')
+          }}
+        >
+          <Brand />
+        </a>
+      </div>
+    </header>
   )
 }
 
@@ -347,17 +197,9 @@ function Intro() {
                 </span>
               ))}
             </p>
-          </div>
-
-          <div className="intro__aside">
             <p className="lead intro__lead">
               Studio tecnico di ingegneria a Rivalta sul Mincio. Un unico riferimento dalla verifica
               di fattibilità alla chiusura del cantiere.
-            </p>
-            <p className="intro__plate">
-              {studio.plate.map((line) => (
-                <span key={line}>{line}</span>
-              ))}
             </p>
             <div className="intro__actions">
               <TextLink href="#contatti" onClick={onNav}>
@@ -368,6 +210,23 @@ function Intro() {
               </TextLink>
             </div>
           </div>
+
+          {/* La targa vera, quella all'ingresso dello studio: porta già
+              marchio, nome e le due righe di specializzazione. */}
+          <figure className="intro__plate">
+            <Photo
+              base="/images/hero-targa"
+              ext="png"
+              alt="La targa dello studio: Ing. Dario Donelli, ingegneria, architettura, ambiente, progettazione integrale e coordinata"
+              width="1489"
+              height="967"
+              eager
+            />
+            <figcaption className="intro__caption">
+              <span className="label">La targa dello studio</span>
+              <span>Via Filippo Turati 1, Rivalta sul Mincio</span>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -498,8 +357,32 @@ function AmbitiSection() {
             </article>
           ))}
         </div>
+
+        <Drawings />
       </div>
     </section>
+  )
+}
+
+/**
+ * Elaborati consultabili: DWG e PDF aperti direttamente nella pagina, da
+ * guardare e non da scaricare. Per ora due file di esempio (vedi `sheets`
+ * in content.js). Il visualizzatore non sta dentro un .reveal: il suo
+ * transform sposterebbe le misure dei gesti.
+ */
+function Drawings() {
+  return (
+    <div className="drawings">
+      <div className="drawings__head reveal">
+        <span className="label">Elaborati consultabili</span>
+        <h3 className="drawings__title">Disegni e documenti si aprono qui, senza programmi.</h3>
+        <p className="body-text">
+          Il DWG si legge così come esce da AutoCAD, il PDF così come è stampato: si ingrandisce fino
+          al dettaglio e ci si sposta sul foglio. I due file qui sotto sono esempi.
+        </p>
+      </div>
+      <SheetViewer sheets={sheets} label="Elaborati di esempio" />
+    </div>
   )
 }
 
@@ -663,9 +546,6 @@ function ContactSection() {
               <TextLink href={studio.mapsHref} target="_blank" rel="noreferrer">
                 Itinerario su Google Maps
               </TextLink>
-              <a className="map__credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-                © OpenStreetMap
-              </a>
             </p>
           </div>
         </div>
@@ -685,17 +565,17 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="container">
+        {/* Quattro colonne uguali, ognuna aperta dalla sua etichetta: le
+            righe partono tutte alla stessa altezza, e la riga in fondo
+            usa la stessa griglia, così le voci cadono sulle colonne. */}
         <div className="footer__grid">
-          <div className="footer__brand">
-            <Logo className="footer__logo" />
-            <p className="footer__name">{studio.name}</p>
-            <p className="footer__role">{studio.plate[0]}</p>
-            <p className="footer__address">
-              Via Filippo Turati 1<br />
-              46040 Rivalta sul Mincio
-              <br />
-              Mantova · Italia
-            </p>
+          <div className="footer__col">
+            <h2 className="label">Studio</h2>
+            <ul role="list">
+              <li className="footer__name">{studio.name}</li>
+              <li>Via Filippo Turati 1</li>
+              <li>46040 Rivalta sul Mincio (MN)</li>
+            </ul>
           </div>
 
           <div className="footer__col">
@@ -720,7 +600,7 @@ function Footer() {
           <div className="footer__col">
             <h2 className="label">Iscrizione</h2>
             <ul role="list">
-              <li>Ordine degli Ingegneri della Provincia di Mantova</li>
+              <li>Ordine degli Ingegneri di Mantova</li>
               <li>n. 1495 · dal 24 maggio 2010</li>
               <li>Settore a) civile e ambientale</li>
             </ul>
@@ -742,9 +622,9 @@ function Footer() {
 
         <div className="footer__meta">
           <span>
-            © {year} {studio.name}
+            © {year} <span className="footer__meta-name">{studio.name}</span>
           </span>
-          <span>Privacy e cookie policy in preparazione</span>
+          <span className="footer__meta-wide">Privacy e cookie policy in preparazione</span>
           <span>
             Sito{' '}
             <a href="https://www.albertopecchini.it" target="_blank" rel="noreferrer">
@@ -771,7 +651,6 @@ const legacyPaths = {
 function Layout() {
   useSmoothScroll()
   useReveal()
-  const active = useScrollSpy(sectionIds)
 
   useEffect(() => {
     const path = window.location.pathname.replace(/\/$/, '')
@@ -794,7 +673,7 @@ function Layout() {
         Salta al contenuto
       </a>
 
-      <Header active={active} />
+      <Header />
 
       <main className="site-main" id="contenuto">
         <Intro />

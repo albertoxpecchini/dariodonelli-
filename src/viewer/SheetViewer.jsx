@@ -1,16 +1,16 @@
 import { useEffect, useRef } from 'react'
-import { Key } from '../Key.jsx'
-import { LedReadout } from '../LedDisplay.jsx'
-import { Sym } from '../Sym.jsx'
 import './viewer.css'
 
 /* ---------------------------------------------------------------------------
    Visualizzatore delle tavole
-   L'elenco dei file, un piano con zoom e spostamento, la riga dati della
-   tavola e il file originale da scaricare. Il markup è completo anche nel
-   prerender: senza JavaScript resta un elenco di miniature che aprono il
-   file. Lo strumento vero (./viewer.js, con i lettori di DWG e PDF) si
-   scarica a parte, quando il visualizzatore sta per entrare nello schermo.
+   Il piano con zoom e spostamento, sotto la riga dati della tavola e
+   l'elenco dei file. Per scelta dello studio non c'è la barra degli
+   strumenti e i file non si scaricano: nessun collegamento all'originale,
+   le voci dell'elenco sono bottoni e il menu del tasto destro sul piano è
+   spento. Si ingrandisce con Ctrl + rotella, due dita o doppio clic; da
+   tastiera + e −, 0 per adattare, frecce per cambiare tavola.
+   Lo strumento vero (./viewer.js, con i lettori di DWG e PDF) si scarica
+   a parte, quando il visualizzatore sta per entrare nello schermo.
    --------------------------------------------------------------------------- */
 
 // Larghezza massima del foglio sullo schermo, in px CSS: DWG e PDF si
@@ -19,24 +19,20 @@ const MAX_DRAWN = 40000
 
 const kindOf = (s) => (s.dwg ? 'dwg' : s.src.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image')
 
-const fromLabel = { dwg: 'DWG originale', pdf: 'PDF originale' }
-
 const pad2 = (n) => String(n).padStart(2, '0')
 
-/** Riga dati: numero, scala, formato, file d'origine. */
-const metaOf = (s, i, total) => [`${s.tag || 'Tav.'} ${pad2(i + 1)} / ${pad2(total)}`, s.scale && `Scala ${s.scale}`, s.paper, fromLabel[kindOf(s)]].filter(Boolean)
-
-const fileLabelOf = (s) => `Scarica il ${kindOf(s) === 'image' ? 'file' : kindOf(s).toUpperCase()}`
-const fileNameOf = (s) => s.src.split('/').pop()
+/** Riga dati: numero, scala, formato, tipo di file. */
+const metaOf = (s, i, total) =>
+  [`${s.tag || 'Tav.'} ${pad2(i + 1)} / ${pad2(total)}`, s.scale && `Scala ${s.scale}`, s.paper, kindOf(s) === 'image' ? null : kindOf(s).toUpperCase()].filter(Boolean)
 
 function Item({ sheet, index, total }) {
   const kind = kindOf(sheet)
   return (
     <li>
-      <a
+      <button
+        type="button"
         className="viewer__item"
-        href={sheet.src}
-        id={sheet.id}
+        aria-current={index === 0 ? 'true' : undefined}
         data-viewer-go={sheet.id}
         data-kind={kind}
         data-src={sheet.src}
@@ -53,17 +49,12 @@ function Item({ sheet, index, total }) {
         data-alt={sheet.alt}
         data-note={sheet.note}
         data-meta={metaOf(sheet, index, total).join('|')}
-        data-file-label={fileLabelOf(sheet)}
-        data-download={fileNameOf(sheet)}
       >
-        <span className="viewer__mini">
-          <img src={sheet.mini} width="320" height={Math.round((320 * sheet.height) / sheet.width)} alt="" loading="lazy" decoding="async" />
-        </span>
         <span className="viewer__item-n">
           {pad2(index + 1)} · {kind === 'image' ? 'Immagine' : kind.toUpperCase()}
         </span>
         <span className="viewer__item-title">{sheet.title}</span>
-      </a>
+      </button>
     </li>
   )
 }
@@ -130,6 +121,7 @@ export default function SheetViewer({ sheets, label = 'Visualizzatore delle tavo
             alt={first.alt}
             decoding="async"
             loading="lazy"
+            draggable="false"
             data-viewer-thumb
           />
         </div>
@@ -139,68 +131,28 @@ export default function SheetViewer({ sheets, label = 'Visualizzatore delle tavo
         </p>
       </div>
 
-      <div className="viewer__panel">
+      <div className="viewer__foot">
+        <div className="viewer__info">
+          <p className="viewer__meta" data-viewer-meta>
+            {metaOf(first, 0, total).map((m) => (
+              <span key={m}>{m}</span>
+            ))}
+          </p>
+          <p className="viewer__title" data-viewer-name>
+            {first.title}
+          </p>
+          <p className="viewer__note" data-viewer-note>
+            {first.note}
+          </p>
+        </div>
+
         <nav className="viewer__list" aria-label="Elenco delle tavole" data-viewer-list>
-          <ol>
+          <ol role="list">
             {sheets.map((sheet, i) => (
               <Item key={sheet.id} sheet={sheet} index={i} total={total} />
             ))}
           </ol>
         </nav>
-      </div>
-
-      <div className="viewer__info">
-        <p className="viewer__meta" data-viewer-meta>
-          {metaOf(first, 0, total).map((m) => (
-            <span key={m}>{m}</span>
-          ))}
-        </p>
-        <p className="viewer__title" data-viewer-name>
-          {first.title}
-        </p>
-        <p className="viewer__note" data-viewer-note>
-          {first.note}
-        </p>
-        <p className="viewer__links">
-          <a className="viewer__link" href={first.src} download={fileNameOf(first)} data-viewer-file>
-            <Sym name="tavola" />
-            <span data-viewer-file-label>{fileLabelOf(first)}</span>
-          </a>
-        </p>
-      </div>
-
-      {/* La tastiera di una stazione totale: gli stessi tasti del sito,
-          rettangolari con la scritta retroilluminata (PREC, SUCC) e tondi
-          per −, + e lo schermo intero, e due display a LED come l'insegna
-          in fondo alla pagina, per il numero della tavola e
-          l'ingrandimento (viewer.js li aggiorna con setLedText). */}
-      <div className="viewer__tools" role="group" aria-label="Strumenti del visualizzatore">
-        <button className="viewer__tool" type="button" data-viewer-prev aria-label="Tavola precedente">
-          <Key label="Prec" />
-        </button>
-        <span className="viewer__tool viewer__count" data-viewer-count aria-hidden="true">
-          <LedReadout text={`${pad2(1)}/${pad2(total)}`} />
-        </span>
-        <button className="viewer__tool" type="button" data-viewer-next aria-label="Tavola successiva">
-          <Key label="Succ" />
-        </button>
-        <button className="viewer__tool" type="button" data-viewer-out aria-label="Riduci">
-          <Key round label="−" />
-        </button>
-        <button className="viewer__tool viewer__zoom" type="button" data-viewer-zoom aria-label="Adatta la tavola allo schermo">
-          {/* cinque celle: l'ingrandimento arriva a quattro cifre */}
-          <LedReadout text="100%" cells={5} />
-        </button>
-        <button className="viewer__tool" type="button" data-viewer-in aria-label="Ingrandisci">
-          <Key round label="+" />
-        </button>
-        <button className="viewer__tool" type="button" data-viewer-full aria-label="Schermo intero" aria-pressed="false">
-          <Key round>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M2.5 6V2.5H6M10 2.5h3.5V6M2.5 10v3.5H6M13.5 10v3.5H10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Key>
-        </button>
       </div>
 
       <p className="sr-only" aria-live="polite" data-viewer-live />

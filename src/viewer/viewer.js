@@ -2,7 +2,8 @@
 // come in un programma CAD. Trascina per spostarti, Ctrl + rotella o due
 // dita per ingrandire, doppio clic per avvicinarti, frecce per cambiare
 // tavola (o per spostarti, quando la tavola è ingrandita), + e − per lo
-// zoom, F o 0 per adattarla allo schermo.
+// zoom, F o 0 per adattarla allo schermo. Niente barra degli strumenti,
+// niente schermo intero e niente scaricamento: lo studio non li vuole.
 //
 // Il foglio è .viewer__sheet: sotto c'è la miniatura, sopra due canvas
 // disegnati leggendo il file originale, il DWG (./dwg-sheet.js) o il PDF
@@ -12,13 +13,10 @@
 //
 // Dentro la pagina la rotella scorre la pagina finché la tavola non è
 // ingrandita e sul telefono un dito scorre la pagina: servono due dita.
-// A schermo intero il visualizzatore prende tutti i gesti.
 //
 // Viene dal visualizzatore di albertopecchini.it; qui `setupViewer`
 // restituisce la funzione che lo smonta, per l'effetto di React.
 
-import { setScrollLocked } from '../motion.js'
-import { setLedText } from '../led.js'
 import { createDwgLayer } from './dwg-sheet.js'
 import { createPdfLayer } from './pdf-sheet.js'
 
@@ -29,27 +27,6 @@ const DOUBLE_TAP_MS = 320
 const $ = (selector, root) => root.querySelector(selector)
 const $$ = (selector, root) => [...root.querySelectorAll(selector)]
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
-
-/** Mantiene il fuoco da tastiera dentro `container`. */
-function trapFocus(container) {
-  const selector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-  const onKey = (e) => {
-    if (e.key !== 'Tab') return
-    const items = $$(selector, container).filter((el) => el.offsetParent !== null)
-    if (!items.length) return
-    const first = items[0]
-    const last = items.at(-1)
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault()
-      last.focus()
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault()
-      first.focus()
-    }
-  }
-  container.addEventListener('keydown', onKey)
-  return () => container.removeEventListener('keydown', onKey)
-}
 
 /**
  * @param {HTMLElement} root la sezione [data-viewer]
@@ -74,11 +51,6 @@ export function setupViewer(root) {
     meta: $('[data-viewer-meta]', root),
     name: $('[data-viewer-name]', root),
     note: $('[data-viewer-note]', root),
-    file: $('[data-viewer-file]', root),
-    fileLabel: $('[data-viewer-file-label]', root),
-    count: $('[data-viewer-count]', root),
-    zoom: $('[data-viewer-zoom]', root),
-    full: $('[data-viewer-full]', root),
   }
 
   const sheets = items.map((a, i) => ({ a, ...a.dataset, w: Number(a.dataset.w), h: Number(a.dataset.h), max: Number(a.dataset.max), pos: i + 1 }))
@@ -104,13 +76,12 @@ export function setupViewer(root) {
   let lastT = 0
   let settleTimer = 0
   let moving = false
-  let full = false
 
   const zoomed = () => view.z > fitZ * 1.02
 
   // Lo scorrimento morbido (Lenis) lascia la rotella al visualizzatore
-  // quando è lui a usarla: tavola ingrandita o schermo intero.
-  const syncWheel = () => stage.toggleAttribute('data-lenis-prevent-wheel', full || zoomed())
+  // quando è lui a usarla: con la tavola ingrandita.
+  const syncWheel = () => stage.toggleAttribute('data-lenis-prevent-wheel', zoomed())
 
   const fit = () => {
     const pad = Math.min(24, sw * 0.03)
@@ -135,7 +106,6 @@ export function setupViewer(root) {
   // ── Disegno ───────────────────────────────────────────────────────────────
 
   let applied = ''
-  let lastPct = -1
   let wasZoomed = null
 
   const commit = () => {
@@ -166,9 +136,6 @@ export function setupViewer(root) {
       clearTimeout(settleTimer)
       settleTimer = setTimeout(settle, SETTLE_MS)
     }
-    const pct = Math.round((view.z / fitZ) * 100)
-    if (pct !== lastPct && el.zoom) setLedText(el.zoom, `${pct}%`)
-    lastPct = pct
     const z = zoomed()
     if (z !== wasZoomed) {
       root.classList.toggle('is-zoomed', (wasZoomed = z))
@@ -294,8 +261,6 @@ export function setupViewer(root) {
       }
     })
 
-  const pad2 = (n) => String(n).padStart(2, '0')
-
   const show = (i, { say = true } = {}) => {
     i = (i + sheets.length) % sheets.length
     if (i === cur) return
@@ -313,12 +278,6 @@ export function setupViewer(root) {
     if (el.meta) el.meta.replaceChildren(...s.meta.split('|').map((m) => Object.assign(document.createElement('span'), { textContent: m })))
     if (el.name) el.name.textContent = s.title
     if (el.note) el.note.textContent = s.note
-    if (el.file) {
-      el.file.href = s.src
-      el.file.setAttribute('download', s.download)
-    }
-    if (el.fileLabel) el.fileLabel.textContent = s.fileLabel
-    if (el.count) setLedText(el.count, `${pad2(s.pos)}/${pad2(sheets.length)}`)
 
     measure()
     reset()
@@ -343,7 +302,7 @@ export function setupViewer(root) {
     'wheel',
     (e) => {
       const pinch = e.ctrlKey || e.metaKey
-      if (!pinch && !full && !zoomed()) return flashHint()
+      if (!pinch && !zoomed()) return flashHint()
       e.preventDefault()
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? sh : 1
       if (pinch) {
@@ -411,7 +370,7 @@ export function setupViewer(root) {
     }
     if (!drag.moved) return
     // al dito, con la tavola adattata, il gesto orizzontale sfoglia le tavole
-    if (drag.type === 'touch' && !zoomed() && !full) return
+    if (drag.type === 'touch' && !zoomed()) return
     go({ x: target.x + dx, y: target.y + dy }, { animate: false })
     drag.x = e.clientX
     drag.y = e.clientY
@@ -460,11 +419,11 @@ export function setupViewer(root) {
   })
 
   // ── Tastiera ──────────────────────────────────────────────────────────────
-  // Il visualizzatore ascolta solo quando ha il fuoco (o è a schermo intero).
+  // Il visualizzatore ascolta solo quando ha il fuoco.
 
   on(document, 'keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return
-    if (!full && !root.contains(document.activeElement)) return
+    if (!root.contains(document.activeElement)) return
     const c = center()
     const pan = 90
     switch (e.key) {
@@ -503,63 +462,21 @@ export function setupViewer(root) {
       case 'PageDown':
         step(1)
         break
-      case 'Escape':
-        if (!full) return
-        setFull(false)
-        break
       default:
         return
     }
     e.preventDefault()
   })
 
-  // ── Schermo intero ────────────────────────────────────────────────────────
-  // Il visualizzatore resta dov'è nel DOM (è di React) e passa sopra tutto
-  // con position: fixed; nessun suo antenato ha transform o filtri che lo
-  // tratterrebbero. La pagina sotto non scorre e il fuoco resta dentro.
+  // ── Elenco e file ─────────────────────────────────────────────────────────
+  // Le voci dell'elenco sono bottoni, senza collegamento al file; il menu
+  // del tasto destro sul piano è spento, così non offre «Salva immagine».
 
-  // Il tasto resta lo stesso: acceso (aria-pressed) finché si è a schermo intero.
-  let untrap = null
-
-  function setFull(on) {
-    if (on === full) return
-    full = on
-    root.classList.toggle('is-full', on)
-    document.documentElement.classList.toggle('has-viewer-full', on)
-    setScrollLocked(on)
-    if (on) untrap = trapFocus(root)
-    else {
-      untrap?.()
-      untrap = null
-    }
-    syncWheel()
-    if (el.full) {
-      el.full.setAttribute('aria-pressed', String(on))
-      el.full.setAttribute('aria-label', on ? 'Esci dallo schermo intero' : 'Schermo intero')
-    }
-    measure()
-    reset()
-    stage.focus({ preventScroll: true })
-  }
-
-  // ── Strumenti ─────────────────────────────────────────────────────────────
-
-  const tool = (name, fn) => {
-    const button = $(`[data-viewer-${name}]`, root)
-    if (button) on(button, 'click', fn)
-  }
-  tool('prev', () => step(-1))
-  tool('next', () => step(1))
-  tool('in', () => zoomAt(1.4, center().x, center().y, true))
-  tool('out', () => zoomAt(1 / 1.4, center().x, center().y, true))
-  tool('zoom', () => go(fit()))
-  tool('full', () => setFull(!full))
+  on(stage, 'contextmenu', (e) => e.preventDefault())
   items.forEach((a, i) =>
-    on(a, 'click', (e) => {
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return // nuova scheda: si apre il file
-      e.preventDefault()
+    on(a, 'click', () => {
       show(i)
-      if (innerWidth < 768 && !full) stage.scrollIntoView?.({ block: 'nearest', behavior: still ? 'auto' : 'smooth' })
+      if (innerWidth < 768) stage.scrollIntoView?.({ block: 'nearest', behavior: still ? 'auto' : 'smooth' })
     }),
   )
 
@@ -580,12 +497,6 @@ export function setupViewer(root) {
   else on(window, 'resize', onResize)
 
   return () => {
-    if (full) {
-      root.classList.remove('is-full')
-      document.documentElement.classList.remove('has-viewer-full')
-      setScrollLocked(false)
-      untrap?.()
-    }
     ac.abort()
     observer?.disconnect()
     if (raf) cancelAnimationFrame(raf)

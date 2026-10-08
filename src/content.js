@@ -8,6 +8,10 @@
  */
 
 export const studio = {
+  /* Sulla pagina il nome compare sempre in maiuscolo, come sulla targa:
+     lo fa il CSS (text-transform), così etichette, alt e lettori di
+     schermo ricevono il nome normale e non lo compitano lettera per
+     lettera. */
   name: 'Ing. Dario Donelli',
   role: 'Ingegnere',
   address: 'Via Filippo Turati, 1, 46040 Rivalta sul Mincio MN',
@@ -25,23 +29,16 @@ export const studio = {
 }
 
 /**
- * Sorgente del riquadro cartografico dei contatti.
- *
- * Lo studio ha chiesto una mappa pulita, senza la carta blu: si usa
- * OpenStreetMap in bianco e nero (il viraggio è in CSS) e non l'embed di
- * Google Maps, che installa cookie di profilazione e imporrebbe un banner
- * di consenso. Il collegamento accanto porta comunque su Google Maps, che
- * è l'applicazione con cui la maggior parte delle persone calcola il
- * percorso.
+ * Sorgente del riquadro cartografico dei contatti: Google Maps, come
+ * chiesto dallo studio. È l'embed pubblico senza chiave API, centrato sulle
+ * coordinate dello studio con lo zoom sulla via; il CSS lo vira in bianco
+ * e nero, così niente colori che stonano con la pagina.
+ * Nota: l'embed di Google può installare cookie di terze parti; quando
+ * arriverà la cookie policy va citato lì.
  */
 export const mapEmbedSrc = (() => {
   const { lat, lng } = studio.geo
-  // Riquadro stretto: si deve leggere la via, non la provincia. L'ampiezza
-  // in longitudine è doppia perché il riquadro è più largo che alto.
-  const dx = 0.0034
-  const dy = 0.0017
-  const bbox = [lng - dx, lat - dy, lng + dx, lat + dy].join(',')
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`
+  return `https://maps.google.com/maps?q=${lat},${lng}&z=17&hl=it&output=embed`
 })()
 
 /**
@@ -69,9 +66,9 @@ export const profile = {
 }
 
 /**
- * Voci di navigazione. Il sito è una pagina sola: ogni voce punta a una
- * sezione tramite ancora, e l'id serve anche allo scroll-spy dell'header
- * per sottolineare la voce corrispondente alla sezione che si sta leggendo.
+ * Sezioni della pagina. Il sito è una pagina sola: ogni voce punta a una
+ * sezione tramite ancora; l'elenco alimenta i numeri delle intestazioni e
+ * i collegamenti del footer.
  */
 export const sections = [
   { id: 'servizi', num: '01', label: 'Servizi' },
@@ -80,8 +77,6 @@ export const sections = [
   { id: 'metodo', num: '04', label: 'Metodo' },
   { id: 'contatti', num: '05', label: 'Contatti' },
 ]
-
-export const navItems = sections
 
 /** Manifesto dell'intro: tre righe, nessuna di più. */
 export const manifesto = ['Progettare.', 'Verificare.', 'Seguire il cantiere.']
@@ -231,6 +226,60 @@ export const projects = [
     height: 1600,
     imageAlt: 'Facciata intonacata di bianco di un edificio ristrutturato',
     text: 'Interventi di recupero, miglioramento sismico e restauro di edifici esistenti, per valorizzare il patrimonio costruito e migliorarne prestazioni, comfort e sicurezza.',
+  },
+]
+
+/**
+ * Elaborati da consultare nel visualizzatore (src/viewer/). ESEMPI: due
+ * file di prova che mostrano come il sito apre un DWG e un PDF così come
+ * escono da AutoCAD o dalla stampa, senza conversioni. Vanno sostituiti
+ * con gli elaborati veri dello studio.
+ *
+ * I file stanno in public/tavole/: il file originale, la miniatura
+ * <nome>.webp (1200 px, fa da anteprima mentre il file si apre) e
+ * <nome>-mini.webp (320 px, per l'elenco).
+ * - DWG (AutoCAD 2010–2018): `dwg` è il file, `box` il riquadro dello
+ *   spazio modello da mostrare (x0, y0, x1, y1 in unità del disegno);
+ *   l'altezza della tavola si ricava dal riquadro. `darken` scurisce i
+ *   colori chiari pensati per lo sfondo nero di AutoCAD; `paper` dà la
+ *   larghezza del foglio, da cui gli spessori di linea.
+ * - PDF: `src` è il file, `page` la pagina (dalla prima); `width` e
+ *   `height` seguono le proporzioni della pagina.
+ */
+const sheetFiles = (name) => ({
+  thumb: `/tavole/${name}.webp`,
+  mini: `/tavole/${name}-mini.webp`,
+})
+
+const exampleBox = [1634445, 4998992, 1638894, 5000944]
+
+export const sheets = [
+  {
+    id: 'esempio-disegno',
+    tag: 'Esempio',
+    title: 'Estratto di mappa con frazionamento',
+    alt: 'Esempio di disegno DWG: estratto di mappa catastale con le linee di frazionamento e le superfici dei lotti',
+    note: 'File DWG di AutoCAD aperto così com’è: linee, testi, tratteggi e layer vengono letti dal file originale e ridisegnati nitidi a ogni ingrandimento.',
+    dwg: '/tavole/esempio-disegno.dwg',
+    src: '/tavole/esempio-disegno.dwg',
+    box: exampleBox,
+    paper: 'A3',
+    width: 1200,
+    height: Math.round((1200 * (exampleBox[3] - exampleBox[1])) / (exampleBox[2] - exampleBox[0])),
+    ...sheetFiles('esempio-disegno'),
+  },
+  {
+    id: 'esempio-documento',
+    tag: 'Esempio',
+    title: 'Documento PDF di una pagina',
+    alt: 'Esempio di documento PDF: una tabella oraria su foglio A4',
+    note: 'PDF originale mostrato nella pagina, senza aprire altri programmi: si ingrandisce fino al dettaglio.',
+    src: '/tavole/esempio-documento.pdf',
+    page: 1,
+    paper: 'A4',
+    width: 1200,
+    height: 1697,
+    ...sheetFiles('esempio-documento'),
   },
 ]
 

@@ -55,13 +55,6 @@ export function scrollToTarget(target, { immediate = false } = {}) {
   window.scrollTo({ top, behavior: immediate || prefersReducedMotion() ? 'auto' : 'smooth' })
 }
 
-/** Ferma e riprende lo scorrimento morbido (menu aperto). */
-export function setScrollLocked(locked) {
-  if (!lenis) return
-  if (locked) lenis.stop()
-  else lenis.start()
-}
-
 /**
  * Rivelazione allo scroll. Un solo observer per tutti gli elementi .reveal:
  * la linea di attivazione sta al 14% dal fondo dello schermo, così
